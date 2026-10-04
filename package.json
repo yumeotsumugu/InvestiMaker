@@ -1,0 +1,23 @@
+{
+  "name": "investimaker",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "InvestiMaker Phase 0 検証プロトタイプ",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "gen:assets": "node tools/generate-dev-assets.ts",
+    "gen:assets:sizes": "node tools/generate-dev-assets.ts --width 1200 --height 1800 --out assets/bench/1200x1800 && node tools/generate-dev-assets.ts --width 1600 --height 2400 --out assets/bench/1600x2400 && node tools/generate-dev-assets.ts --width 2000 --height 3000 --out assets/bench/2000x3000",
+    "report:images": "node tools/render-report-images.ts",
+    "bench:browser": "node tools/browser-bench.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.2",
+    "vitest": "^5.0.3"
+  }
+}
