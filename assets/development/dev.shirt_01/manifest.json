@@ -1,0 +1,139 @@
+{
+  "format": "INVESTIMAKER_PART",
+  "formatVersion": 1,
+  "id": "dev.shirt_01",
+  "version": "0.1.0",
+  "name": "仮・シャツ",
+  "author": "InvestiMaker (dev)",
+  "category": "outfit.top",
+  "canvas": [1600, 2400],
+  "tags": [
+    "仮素材"
+  ],
+  "license": {
+    "name": "InvestiMaker 開発用仮素材（リポジトリ内のスクリプトで生成）",
+    "url": "",
+    "commercial": false,
+    "modify": true,
+    "redistributable": false,
+    "creditRequired": false,
+    "creditText": ""
+  },
+  "kind": "part",
+  "compatible": {
+    "body": [
+      "dev.body_adult_standard"
+    ]
+  },
+  "requires": [],
+  "conflicts": [],
+  "hides": [],
+  "mirrorable": false,
+  "colorSlots": [
+    {
+      "id": "main",
+      "name": "本体",
+      "mode": "tint",
+      "default": "#E9EDF2"
+    },
+    {
+      "id": "button",
+      "name": "ボタン",
+      "mode": "tint",
+      "default": "#8A93A6"
+    }
+  ],
+  "layers": [
+    {
+      "id": "body",
+      "slot": "outfit.top",
+      "assets": [
+        {
+          "when": {
+            "view": "front"
+          },
+          "file": "assets/front/body.png",
+          "offset": [624, 640],
+          "mask": {
+            "file": "assets/front/body.mask.png",
+            "channels": {
+              "r": "main",
+              "g": "button"
+            }
+          }
+        },
+        {
+          "when": {
+            "view": "front",
+            "fit": {
+              "chest": "large"
+            }
+          },
+          "file": "assets/front/body_chest_l.png",
+          "offset": [616, 640],
+          "mask": {
+            "file": "assets/front/body_chest_l.mask.png",
+            "channels": {
+              "r": "main",
+              "g": "button"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "sleeve_l",
+      "slot": "arm.left.sleeve.top",
+      "assets": [
+        {
+          "when": {
+            "view": "front",
+            "pose": "down"
+          },
+          "file": "assets/front/sleeve_l_down.png",
+          "offset": [912, 644],
+          "mask": {
+            "file": "assets/front/sleeve_l_down.mask.png",
+            "channels": {
+              "r": "main"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "sleeve_r",
+      "slot": "arm.right.sleeve.top",
+      "assets": [
+        {
+          "when": {
+            "view": "front",
+            "pose": "down"
+          },
+          "file": "assets/front/sleeve_r_down.png",
+          "offset": [536, 644],
+          "mask": {
+            "file": "assets/front/sleeve_r_down.mask.png",
+            "channels": {
+              "r": "main"
+            }
+          }
+        },
+        {
+          "when": {
+            "view": "front",
+            "pose": "pocket"
+          },
+          "file": "assets/front/sleeve_r_pocket.png",
+          "offset": [504, 644],
+          "mask": {
+            "file": "assets/front/sleeve_r_pocket.mask.png",
+            "channels": {
+              "r": "main"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

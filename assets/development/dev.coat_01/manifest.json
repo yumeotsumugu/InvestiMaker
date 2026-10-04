@@ -1,0 +1,142 @@
+{
+  "format": "INVESTIMAKER_PART",
+  "formatVersion": 1,
+  "id": "dev.coat_01",
+  "version": "0.1.0",
+  "name": "仮・コート",
+  "author": "InvestiMaker (dev)",
+  "category": "outfit.outer",
+  "canvas": [1600, 2400],
+  "tags": [
+    "仮素材",
+    "冬"
+  ],
+  "license": {
+    "name": "InvestiMaker 開発用仮素材（リポジトリ内のスクリプトで生成）",
+    "url": "",
+    "commercial": false,
+    "modify": true,
+    "redistributable": false,
+    "creditRequired": false,
+    "creditText": ""
+  },
+  "kind": "part",
+  "compatible": {
+    "body": [
+      "dev.body_adult_standard"
+    ]
+  },
+  "requires": [
+    {
+      "type": "category",
+      "category": "outfit.top"
+    }
+  ],
+  "conflicts": [],
+  "hides": [],
+  "mirrorable": false,
+  "colorSlots": [
+    {
+      "id": "main",
+      "name": "本体",
+      "mode": "tint",
+      "default": "#3A3F4B"
+    },
+    {
+      "id": "lapel",
+      "name": "襟",
+      "mode": "tint",
+      "default": "#2B2F38"
+    },
+    {
+      "id": "button",
+      "name": "ボタン",
+      "mode": "tint",
+      "default": "#C8A85A"
+    }
+  ],
+  "layers": [
+    {
+      "id": "back",
+      "slot": "outfit.outer.back",
+      "assets": [
+        {
+          "when": {
+            "view": "front"
+          },
+          "file": "assets/front/back.png",
+          "offset": [588, 634],
+          "mask": {
+            "file": "assets/front/back.mask.png",
+            "channels": {
+              "r": "main"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "body",
+      "slot": "outfit.outer",
+      "assets": [
+        {
+          "when": {
+            "view": "front"
+          },
+          "file": "assets/front/body.png",
+          "offset": [590, 634],
+          "mask": {
+            "file": "assets/front/body.mask.png",
+            "channels": {
+              "r": "main",
+              "g": "lapel",
+              "b": "button"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "sleeve_l",
+      "slot": "arm.left.sleeve.outer",
+      "assets": [
+        {
+          "when": {
+            "view": "front",
+            "pose": "down"
+          },
+          "file": "assets/front/sleeve_l_down.png",
+          "offset": [902, 634],
+          "mask": {
+            "file": "assets/front/sleeve_l_down.mask.png",
+            "channels": {
+              "r": "main",
+              "b": "button"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "sleeve_r",
+      "slot": "arm.right.sleeve.outer",
+      "assets": [
+        {
+          "when": {
+            "view": "front",
+            "pose": "down"
+          },
+          "file": "assets/front/sleeve_r_down.png",
+          "offset": [524, 634],
+          "mask": {
+            "file": "assets/front/sleeve_r_down.mask.png",
+            "channels": {
+              "r": "main",
+              "b": "button"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

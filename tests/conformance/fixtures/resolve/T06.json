@@ -1,0 +1,36 @@
+{
+  "id": "T6",
+  "spec": "§6.6",
+  "description": "body は pose より上位",
+  "compatibleBody": [
+    "dev.body_a",
+    "dev.body_b"
+  ],
+  "layer": {
+    "id": "target",
+    "slot": "arm.right.sleeve.top",
+    "assets": [
+      {
+        "when": {
+          "view": "front",
+          "body": "dev.body_a"
+        },
+        "file": "assets/front/x.png"
+      },
+      {
+        "when": {
+          "view": "front",
+          "pose": "down"
+        },
+        "file": "assets/front/y.png"
+      }
+    ]
+  },
+  "context": {
+    "view": "front",
+    "body": "dev.body_a",
+    "pose": "down",
+    "fit": {}
+  },
+  "expect": "x"
+}

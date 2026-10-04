@@ -1,0 +1,62 @@
+{
+  "format": "INVESTIMAKER_PART",
+  "formatVersion": 1,
+  "id": "dev.face_head_01",
+  "version": "0.1.0",
+  "name": "仮・輪郭",
+  "author": "InvestiMaker (dev)",
+  "category": "face.head",
+  "canvas": [1600, 2400],
+  "tags": [
+    "仮素材"
+  ],
+  "license": {
+    "name": "InvestiMaker 開発用仮素材（リポジトリ内のスクリプトで生成）",
+    "url": "",
+    "commercial": false,
+    "modify": true,
+    "redistributable": false,
+    "creditRequired": false,
+    "creditText": ""
+  },
+  "kind": "part",
+  "compatible": {
+    "body": [
+      "dev.body_adult_standard"
+    ]
+  },
+  "requires": [],
+  "conflicts": [],
+  "hides": [],
+  "mirrorable": false,
+  "colorSlots": [
+    {
+      "id": "skin",
+      "name": "肌",
+      "mode": "tint",
+      "default": "#F2D3BD",
+      "link": "skin.base"
+    }
+  ],
+  "layers": [
+    {
+      "id": "head",
+      "slot": "face.head",
+      "assets": [
+        {
+          "when": {
+            "view": "front"
+          },
+          "file": "assets/front/head.png",
+          "offset": [650, 188],
+          "mask": {
+            "file": "assets/front/head.mask.png",
+            "channels": {
+              "r": "skin"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

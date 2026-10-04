@@ -1,0 +1,3 @@
+# 生成物（manifest.json など）がチェックアウト時に変わらないよう、改行は LF に固定する。
+* text=auto eol=lf
+*.png binary

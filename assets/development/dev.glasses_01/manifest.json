@@ -1,0 +1,61 @@
+{
+  "format": "INVESTIMAKER_PART",
+  "formatVersion": 1,
+  "id": "dev.glasses_01",
+  "version": "0.1.0",
+  "name": "仮・メガネ",
+  "author": "InvestiMaker (dev)",
+  "category": "outfit.eyewear",
+  "canvas": [1600, 2400],
+  "tags": [
+    "仮素材"
+  ],
+  "license": {
+    "name": "InvestiMaker 開発用仮素材（リポジトリ内のスクリプトで生成）",
+    "url": "",
+    "commercial": false,
+    "modify": true,
+    "redistributable": false,
+    "creditRequired": false,
+    "creditText": ""
+  },
+  "kind": "part",
+  "compatible": {
+    "body": [
+      "dev.body_adult_standard"
+    ]
+  },
+  "requires": [],
+  "conflicts": [],
+  "hides": [],
+  "mirrorable": false,
+  "colorSlots": [
+    {
+      "id": "frame",
+      "name": "フレーム",
+      "mode": "tint",
+      "default": "#30343C"
+    }
+  ],
+  "layers": [
+    {
+      "id": "glasses",
+      "slot": "outfit.eyewear",
+      "assets": [
+        {
+          "when": {
+            "view": "front"
+          },
+          "file": "assets/front/glasses.png",
+          "offset": [652, 369],
+          "mask": {
+            "file": "assets/front/glasses.mask.png",
+            "channels": {
+              "r": "frame"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
