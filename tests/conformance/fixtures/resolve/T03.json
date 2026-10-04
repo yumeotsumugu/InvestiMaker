@@ -1,0 +1,40 @@
+{
+  "id": "T3",
+  "spec": "§6.6",
+  "description": "pose は fit より上位",
+  "compatibleBody": [
+    "dev.body_a",
+    "dev.body_b"
+  ],
+  "layer": {
+    "id": "target",
+    "slot": "arm.right.sleeve.top",
+    "assets": [
+      {
+        "when": {
+          "view": "front",
+          "pose": "down"
+        },
+        "file": "assets/front/x.png"
+      },
+      {
+        "when": {
+          "view": "front",
+          "fit": {
+            "chest": "large"
+          }
+        },
+        "file": "assets/front/y.png"
+      }
+    ]
+  },
+  "context": {
+    "view": "front",
+    "body": "dev.body_a",
+    "pose": "down",
+    "fit": {
+      "chest": "large"
+    }
+  },
+  "expect": "x"
+}

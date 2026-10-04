@@ -1,0 +1,35 @@
+{
+  "id": "T2",
+  "spec": "§6.6",
+  "description": "Y は不一致、X はポーズ非依存",
+  "compatibleBody": [
+    "dev.body_a",
+    "dev.body_b"
+  ],
+  "layer": {
+    "id": "target",
+    "slot": "arm.right.sleeve.top",
+    "assets": [
+      {
+        "when": {
+          "view": "front"
+        },
+        "file": "assets/front/x.png"
+      },
+      {
+        "when": {
+          "view": "front",
+          "pose": "down"
+        },
+        "file": "assets/front/y.png"
+      }
+    ]
+  },
+  "context": {
+    "view": "front",
+    "body": "dev.body_a",
+    "pose": "pocket",
+    "fit": {}
+  },
+  "expect": "x"
+}

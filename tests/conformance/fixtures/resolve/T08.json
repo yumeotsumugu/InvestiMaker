@@ -1,0 +1,34 @@
+{
+  "id": "T8",
+  "spec": "§6.6",
+  "description": "配列の短さは優先理由にならない",
+  "compatibleBody": [
+    "dev.body_a",
+    "dev.body_b"
+  ],
+  "layer": {
+    "id": "target",
+    "slot": "arm.right.sleeve.top",
+    "assets": [
+      {
+        "when": {
+          "view": "front",
+          "body": [
+            "dev.body_a",
+            "dev.body_b"
+          ]
+        },
+        "file": "assets/front/x.png"
+      },
+      {
+        "when": {
+          "view": "front",
+          "body": "dev.body_a"
+        },
+        "file": "assets/front/y.png"
+      }
+    ]
+  },
+  "context": null,
+  "expect": "invalid"
+}

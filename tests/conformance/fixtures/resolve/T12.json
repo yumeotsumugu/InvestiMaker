@@ -1,0 +1,40 @@
+{
+  "id": "T12",
+  "spec": "§6.6",
+  "description": "pose は state より上位",
+  "compatibleBody": [
+    "dev.body_a",
+    "dev.body_b"
+  ],
+  "layer": {
+    "id": "target",
+    "slot": "arm.right.sleeve.top",
+    "assets": [
+      {
+        "when": {
+          "view": "front",
+          "pose": [
+            "down",
+            "pocket"
+          ]
+        },
+        "file": "assets/front/x.png"
+      },
+      {
+        "when": {
+          "view": "front",
+          "state": "smile"
+        },
+        "file": "assets/front/y.png"
+      }
+    ]
+  },
+  "context": {
+    "view": "front",
+    "body": "dev.body_a",
+    "pose": "down",
+    "fit": {},
+    "state": "smile"
+  },
+  "expect": "x"
+}
