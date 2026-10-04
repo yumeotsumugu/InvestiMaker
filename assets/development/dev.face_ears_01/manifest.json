@@ -1,0 +1,61 @@
+{
+  "format": "INVESTIMAKER_PART",
+  "formatVersion": 1,
+  "id": "dev.face_ears_01",
+  "version": "0.1.0",
+  "name": "仮・耳",
+  "author": "InvestiMaker (dev)",
+  "category": "face.ears",
+  "tags": [
+    "仮素材"
+  ],
+  "license": {
+    "name": "InvestiMaker 開発用仮素材（リポジトリ内のスクリプトで生成）",
+    "url": "",
+    "commercial": false,
+    "modify": true,
+    "redistributable": false,
+    "creditRequired": false,
+    "creditText": ""
+  },
+  "kind": "part",
+  "compatible": {
+    "body": [
+      "dev.body_adult_standard"
+    ]
+  },
+  "requires": [],
+  "conflicts": [],
+  "hides": [],
+  "mirrorable": false,
+  "colorSlots": [
+    {
+      "id": "skin",
+      "name": "肌",
+      "mode": "tint",
+      "default": "#F2D3BD",
+      "link": "skin.base"
+    }
+  ],
+  "layers": [
+    {
+      "id": "ears",
+      "slot": "face.ears",
+      "assets": [
+        {
+          "when": {
+            "view": "front"
+          },
+          "file": "assets/front/ears.png",
+          "offset": [628, 368],
+          "mask": {
+            "file": "assets/front/ears.mask.png",
+            "channels": {
+              "r": "skin"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

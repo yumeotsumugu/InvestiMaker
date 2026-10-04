@@ -1,0 +1,88 @@
+{
+  "format": "INVESTIMAKER_PART",
+  "formatVersion": 1,
+  "id": "dev.hat_01",
+  "version": "0.1.0",
+  "name": "仮・帽子",
+  "author": "InvestiMaker (dev)",
+  "category": "outfit.head",
+  "tags": [
+    "仮素材"
+  ],
+  "license": {
+    "name": "InvestiMaker 開発用仮素材（リポジトリ内のスクリプトで生成）",
+    "url": "",
+    "commercial": false,
+    "modify": true,
+    "redistributable": false,
+    "creditRequired": false,
+    "creditText": ""
+  },
+  "kind": "part",
+  "compatible": {
+    "body": [
+      "dev.body_adult_standard"
+    ]
+  },
+  "requires": [],
+  "conflicts": [],
+  "hides": [
+    "hair.extra"
+  ],
+  "mirrorable": false,
+  "colorSlots": [
+    {
+      "id": "main",
+      "name": "本体",
+      "mode": "tint",
+      "default": "#6B4F3A"
+    },
+    {
+      "id": "band",
+      "name": "リボン",
+      "mode": "tint",
+      "default": "#2B2F38"
+    }
+  ],
+  "layers": [
+    {
+      "id": "back",
+      "slot": "outfit.head.back",
+      "assets": [
+        {
+          "when": {
+            "view": "front"
+          },
+          "file": "assets/front/back.png",
+          "offset": [550, 258],
+          "mask": {
+            "file": "assets/front/back.mask.png",
+            "channels": {
+              "r": "main"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "front",
+      "slot": "outfit.head",
+      "assets": [
+        {
+          "when": {
+            "view": "front"
+          },
+          "file": "assets/front/front.png",
+          "offset": [550, 112],
+          "mask": {
+            "file": "assets/front/front.mask.png",
+            "channels": {
+              "r": "main",
+              "g": "band"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

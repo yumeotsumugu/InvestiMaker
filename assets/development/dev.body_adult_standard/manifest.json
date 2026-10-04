@@ -1,0 +1,188 @@
+{
+  "format": "INVESTIMAKER_PART",
+  "formatVersion": 1,
+  "id": "dev.body_adult_standard",
+  "version": "0.1.0",
+  "name": "仮素体（成人・標準）",
+  "author": "InvestiMaker (dev)",
+  "category": "body",
+  "tags": [
+    "仮素材"
+  ],
+  "license": {
+    "name": "InvestiMaker 開発用仮素材（リポジトリ内のスクリプトで生成）",
+    "url": "",
+    "commercial": false,
+    "modify": true,
+    "redistributable": false,
+    "creditRequired": false,
+    "creditText": ""
+  },
+  "kind": "body",
+  "views": [
+    "front"
+  ],
+  "fitDimensions": {
+    "chest": [
+      "small",
+      "medium",
+      "large"
+    ]
+  },
+  "anchors": {
+    "front": {
+      "head_top": [800, 188],
+      "eye_line": [800, 405],
+      "chin": [800, 572],
+      "bust": [800, 895],
+      "waist": [800, 1180],
+      "knee": [800, 1800],
+      "foot": [800, 2340]
+    }
+  },
+  "requires": [],
+  "conflicts": [],
+  "hides": [],
+  "mirrorable": false,
+  "colorSlots": [
+    {
+      "id": "skin",
+      "name": "肌",
+      "mode": "tint",
+      "default": "#F2D3BD",
+      "link": "skin.base"
+    }
+  ],
+  "layers": [
+    {
+      "id": "base",
+      "slot": "body.base",
+      "assets": [
+        {
+          "when": {
+            "view": "front"
+          },
+          "file": "assets/front/base.png",
+          "offset": [634, 530],
+          "mask": {
+            "file": "assets/front/base.mask.png",
+            "channels": {
+              "r": "skin"
+            }
+          }
+        },
+        {
+          "when": {
+            "view": "front",
+            "fit": {
+              "chest": "large"
+            }
+          },
+          "file": "assets/front/base_chest_l.png",
+          "offset": [628, 530],
+          "mask": {
+            "file": "assets/front/base_chest_l.mask.png",
+            "channels": {
+              "r": "skin"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "arm_l",
+      "slot": "arm.left.skin",
+      "assets": [
+        {
+          "when": {
+            "view": "front",
+            "pose": "down"
+          },
+          "file": "assets/front/arm_l_down.png",
+          "offset": [922, 654],
+          "mask": {
+            "file": "assets/front/arm_l_down.mask.png",
+            "channels": {
+              "r": "skin"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "hand_l",
+      "slot": "arm.left.hand",
+      "assets": [
+        {
+          "when": {
+            "view": "front",
+            "pose": "down"
+          },
+          "file": "assets/front/hand_l_down.png",
+          "offset": [972, 1242],
+          "mask": {
+            "file": "assets/front/hand_l_down.mask.png",
+            "channels": {
+              "r": "skin"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "arm_r",
+      "slot": "arm.right.skin",
+      "assets": [
+        {
+          "when": {
+            "view": "front",
+            "pose": "down"
+          },
+          "file": "assets/front/arm_r_down.png",
+          "offset": [542, 654],
+          "mask": {
+            "file": "assets/front/arm_r_down.mask.png",
+            "channels": {
+              "r": "skin"
+            }
+          }
+        },
+        {
+          "when": {
+            "view": "front",
+            "pose": "pocket"
+          },
+          "file": "assets/front/arm_r_pocket.png",
+          "offset": [514, 654],
+          "mask": {
+            "file": "assets/front/arm_r_pocket.mask.png",
+            "channels": {
+              "r": "skin"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "hand_r",
+      "slot": "arm.right.hand",
+      "optional": true,
+      "assets": [
+        {
+          "when": {
+            "view": "front",
+            "pose": "down"
+          },
+          "file": "assets/front/hand_r_down.png",
+          "offset": [540, 1242],
+          "mask": {
+            "file": "assets/front/hand_r_down.mask.png",
+            "channels": {
+              "r": "skin"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

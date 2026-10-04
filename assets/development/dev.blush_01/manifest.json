@@ -1,0 +1,60 @@
+{
+  "format": "INVESTIMAKER_PART",
+  "formatVersion": 1,
+  "id": "dev.blush_01",
+  "version": "0.1.0",
+  "name": "仮・赤面",
+  "author": "InvestiMaker (dev)",
+  "category": "overlay",
+  "tags": [
+    "仮素材"
+  ],
+  "license": {
+    "name": "InvestiMaker 開発用仮素材（リポジトリ内のスクリプトで生成）",
+    "url": "",
+    "commercial": false,
+    "modify": true,
+    "redistributable": false,
+    "creditRequired": false,
+    "creditText": ""
+  },
+  "kind": "part",
+  "compatible": {
+    "body": [
+      "dev.body_adult_standard"
+    ]
+  },
+  "requires": [],
+  "conflicts": [],
+  "hides": [],
+  "mirrorable": false,
+  "colorSlots": [
+    {
+      "id": "color",
+      "name": "色",
+      "mode": "tint",
+      "default": "#F08A8A"
+    }
+  ],
+  "layers": [
+    {
+      "id": "blush",
+      "slot": "overlay.face",
+      "assets": [
+        {
+          "when": {
+            "view": "front"
+          },
+          "file": "assets/front/blush.png",
+          "offset": [668, 438],
+          "mask": {
+            "file": "assets/front/blush.mask.png",
+            "channels": {
+              "r": "color"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

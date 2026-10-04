@@ -1,0 +1,131 @@
+{
+  "format": "INVESTIMAKER_PART",
+  "formatVersion": 1,
+  "id": "dev.eyes_01",
+  "version": "0.1.0",
+  "name": "仮・目",
+  "author": "InvestiMaker (dev)",
+  "category": "face.eyes",
+  "tags": [
+    "仮素材"
+  ],
+  "license": {
+    "name": "InvestiMaker 開発用仮素材（リポジトリ内のスクリプトで生成）",
+    "url": "",
+    "commercial": false,
+    "modify": true,
+    "redistributable": false,
+    "creditRequired": false,
+    "creditText": ""
+  },
+  "kind": "part",
+  "compatible": {
+    "body": [
+      "dev.body_adult_standard"
+    ]
+  },
+  "requires": [],
+  "conflicts": [],
+  "hides": [],
+  "mirrorable": false,
+  "colorSlots": [
+    {
+      "id": "iris_l",
+      "name": "左の瞳",
+      "mode": "tint",
+      "default": "#4A6FA5",
+      "link": "eyes.left"
+    },
+    {
+      "id": "iris_r",
+      "name": "右の瞳",
+      "mode": "tint",
+      "default": "#4A6FA5",
+      "link": "eyes.right"
+    }
+  ],
+  "layers": [
+    {
+      "id": "eyes",
+      "slot": "face.eyes",
+      "assets": [
+        {
+          "when": {
+            "view": "front",
+            "state": "open"
+          },
+          "file": "assets/front/eyes_open.png",
+          "offset": [699, 381],
+          "mask": {
+            "file": "assets/front/eyes_open.mask.png",
+            "channels": {
+              "r": "iris_l",
+              "g": "iris_r"
+            }
+          }
+        },
+        {
+          "when": {
+            "view": "front",
+            "state": "half"
+          },
+          "file": "assets/front/eyes_half.png",
+          "offset": [699, 401],
+          "mask": {
+            "file": "assets/front/eyes_half.mask.png",
+            "channels": {
+              "r": "iris_l",
+              "g": "iris_r"
+            }
+          }
+        },
+        {
+          "when": {
+            "view": "front",
+            "state": "closed"
+          },
+          "file": "assets/front/eyes_closed.png",
+          "offset": [697, 401]
+        },
+        {
+          "when": {
+            "view": "front",
+            "state": "smile"
+          },
+          "file": "assets/front/eyes_smile.png",
+          "offset": [697, 391]
+        },
+        {
+          "when": {
+            "view": "front",
+            "state": "wide"
+          },
+          "file": "assets/front/eyes_wide.png",
+          "offset": [695, 373],
+          "mask": {
+            "file": "assets/front/eyes_wide.mask.png",
+            "channels": {
+              "r": "iris_l",
+              "g": "iris_r"
+            }
+          }
+        },
+        {
+          "when": {
+            "view": "front",
+            "state": "glare"
+          },
+          "file": "assets/front/eyes_glare.png",
+          "offset": [699, 390],
+          "mask": {
+            "file": "assets/front/eyes_glare.mask.png",
+            "channels": {
+              "r": "iris_l",
+              "g": "iris_r"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

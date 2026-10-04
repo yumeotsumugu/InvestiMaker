@@ -1,0 +1,60 @@
+{
+  "format": "INVESTIMAKER_PART",
+  "formatVersion": 1,
+  "id": "dev.shoes_01",
+  "version": "0.1.0",
+  "name": "仮・靴",
+  "author": "InvestiMaker (dev)",
+  "category": "outfit.shoes",
+  "tags": [
+    "仮素材"
+  ],
+  "license": {
+    "name": "InvestiMaker 開発用仮素材（リポジトリ内のスクリプトで生成）",
+    "url": "",
+    "commercial": false,
+    "modify": true,
+    "redistributable": false,
+    "creditRequired": false,
+    "creditText": ""
+  },
+  "kind": "part",
+  "compatible": {
+    "body": [
+      "dev.body_adult_standard"
+    ]
+  },
+  "requires": [],
+  "conflicts": [],
+  "hides": [],
+  "mirrorable": false,
+  "colorSlots": [
+    {
+      "id": "main",
+      "name": "本体",
+      "mode": "tint",
+      "default": "#5B3A29"
+    }
+  ],
+  "layers": [
+    {
+      "id": "shoes",
+      "slot": "outfit.shoes",
+      "assets": [
+        {
+          "when": {
+            "view": "front"
+          },
+          "file": "assets/front/shoes.png",
+          "offset": [630, 2215],
+          "mask": {
+            "file": "assets/front/shoes.mask.png",
+            "channels": {
+              "r": "main"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

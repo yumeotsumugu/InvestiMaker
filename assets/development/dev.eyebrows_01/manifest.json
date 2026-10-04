@@ -1,0 +1,118 @@
+{
+  "format": "INVESTIMAKER_PART",
+  "formatVersion": 1,
+  "id": "dev.eyebrows_01",
+  "version": "0.1.0",
+  "name": "仮・眉",
+  "author": "InvestiMaker (dev)",
+  "category": "face.eyebrows",
+  "tags": [
+    "仮素材"
+  ],
+  "license": {
+    "name": "InvestiMaker 開発用仮素材（リポジトリ内のスクリプトで生成）",
+    "url": "",
+    "commercial": false,
+    "modify": true,
+    "redistributable": false,
+    "creditRequired": false,
+    "creditText": ""
+  },
+  "kind": "part",
+  "compatible": {
+    "body": [
+      "dev.body_adult_standard"
+    ]
+  },
+  "requires": [],
+  "conflicts": [],
+  "hides": [],
+  "mirrorable": false,
+  "colorSlots": [
+    {
+      "id": "color",
+      "name": "眉",
+      "mode": "tint",
+      "default": "#5A3E2B",
+      "link": "hair.base"
+    }
+  ],
+  "layers": [
+    {
+      "id": "eyebrows",
+      "slot": "face.eyebrows",
+      "assets": [
+        {
+          "when": {
+            "view": "front",
+            "state": "neutral"
+          },
+          "file": "assets/front/eyebrows_neutral.png",
+          "offset": [693, 341],
+          "mask": {
+            "file": "assets/front/eyebrows_neutral.mask.png",
+            "channels": {
+              "r": "color"
+            }
+          }
+        },
+        {
+          "when": {
+            "view": "front",
+            "state": "relaxed"
+          },
+          "file": "assets/front/eyebrows_relaxed.png",
+          "offset": [693, 335],
+          "mask": {
+            "file": "assets/front/eyebrows_relaxed.mask.png",
+            "channels": {
+              "r": "color"
+            }
+          }
+        },
+        {
+          "when": {
+            "view": "front",
+            "state": "angry"
+          },
+          "file": "assets/front/eyebrows_angry.png",
+          "offset": [693, 333],
+          "mask": {
+            "file": "assets/front/eyebrows_angry.mask.png",
+            "channels": {
+              "r": "color"
+            }
+          }
+        },
+        {
+          "when": {
+            "view": "front",
+            "state": "sad"
+          },
+          "file": "assets/front/eyebrows_sad.png",
+          "offset": [693, 333],
+          "mask": {
+            "file": "assets/front/eyebrows_sad.mask.png",
+            "channels": {
+              "r": "color"
+            }
+          }
+        },
+        {
+          "when": {
+            "view": "front",
+            "state": "raised"
+          },
+          "file": "assets/front/eyebrows_raised.png",
+          "offset": [693, 319],
+          "mask": {
+            "file": "assets/front/eyebrows_raised.mask.png",
+            "channels": {
+              "r": "color"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

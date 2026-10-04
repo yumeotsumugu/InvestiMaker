@@ -1,0 +1,61 @@
+{
+  "format": "INVESTIMAKER_PART",
+  "formatVersion": 1,
+  "id": "dev.hair_extra_01",
+  "version": "0.1.0",
+  "name": "仮・追加髪（アホ毛）",
+  "author": "InvestiMaker (dev)",
+  "category": "hair.extra",
+  "tags": [
+    "仮素材"
+  ],
+  "license": {
+    "name": "InvestiMaker 開発用仮素材（リポジトリ内のスクリプトで生成）",
+    "url": "",
+    "commercial": false,
+    "modify": true,
+    "redistributable": false,
+    "creditRequired": false,
+    "creditText": ""
+  },
+  "kind": "part",
+  "compatible": {
+    "body": [
+      "dev.body_adult_standard"
+    ]
+  },
+  "requires": [],
+  "conflicts": [],
+  "hides": [],
+  "mirrorable": false,
+  "colorSlots": [
+    {
+      "id": "base",
+      "name": "髪",
+      "mode": "tint",
+      "default": "#5A3E2B",
+      "link": "hair.base"
+    }
+  ],
+  "layers": [
+    {
+      "id": "ahoge",
+      "slot": "hair.extra",
+      "assets": [
+        {
+          "when": {
+            "view": "front"
+          },
+          "file": "assets/front/ahoge.png",
+          "offset": [783, 91],
+          "mask": {
+            "file": "assets/front/ahoge.mask.png",
+            "channels": {
+              "r": "base"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
