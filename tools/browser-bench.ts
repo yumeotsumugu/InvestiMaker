@@ -205,7 +205,15 @@ function compareWithReference(dataUrl: string) {
   let differing = 0;
   let maxDiff = 0;
   let maxDiffOpaque = 0;
+  let maxDiffPremultiplied = 0;
   for (let i = 0; i < reference.data.length; i += 4) {
+    // アルファを乗算した値（画面に実際に現れる寄与）での差。
+    for (let c = 0; c < 3; c++) {
+      const a = (reference.data[i + c]! * reference.data[i + 3]!) / 255;
+      const b = (browser.data[i + c]! * browser.data[i + 3]!) / 255;
+      maxDiffPremultiplied = Math.max(maxDiffPremultiplied, Math.abs(a - b));
+    }
+    maxDiffPremultiplied = Math.max(maxDiffPremultiplied, Math.abs(reference.data[i + 3]! - browser.data[i + 3]!));
     let d = 0;
     for (let c = 0; c < 4; c++) d = Math.max(d, Math.abs(reference.data[i + c]! - browser.data[i + c]!));
     // アルファ 0 の画素は RGB が見えないので比べない。
@@ -214,7 +222,7 @@ function compareWithReference(dataUrl: string) {
     maxDiff = Math.max(maxDiff, d);
     if (reference.data[i + 3] === 255) maxDiffOpaque = Math.max(maxDiffOpaque, d);
   }
-  return { pixels: reference.data.length / 4, differing, maxDiff, maxDiffOpaque };
+  return { pixels: reference.data.length / 4, differing, maxDiff, maxDiffOpaque, maxDiffPremultiplied: Number(maxDiffPremultiplied.toFixed(2)) };
 }
 
 // ---------------------------------------------------------------- 実行

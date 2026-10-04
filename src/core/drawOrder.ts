@@ -34,8 +34,9 @@ const G5_HEAD = [
   'hair.side',
   'face.ears',
   'outfit.ear',
-  'hair.front',
   'face.eyebrows',
+  'hair.front',
+  'face.eyebrows.over',
   'outfit.eyewear',
   'overlay.face.front',
   'hair.extra',
@@ -71,11 +72,16 @@ export const LAYER_SLOTS: ReadonlySet<string> = new Set([
 
 /**
  * 標準描画順。腕グループは腕ごとに G2（背面）か G6（前面）へ入る。
- * 同じグループに両腕が入るときの順序は仕様書に規定がなく、left → right とした（レポートの変更提案を参照）。
+ * 同じグループに両腕が入るときは Pose Definition の `order` の昇順、同値なら left → right（§6.2）。
  */
-export function standardSlotOrder(placement: Record<ArmSide, ArmPlacement>): string[] {
+export function standardSlotOrder(
+  placement: Record<ArmSide, ArmPlacement>,
+  order: Record<ArmSide, number> = { left: 10, right: 20 },
+): string[] {
   const armsAt = (p: ArmPlacement) =>
-    ARM_SIDES.filter((side) => placement[side] === p).flatMap(armGroupSlots);
+    ARM_SIDES.filter((side) => placement[side] === p)
+      .sort((a, b) => order[a] - order[b])
+      .flatMap(armGroupSlots);
   return [
     ...G0_BACKGROUND,
     ...G1_BACK,

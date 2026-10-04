@@ -11,6 +11,7 @@ export function minimalPart(overrides: Partial<Part> = {}): Part {
     name: 'テスト用 Part',
     author: 'test',
     category: 'outfit.top',
+    canvas: [1600, 2400],
     license: { name: 'test' },
     compatible: { body: ['dev.body_a'] },
     layers: [layer('main', 'outfit.top')],

@@ -6,12 +6,7 @@ import type { ColorMode, ColorSlot, Mask, MaskChannel, PartManifest } from './ma
 /** 0–255 の整数。 */
 export type RGB = readonly [number, number, number];
 
-/**
- * `tint` の基準下地の明度。
- * 仕様書の式は 0.5 を境にしているが、#808080 は 128/255 ≈ 0.50196 で 0.5 と一致せず、
- * 式のままでは「下地が #808080 のとき指定色そのものになる」が 8bit で最大 1 段ずれる。
- * 両立させるため、境界を 128/255 とする解釈を採った（レポートの変更提案を参照）。
- */
+/** `tint` の基準下地の明度 p（§5.3）。#808080 の 8bit 値に合わせて 128/255。 */
 export const TINT_PIVOT = 128 / 255;
 
 export function parseHex(hex: string): RGB {
@@ -37,7 +32,7 @@ export interface MaskInput {
   channels: readonly [ChannelColor | null, ChannelColor | null, ChannelColor | null];
 }
 
-/** 0–1 の値を 8bit に戻す。丸めは四捨五入（仕様書に規定がなく、実装側で固定した）。 */
+/** 0–1 の値を 8bit に戻す。四捨五入で、0.5 は切り上げ（§5.3）。 */
 function to8bit(v: number): number {
   return v <= 0 ? 0 : v >= 1 ? 255 : Math.floor(v * 255 + 0.5);
 }
@@ -45,7 +40,7 @@ function to8bit(v: number): number {
 /**
  * Mask に従って画素の色を置き換える。
  * `result = B × (1 − Σw) + Σ(w × out)`、アルファは B のまま。
- * Σw が 1 を超える画素（§4.3 の SHOULD 違反）は、適用率を比例配分で 1 に収める。
+ * Σw が 1 を超える画素（§4.3 の SHOULD 違反）は、適用率を比例配分で 1 に収める（§5.3）。
  */
 export function recolor<T extends Uint8Array | Uint8ClampedArray>(
   base: ArrayLike<number>,

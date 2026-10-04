@@ -6,6 +6,7 @@
   "name": "仮素体（成人・標準）",
   "author": "InvestiMaker (dev)",
   "category": "body",
+  "canvas": [1600, 2400],
   "tags": [
     "仮素材"
   ],

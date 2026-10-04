@@ -1,19 +1,20 @@
 // 仕様書 §12：読み込み時の検証（manifest の範囲）。
 // ZIP の安全性（項目 1）と SVG のサニタイズ（項目 6）、version 比較（項目 7）は今回の対象外。
 
-import { CONTEXT_PATHS } from './context.ts';
+import { CONTEXT_PATHS, findPose } from './context.ts';
 import { LAYER_SLOTS, regionOfSlot } from './drawOrder.ts';
 import {
   CATEGORIES,
   FORMAT,
+  MASTER_CANVAS,
   OFFICIAL_NAMESPACE,
   SUPPORTED_FORMAT_VERSION,
   isValidId,
   isValidPartId,
   namespaceOf,
 } from './ids.ts';
-import type { Asset, PartManifest, When } from './manifest.ts';
-import { masksOf } from './manifest.ts';
+import type { Asset, Body, PartManifest, When } from './manifest.ts';
+import { masksOf, toArray } from './manifest.ts';
 import { whenOverlaps } from './resolve.ts';
 
 export interface Issue {
@@ -35,6 +36,8 @@ export interface ValidationResult {
 export interface ValidateOptions {
   /** 公式素材として読むか。既定 false（ユーザー素材。namespace `im` を拒否する）。 */
   official?: boolean;
+  /** 期待するキャンバスサイズ。既定はマスターキャンバス。サイズ比較の検証など開発用途でだけ変える。 */
+  canvas?: readonly [number, number];
 }
 
 type Json = Record<string, unknown>;
@@ -86,6 +89,15 @@ export function validateManifest(input: unknown, options: ValidateOptions = {}):
   }
   if (!isObject(m.license)) error('required', 'license', 'license は必須');
   else if (!isNonEmptyString(m.license.name)) warn('license-name', 'license.name', 'license.name がない');
+
+  // --- キャンバス（§4.1）
+  const expected = options.canvas ?? MASTER_CANVAS;
+  const canvas = m.canvas;
+  if (!Array.isArray(canvas) || canvas.length !== 2 || !canvas.every((v) => Number.isInteger(v) && v > 0)) {
+    error('canvas', 'canvas', 'canvas は [幅, 高さ]（正の整数）で必須');
+  } else if (canvas[0] !== expected[0] || canvas[1] !== expected[1]) {
+    error('canvas-mismatch', 'canvas', `キャンバスサイズが ${expected[0]}×${expected[1]} ではない: ${canvas[0]}×${canvas[1]}`);
+  }
 
   // --- ID（§3）
   if (!isValidPartId(m.id)) {
@@ -225,9 +237,17 @@ export function validateManifest(input: unknown, options: ValidateOptions = {}):
           const outside = (typeof when.body === 'string' ? [when.body] : when.body).filter((b) => !compatBody.includes(b));
           if (outside.length > 0) warn('when-body-outside', `${apath}.when.body`, `compatible.body にない Body: ${outside.join(', ')}`);
         }
-        // ポーズで形が変わる Layer（袖など）は pose を明示する（§6.4 SHOULD）。
-        if (slotOk && regionOfSlot(layer.slot as string) !== 'torso' && when.pose === undefined) {
-          warn('when-pose-missing', `${apath}.when`, '腕領域の Layer は pose を明示することを推奨');
+        if (slotOk) {
+          const region = regionOfSlot(layer.slot as string);
+          // ポーズで形が変わる Layer（袖など）は pose を明示する（§6.4 SHOULD）。
+          if (region !== 'torso' && when.pose === undefined) {
+            warn('when-pose-missing', `${apath}.when`, '腕領域の Layer は pose を明示することを推奨');
+          }
+          // Pose Definition にないポーズは、どの Context にも一致しない（§6.2 SHOULD）。
+          const unknown = (when.pose === undefined ? [] : toArray(when.pose)).filter((id) => !findPose(region, id));
+          if (unknown.length > 0) {
+            warn('when-pose-unknown', `${apath}.when.pose`, `Pose Definition にないポーズ（${region}）: ${unknown.join(', ')}`);
+          }
         }
       }
 
@@ -239,6 +259,9 @@ export function validateManifest(input: unknown, options: ValidateOptions = {}):
         }
       }
 
+      if (asset.mask !== undefined && asset.masks !== undefined) {
+        error('mask-both', apath, 'mask と masks を同時に書くことはできない');
+      }
       const masks: [unknown, string][] = [];
       if (asset.mask !== undefined) masks.push([asset.mask, `${apath}.mask`]);
       if (asset.masks !== undefined) {
@@ -257,8 +280,8 @@ export function validateManifest(input: unknown, options: ValidateOptions = {}):
         }
         for (const [channel, slotId] of Object.entries(mask.channels)) {
           if (channel !== 'r' && channel !== 'g' && channel !== 'b') {
-            // A チャンネルは v1 では使用しない（§4.3）。未知のキーとして無視し、警告だけ出す。
-            warn('mask-channel-unknown', `${mpath}.channels.${channel}`, `v1 で使えるチャンネルは r / g / b のみ（${channel} は無視）`);
+            // A チャンネルは使用しない（§4.3）。曖昧な指定は解釈せずに拒否する。
+            error('mask-channel-unknown', `${mpath}.channels.${channel}`, `channels に書けるのは r / g / b のみ: ${channel}`);
           } else if (typeof slotId !== 'string' || !slotIds.has(slotId)) {
             error('mask-channel-slot', `${mpath}.channels.${channel}`, `宣言されていない ColorSlot: ${String(slotId)}`);
           }
@@ -347,6 +370,31 @@ export function validateImageGeometry(
         if (!msize) error('file-missing', `${path}.mask`, `参照されたファイルがない: ${mask.file}`);
         else if (msize.width !== size.width || msize.height !== size.height) {
           error('mask-size', `${path}.mask`, `Mask と Asset のサイズが一致しない: ${mask.file}`);
+        }
+      }
+    });
+  });
+  return issues;
+}
+
+/**
+ * Part の `when.fit` が、素体の `fitDimensions` にない次元・値を使っていないか（§6.5 SHOULD）。
+ * 素体が分かってから（読み込み後・装備時）に呼ぶ。
+ */
+export function validateFitAgainstBody(part: PartManifest, body: Body): Issue[] {
+  const issues: Issue[] = [];
+  part.layers.forEach((layer, li) => {
+    layer.assets.forEach((asset, ai) => {
+      for (const [dim, cond] of Object.entries(asset.when.fit ?? {})) {
+        const path = `layers[${li}].assets[${ai}].when.fit.${dim}`;
+        const values = body.fitDimensions?.[dim];
+        if (!values) {
+          issues.push({ level: 'warning', code: 'fit-dimension-unknown', path, message: `素体 ${body.id} にない fit 次元: ${dim}` });
+          continue;
+        }
+        const unknown = toArray(cond).filter((v) => !values.includes(v));
+        if (unknown.length > 0) {
+          issues.push({ level: 'warning', code: 'fit-value-unknown', path, message: `素体 ${body.id} の ${dim} にない値: ${unknown.join(', ')}` });
         }
       }
     });

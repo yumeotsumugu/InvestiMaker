@@ -37,8 +37,8 @@ export interface LayerContext {
 type StateDomain = 'eyes' | 'eyebrows' | 'mouth';
 
 /**
- * `when.state` をどの状態と照合するか。仕様書は「目・眉・口の Part」としか書いていないため、
- * Part の category で決める解釈を採った（レポートの変更提案を参照）。
+ * `when.state` をどの状態と照合するか（§6.5）。Part の category で決まり、
+ * ここにない category の Part は状態を持たない。
  */
 const STATE_DOMAIN_BY_CATEGORY: Readonly<Record<string, StateDomain>> = {
   'face.eyes': 'eyes',
@@ -79,32 +79,50 @@ export function contextValue(ctx: Context, path: string): string | undefined {
 }
 
 /**
- * 腕の状態 → 腕グループの置き場所。仕様書は「ポーズ定義が腕ごとに指定する」とするが、
- * ポーズ定義のデータ形式は未定義のため、実装側の表として持つ（レポートの変更提案を参照）。
- * `pocket` は検証用に追加した状態で、v1 の規定にはない。
+ * Pose Definition（§6.2）。InvestiMaker 側の共通定義で、素材（.impart）は定義しない。
+ * 腕の領域の定義は、腕グループの置き場所（placement）と、同じグループに両腕が入るときの順序（order）を持つ。
  */
-export const ARM_STATE_PLACEMENT: Readonly<Record<string, ArmPlacement>> = {
-  down: 'back',
-  pocket: 'front',
-};
-
-export function armPlacements(
-  ctx: Context,
-  table: Readonly<Record<string, ArmPlacement>> = ARM_STATE_PLACEMENT,
-): Record<ArmSide, ArmPlacement> {
-  const of = (side: ArmSide): ArmPlacement => {
-    const state = ctx.pose[`arm.${side}`];
-    const placement = table[state];
-    if (!placement) throw new Error(`腕の状態 "${state}" の置き場所が定義されていない`);
-    return placement;
-  };
-  return { left: of('left'), right: of('right') };
+export interface PoseDefinition {
+  id: string;
+  region: PoseRegion;
+  /** 腕の領域だけが持つ。 */
+  placement?: ArmPlacement;
+  /** 腕の領域だけが持つ。小さい方が奥。 */
+  order?: number;
 }
 
-/**
- * v1 の標準表情（§6.3）。仕様書が状態の組を示しているのは smile だけで、
- * 他の 5 つは実装側で仮に決めた（レポートの変更提案を参照）。
- */
+export const POSE_DEFINITIONS: readonly PoseDefinition[] = [
+  { id: 'stand', region: 'torso' },
+  { id: 'down', region: 'arm.left', placement: 'back', order: 10 },
+  { id: 'down', region: 'arm.right', placement: 'back', order: 20 },
+  { id: 'pocket', region: 'arm.left', placement: 'front', order: 10 },
+  { id: 'pocket', region: 'arm.right', placement: 'front', order: 20 },
+];
+
+export function findPose(region: PoseRegion, id: string): PoseDefinition | undefined {
+  return POSE_DEFINITIONS.find((d) => d.region === region && d.id === id);
+}
+
+export interface ArmLayout {
+  placement: Record<ArmSide, ArmPlacement>;
+  order: Record<ArmSide, number>;
+}
+
+/** 現在のポーズから、両腕の腕グループの置き場所と順序を得る。未定義のポーズは例外。 */
+export function armLayout(ctx: Context): ArmLayout {
+  const of = (side: ArmSide) => {
+    const def = findPose(`arm.${side}`, ctx.pose[`arm.${side}`]);
+    if (!def?.placement || def.order === undefined) {
+      throw new Error(`Pose Definition にない腕の状態: arm.${side} = ${ctx.pose[`arm.${side}`]}`);
+    }
+    return { placement: def.placement, order: def.order };
+  };
+  const left = of('left');
+  const right = of('right');
+  return { placement: { left: left.placement, right: right.placement }, order: { left: left.order, right: right.order } };
+}
+
+/** v1 の標準表情（§6.3）。 */
 export const STANDARD_EXPRESSIONS: readonly Required<Expression>[] = [
   { id: 'normal', eyes: 'open', eyebrows: 'neutral', mouth: 'closed' },
   { id: 'smile', eyes: 'smile', eyebrows: 'relaxed', mouth: 'smile_open' },

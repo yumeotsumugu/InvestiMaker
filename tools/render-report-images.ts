@@ -132,12 +132,8 @@ const face = (b: Bitmap) => crop(b, ...FACE);
     overrides: { 'dev.eyebrows_01': { color: unlinked('#101014') } },
     shared: { 'hair.base': '#C08A4A' },
   };
-  const order = renderCharacter(full, base).plan.entries.map((e) => e.slot);
-  const slots = [...new Set(order)];
-  slots.splice(slots.indexOf('face.eyebrows'), 1);
-  slots.splice(slots.indexOf('hair.front'), 0, 'face.eyebrows');
-  // 標準順に存在する Slot をすべて含める必要はない（この絵に出てくる Slot だけで足りる）。
-  save('order_eyebrows', sheet([face(draw(full, base)), face(draw(full, base, { slotOrder: slots }))], 2));
+  const over: RenderOptions = { slotOf: (_, layer) => (layer.slot === 'face.eyebrows' ? 'face.eyebrows.over' : layer.slot) };
+  save('order_eyebrows', sheet([face(draw(full, base)), face(draw(full, base, over))], 2));
 }
 {
   const base = without(defaultState(full), 'dev.coat_01');

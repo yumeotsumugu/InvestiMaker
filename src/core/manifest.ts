@@ -39,7 +39,7 @@ export interface Asset {
   /** 省略時は [0, 0]（キャンバス全体サイズの画像）。 */
   offset?: [number, number];
   mask?: Mask;
-  /** 4 スロット以上を使う Asset（§5.2）。 */
+  /** 4 スロット以上を使う Asset（§5.2）。`mask` と同時には書けない。 */
   masks?: Mask[];
 }
 
@@ -86,6 +86,8 @@ interface PartCommon {
   name: string;
   author: string;
   category: string;
+  /** この素材が前提にするキャンバスサイズ（§4.1）。 */
+  canvas: [number, number];
   tags?: string[];
   license: License;
   requires?: Condition[];

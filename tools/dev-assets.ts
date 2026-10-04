@@ -85,6 +85,7 @@ function generatePart(def: PartDef, view: View): GeneratedPart {
     name: def.name,
     author: 'InvestiMaker (dev)',
     category: def.category,
+    canvas: [view.width, view.height] as [number, number],
     tags: ['仮素材', ...(def.tags ?? [])],
     license: LICENSE,
   };

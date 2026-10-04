@@ -11,40 +11,40 @@
         1800
       ],
       "runs": 3,
-      "firstTotalMs": 78.4,
-      "firstLoadMs": 37.1,
-      "firstRecolorMs": 34.2,
-      "firstDrawMs": 7.2,
+      "firstTotalMs": 80.9,
+      "firstLoadMs": 39.8,
+      "firstRecolorMs": 34.3,
+      "firstDrawMs": 7.1,
       "firstLayers": 27,
-      "redrawMs": 9.1,
+      "redrawMs": 10.3,
       "colorChange": [
         {
           "label": "共有カラー skin.base（素体・輪郭・耳）",
-          "totalMs": 17.5,
-          "recolorMs": 8,
+          "totalMs": 17.2,
+          "recolorMs": 8.2,
           "recolored": 7,
           "recoloredMpx": 0.54
         },
         {
           "label": "コートの main（後ろ身頃・前身頃・両袖）",
-          "totalMs": 20.5,
-          "recolorMs": 11.1,
+          "totalMs": 20.7,
+          "recolorMs": 11.5,
           "recolored": 4,
           "recoloredMpx": 0.63
         },
         {
           "label": "共有カラー hair.base（前髪・後髪・眉）",
-          "totalMs": 11.2,
-          "recolorMs": 2.8,
+          "totalMs": 12,
+          "recolorMs": 2.9,
           "recolored": 3,
           "recoloredMpx": 0.18
         }
       ],
-      "recolorAllMs": 44.4,
+      "recolorAllMs": 44.8,
       "recolorAllMpx": 1.97,
-      "poseChangeMs": 15.5,
-      "pngExportMs": 7.4,
-      "pngBytes": 168282,
+      "poseChangeMs": 17,
+      "pngExportMs": 8.7,
+      "pngBytes": 167953,
       "memory": {
         "images": 52,
         "sourceMpx": 3.94,
@@ -61,40 +61,40 @@
         2400
       ],
       "runs": 3,
-      "firstTotalMs": 114.6,
-      "firstLoadMs": 49.4,
-      "firstRecolorMs": 56.8,
-      "firstDrawMs": 8.3,
+      "firstTotalMs": 120.3,
+      "firstLoadMs": 51.9,
+      "firstRecolorMs": 58.4,
+      "firstDrawMs": 8.6,
       "firstLayers": 27,
-      "redrawMs": 15,
+      "redrawMs": 15.3,
       "colorChange": [
         {
           "label": "共有カラー skin.base（素体・輪郭・耳）",
-          "totalMs": 27.7,
-          "recolorMs": 13.2,
+          "totalMs": 29.9,
+          "recolorMs": 13.3,
           "recolored": 7,
           "recoloredMpx": 0.95
         },
         {
           "label": "コートの main（後ろ身頃・前身頃・両袖）",
-          "totalMs": 34.2,
-          "recolorMs": 19.1,
+          "totalMs": 35.9,
+          "recolorMs": 19.5,
           "recolored": 4,
           "recoloredMpx": 1.13
         },
         {
           "label": "共有カラー hair.base（前髪・後髪・眉）",
-          "totalMs": 19.6,
-          "recolorMs": 4.9,
+          "totalMs": 21.5,
+          "recolorMs": 5.6,
           "recolored": 3,
           "recoloredMpx": 0.32
         }
       ],
-      "recolorAllMs": 70.6,
+      "recolorAllMs": 76.8,
       "recolorAllMpx": 3.49,
-      "poseChangeMs": 23,
-      "pngExportMs": 9.2,
-      "pngBytes": 242486,
+      "poseChangeMs": 25.9,
+      "pngExportMs": 13.3,
+      "pngBytes": 242239,
       "memory": {
         "images": 52,
         "sourceMpx": 6.97,
@@ -111,40 +111,40 @@
         3000
       ],
       "runs": 3,
-      "firstTotalMs": 156.8,
-      "firstLoadMs": 61.9,
-      "firstRecolorMs": 86.9,
-      "firstDrawMs": 7.9,
+      "firstTotalMs": 158.2,
+      "firstLoadMs": 65.2,
+      "firstRecolorMs": 89.1,
+      "firstDrawMs": 5.1,
       "firstLayers": 27,
-      "redrawMs": 23.8,
+      "redrawMs": 23.9,
       "colorChange": [
         {
           "label": "共有カラー skin.base（素体・輪郭・耳）",
-          "totalMs": 43.9,
-          "recolorMs": 20.4,
+          "totalMs": 45.6,
+          "recolorMs": 21.3,
           "recolored": 7,
           "recoloredMpx": 1.48
         },
         {
           "label": "コートの main（後ろ身頃・前身頃・両袖）",
-          "totalMs": 54.4,
-          "recolorMs": 29.8,
+          "totalMs": 56.1,
+          "recolorMs": 30.8,
           "recolored": 4,
           "recoloredMpx": 1.76
         },
         {
           "label": "共有カラー hair.base（前髪・後髪・眉）",
-          "totalMs": 30,
-          "recolorMs": 7.9,
+          "totalMs": 31.5,
+          "recolorMs": 8.3,
           "recolored": 3,
           "recoloredMpx": 0.51
         }
       ],
-      "recolorAllMs": 109.6,
+      "recolorAllMs": 113.8,
       "recolorAllMpx": 5.46,
-      "poseChangeMs": 35.6,
-      "pngExportMs": 16.2,
-      "pngBytes": 334665,
+      "poseChangeMs": 37.6,
+      "pngExportMs": 15.1,
+      "pngBytes": 334091,
       "memory": {
         "images": 52,
         "sourceMpx": 10.92,
@@ -163,40 +163,40 @@
         1800
       ],
       "runs": 3,
-      "firstTotalMs": 354.5,
-      "firstLoadMs": 192,
-      "firstRecolorMs": 157.1,
-      "firstDrawMs": 5.5,
+      "firstTotalMs": 358.2,
+      "firstLoadMs": 192.8,
+      "firstRecolorMs": 159.2,
+      "firstDrawMs": 5.4,
       "firstLayers": 27,
-      "redrawMs": 21.2,
+      "redrawMs": 21.3,
       "colorChange": [
         {
           "label": "共有カラー skin.base（素体・輪郭・耳）",
-          "totalMs": 55.1,
-          "recolorMs": 35.4,
+          "totalMs": 58.9,
+          "recolorMs": 35.5,
           "recolored": 7,
           "recoloredMpx": 0.54
         },
         {
           "label": "コートの main（後ろ身頃・前身頃・両袖）",
-          "totalMs": 69.8,
-          "recolorMs": 49.2,
+          "totalMs": 73.3,
+          "recolorMs": 51,
           "recolored": 4,
           "recoloredMpx": 0.63
         },
         {
           "label": "共有カラー hair.base（前髪・後髪・眉）",
-          "totalMs": 32,
-          "recolorMs": 12.3,
+          "totalMs": 35.1,
+          "recolorMs": 12.5,
           "recolored": 3,
           "recoloredMpx": 0.18
         }
       ],
-      "recolorAllMs": 165.4,
+      "recolorAllMs": 176.6,
       "recolorAllMpx": 1.97,
-      "poseChangeMs": 41,
-      "pngExportMs": 51.1,
-      "pngBytes": 168282,
+      "poseChangeMs": 41.7,
+      "pngExportMs": 50.3,
+      "pngBytes": 167953,
       "memory": {
         "images": 52,
         "sourceMpx": 3.94,
@@ -213,40 +213,40 @@
         2400
       ],
       "runs": 3,
-      "firstTotalMs": 497.5,
-      "firstLoadMs": 243.6,
-      "firstRecolorMs": 244.2,
-      "firstDrawMs": 9.2,
+      "firstTotalMs": 519.8,
+      "firstLoadMs": 251.5,
+      "firstRecolorMs": 257.2,
+      "firstDrawMs": 7.4,
       "firstLayers": 27,
-      "redrawMs": 35.5,
+      "redrawMs": 36.8,
       "colorChange": [
         {
           "label": "共有カラー skin.base（素体・輪郭・耳）",
-          "totalMs": 92.3,
-          "recolorMs": 58.1,
+          "totalMs": 99.8,
+          "recolorMs": 60.8,
           "recolored": 7,
           "recoloredMpx": 0.95
         },
         {
           "label": "コートの main（後ろ身頃・前身頃・両袖）",
-          "totalMs": 119.5,
-          "recolorMs": 84.1,
+          "totalMs": 126.4,
+          "recolorMs": 88.1,
           "recolored": 4,
           "recoloredMpx": 1.13
         },
         {
           "label": "共有カラー hair.base（前髪・後髪・眉）",
-          "totalMs": 57,
+          "totalMs": 58.9,
           "recolorMs": 21.4,
           "recolored": 3,
           "recoloredMpx": 0.32
         }
       ],
-      "recolorAllMs": 276.5,
+      "recolorAllMs": 285.6,
       "recolorAllMpx": 3.49,
-      "poseChangeMs": 61,
-      "pngExportMs": 60.9,
-      "pngBytes": 242486,
+      "poseChangeMs": 62.7,
+      "pngExportMs": 58.9,
+      "pngBytes": 242239,
       "memory": {
         "images": 52,
         "sourceMpx": 6.97,
@@ -263,40 +263,40 @@
         3000
       ],
       "runs": 3,
-      "firstTotalMs": 687.9,
-      "firstLoadMs": 291.2,
-      "firstRecolorMs": 391.4,
-      "firstDrawMs": 7.7,
+      "firstTotalMs": 724.6,
+      "firstLoadMs": 298.8,
+      "firstRecolorMs": 405.3,
+      "firstDrawMs": 6.7,
       "firstLayers": 27,
-      "redrawMs": 53.7,
+      "redrawMs": 54.3,
       "colorChange": [
         {
           "label": "共有カラー skin.base（素体・輪郭・耳）",
-          "totalMs": 146.2,
-          "recolorMs": 91.5,
+          "totalMs": 151.1,
+          "recolorMs": 94.5,
           "recolored": 7,
           "recoloredMpx": 1.48
         },
         {
           "label": "コートの main（後ろ身頃・前身頃・両袖）",
-          "totalMs": 187.9,
-          "recolorMs": 133.8,
+          "totalMs": 193.9,
+          "recolorMs": 136.6,
           "recolored": 4,
           "recoloredMpx": 1.76
         },
         {
           "label": "共有カラー hair.base（前髪・後髪・眉）",
-          "totalMs": 90.1,
-          "recolorMs": 36,
+          "totalMs": 94,
+          "recolorMs": 36.6,
           "recolored": 3,
           "recoloredMpx": 0.51
         }
       ],
-      "recolorAllMs": 435.2,
+      "recolorAllMs": 451.7,
       "recolorAllMpx": 5.46,
-      "poseChangeMs": 90.3,
-      "pngExportMs": 72.3,
-      "pngBytes": 334665,
+      "poseChangeMs": 94,
+      "pngExportMs": 76.7,
+      "pngBytes": 334091,
       "memory": {
         "images": 52,
         "sourceMpx": 10.92,
@@ -403,8 +403,9 @@
   ],
   "exportVsReference": {
     "pixels": 3840000,
-    "differing": 15182,
+    "differing": 15073,
     "maxDiff": 48,
-    "maxDiffOpaque": 2
+    "maxDiffOpaque": 2,
+    "maxDiffPremultiplied": 2
   }
 }

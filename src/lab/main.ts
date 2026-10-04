@@ -271,14 +271,14 @@ async function main() {
   }
 
   function buildCompare() {
-    const toggle = (label: string, key: 'browsBehindBangs' | 'shoesOver' | 'multiply' | 'drawConflicted') =>
+    const toggle = (label: string, key: 'browsOver' | 'shoesOver' | 'multiply' | 'drawConflicted') =>
       checkbox(label, state[key], (on) => {
         state[key] = on;
         void update(key === 'multiply' ? 'color' : 'other');
       });
     return group(
       '比較用の切り替え',
-      toggle('眉を前髪の後ろに置く（標準は前）', 'browsBehindBangs'),
+      toggle('眉を前髪の前に置く（face.eyebrows.over）', 'browsOver'),
       toggle('靴をボトムスの上に置く（outfit.shoes.over）', 'shoesOver'),
       toggle('色合成を multiply にする（標準は tint）', 'multiply'),
       toggle('競合の Part も描画する', 'drawConflicted'),

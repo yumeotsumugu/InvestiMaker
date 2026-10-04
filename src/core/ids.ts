@@ -8,6 +8,9 @@ export const OFFICIAL_NAMESPACE = 'im';
 
 export const MAX_ID_LENGTH = 96;
 
+/** マスターキャンバス（§4.1）。 */
+export const MASTER_CANVAS: readonly [number, number] = [1600, 2400];
+
 export const VIEWS = ['front', 'diagonal_left', 'diagonal_right', 'side_left', 'side_right'] as const;
 
 /** §2 の表。値は `[category, 同時に複数装備できるか]`。 */
@@ -67,7 +70,7 @@ export function isValidId(id: unknown): id is string {
   return id.split('.').every((s) => SEGMENT.test(s));
 }
 
-/** Part ID は `<namespace>.<name>`（§3）。セグメントはちょうど 2 個と解釈する。 */
+/** Part ID は `<namespace>.<name>`（§3）。セグメントはちょうど 2 個。 */
 export function isValidPartId(id: unknown): id is string {
   return isValidId(id) && id.split('.').length === 2;
 }

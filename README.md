@@ -6,7 +6,7 @@ TRPG 用の 2D キャラクター立ち絵・差分・アイコンを、既製�
 
 ## 現在の段階：Phase 0 検証プロトタイプ
 
-このリポジトリは製品ではなく、素材規格（[仕様書](docs/specifications/InvestiMaker_Asset_Specification_v1.md) 草案 0.2）の未確定事項 §13 を確定するための検証用実装です。
+このリポジトリは製品ではなく、素材規格（[仕様書](docs/specifications/InvestiMaker_Asset_Specification_v1.md)）の未確定事項を確定するための検証用実装です。**Phase 0 は完了し、仕様書は検証結果を反映した RC1 になっています。**
 
 - 仮素材 1 セット（スクリプトで生成した単純な図形）
 - 仕様書どおりの Asset 解決・描画順・色合成・検証（`src/core/`）
@@ -20,7 +20,7 @@ Node.js 24 以降が必要です（`tools/` の TypeScript を Node の型除去
 ```sh
 npm install
 npm run dev        # 検証ページ。表示された http://127.0.0.1:5173/ を開く
-npm test           # 単体テストと規格適合性テスト（§6.6 の T1〜T12 を含む）
+npm test           # 単体テストと規格適合性テスト（§6.6 の T1〜T12、§5.3 の色計算の参照ベクタを含む）
 npm run typecheck  # 型検査
 ```
 

@@ -38,7 +38,8 @@ export async function loadSet(name: string): Promise<AssetSet> {
   await Promise.all(
     index.parts.map(async ({ id }) => {
       const manifest = await fetchJson(`${baseUrl}${id}/manifest.json`);
-      const result = validateManifest(manifest);
+      // サイズ比較用の素材セットも読めるよう、期待するキャンバスは一覧の値にする。
+      const result = validateManifest(manifest, { canvas: index.canvas });
       validation.set(id, result);
       // MUST 違反の素材は読み込みを拒否する（仕様書 §0）。
       if (result.ok) library.set(id, manifest as PartManifest);

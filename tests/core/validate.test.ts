@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Body, Part } from '../../src/core/index.ts';
-import { validateImageGeometry, validateManifest } from '../../src/core/index.ts';
+import { validateFitAgainstBody, validateImageGeometry, validateManifest } from '../../src/core/index.ts';
 import { layer, minimalPart } from '../helpers.ts';
 
 const codes = (input: unknown, options = {}) => validateManifest(input, options).errors.map((e) => e.code);
@@ -61,6 +61,27 @@ describe('必須フィールド（§11.1）', () => {
   });
 });
 
+describe('キャンバス（§4.1）', () => {
+  it('canvas は必須で、マスターキャンバスと一致しなければ拒否', () => {
+    const part: Partial<Part> = minimalPart();
+    delete part.canvas;
+    expect(codes(part)).toEqual(['canvas']);
+    expect(codes(minimalPart({ canvas: [1200, 1800] }))).toEqual(['canvas-mismatch']);
+    expect(codes(minimalPart({ canvas: [1200, 1800] }), { canvas: [1200, 1800] })).toEqual([]);
+  });
+});
+
+describe('素体の fit との照合（§6.5）', () => {
+  it('素体にない fit 次元・値を使っていたら警告', () => {
+    const body = minimalBody({ fitDimensions: { chest: ['small', 'medium', 'large'] } });
+    const l = layer('a', 'outfit.top');
+    l.assets[0]!.when = { view: 'front', fit: { chest: ['large', 'huge'], waist: 'wide' } };
+    expect(validateFitAgainstBody(minimalPart({ layers: [l] }), body).map((i) => i.code)).toEqual(['fit-value-unknown', 'fit-dimension-unknown']);
+    l.assets[0]!.when = { view: 'front', fit: { chest: 'large' } };
+    expect(validateFitAgainstBody(minimalPart({ layers: [l] }), body)).toEqual([]);
+  });
+});
+
 describe('ID 規則（§3）', () => {
   it.each(['coat', 'Dev.coat', 'dev.coat-01', 'dev.', 'dev.a.b', 'dev.' + 'a'.repeat(96)])('Part ID "%s" は拒否', (id) => {
     expect(codes(minimalPart({ id }))).toContain('part-id');
@@ -98,11 +119,33 @@ describe('Layer と Asset（§12 の 3〜5）', () => {
     expect(codes(minimalPart({ layers: [l], colorSlots: slots }))).toEqual([]);
   });
 
-  it('A チャンネルの割り当ては無視して警告する', () => {
+  it('channels に r / g / b 以外（A チャンネルなど）を書いたら拒否', () => {
+    const slots = [{ id: 'main', name: '本体', mode: 'tint' as const, default: '#000000' }];
     const l = layer('a', 'outfit.top');
-    l.assets[0]!.mask = { file: 'assets/front/a.mask.png', channels: { a: 'main' } as never };
-    expect(validateManifest(minimalPart({ layers: [l] })).ok).toBe(true);
-    expect(warnings(minimalPart({ layers: [l] }))).toContain('mask-channel-unknown');
+    l.assets[0]!.mask = { file: 'assets/front/a.mask.png', channels: { r: 'main', a: 'main' } as never };
+    expect(codes(minimalPart({ layers: [l], colorSlots: slots }))).toEqual(['mask-channel-unknown']);
+  });
+
+  it('mask と masks を同時に書いたら拒否', () => {
+    const slots = [{ id: 'main', name: '本体', mode: 'tint' as const, default: '#000000' }];
+    const mask = { file: 'assets/front/a.mask.png', channels: { r: 'main' } };
+    const l = layer('a', 'outfit.top');
+    l.assets[0]!.masks = [mask, { ...mask, file: 'assets/front/a.mask2.png' }];
+    expect(codes(minimalPart({ layers: [l], colorSlots: slots }))).toEqual([]);
+    l.assets[0]!.mask = mask;
+    expect(codes(minimalPart({ layers: [l], colorSlots: slots }))).toEqual(['mask-both']);
+  });
+
+  it('Pose Definition にないポーズを書いたら警告', () => {
+    const sleeve = layer('a', 'arm.left.sleeve.top');
+    sleeve.assets[0]!.when = { view: 'front', pose: ['down', 'wave'] };
+    expect(warnings(minimalPart({ layers: [sleeve] }))).toEqual(['when-pose-unknown']);
+    // down は腕の状態で、胴体の状態ではない
+    const body = layer('b', 'outfit.top');
+    body.assets[0]!.when = { view: 'front', pose: 'down' };
+    expect(warnings(minimalPart({ layers: [body] }))).toEqual(['when-pose-unknown']);
+    body.assets[0]!.when = { view: 'front', pose: 'stand' };
+    expect(warnings(minimalPart({ layers: [body] }))).toEqual([]);
   });
 
   it('ColorSlot の mode と default を検査する', () => {

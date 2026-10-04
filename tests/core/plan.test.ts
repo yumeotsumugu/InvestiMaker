@@ -5,6 +5,8 @@ import {
   armGroupSlots,
   compositeOver,
   createBitmap,
+  defaultSlotOrder,
+  findPose,
   layerContext,
   planRender,
   regionOfSlot,
@@ -38,6 +40,25 @@ describe('標準描画順（§6.1）', () => {
     expect(at('arm.right.hand.front')).toBeLessThan(at('item.front'));
   });
 
+  it('同じグループに両腕が入るときは Pose Definition の order の昇順', () => {
+    const back = { left: 'back', right: 'back' } as const;
+    const at = (order: string[], slot: string) => order.indexOf(slot);
+    const standard = standardSlotOrder(back);
+    expect(at(standard, 'arm.left.hand.front')).toBeLessThan(at(standard, 'arm.right.skin'));
+    const swapped = standardSlotOrder(back, { left: 20, right: 10 });
+    expect(at(swapped, 'arm.right.hand.front')).toBeLessThan(at(swapped, 'arm.left.skin'));
+    // 同値なら left → right
+    expect(standardSlotOrder(back, { left: 5, right: 5 })).toEqual(standard);
+  });
+
+  it('現在のポーズから Pose Definition を引いて描画順を決める', () => {
+    const order = defaultSlotOrder(context({ pose: { torso: 'stand', 'arm.left': 'down', 'arm.right': 'pocket' } }));
+    expect(order.indexOf('arm.left.skin')).toBeLessThan(order.indexOf('body.base'));
+    expect(order.indexOf('arm.right.skin')).toBeGreaterThan(order.indexOf('outfit.head'));
+    expect(findPose('arm.right', 'pocket')).toEqual({ id: 'pocket', region: 'arm.right', placement: 'front', order: 20 });
+    expect(() => defaultSlotOrder(context({ pose: { torso: 'stand', 'arm.left': 'down', 'arm.right': 'wave' } }))).toThrow();
+  });
+
   it('腕グループ内は skin → 袖（inner → top → outer）→ hand → glove の順', () => {
     expect(armGroupSlots('right')).toEqual([
       'arm.right.skin',
@@ -57,8 +78,9 @@ describe('標準描画順（§6.1）', () => {
     const before = (a: string, b: string) => expect(order.indexOf(a)).toBeLessThan(order.indexOf(b));
     before('outfit.shoes', 'outfit.bottom');
     before('outfit.bottom', 'outfit.shoes.over');
-    before('hair.front', 'face.eyebrows');
-    before('face.eyebrows', 'outfit.eyewear');
+    before('face.eyebrows', 'hair.front');
+    before('hair.front', 'face.eyebrows.over');
+    before('face.eyebrows.over', 'outfit.eyewear');
     before('outfit.head.back', 'hair.back');
     before('hair.extra', 'outfit.head');
   });
@@ -211,15 +233,20 @@ describe('描画計画', () => {
     expect(plan.entries.map((e) => e.status)).toEqual(['draw', 'omitted']);
   });
 
+  it('眉は前髪の後ろが標準で、face.eyebrows.over に置くと前髪の前に出る', () => {
+    const brow = (slot: string) => minimalPart({ id: 'dev.brow', category: 'face.eyebrows', layers: [layer('main', slot)] });
+    const bangs = minimalPart({ id: 'dev.bangs', category: 'hair.front', layers: [layer('main', 'hair.front')] });
+    const order = (slot: string) => drawn(planRender(library(brow(slot), bangs), ['dev.bangs', 'dev.brow'], context()));
+    expect(order('face.eyebrows')).toEqual(['dev.brow/main', 'dev.bangs/main']);
+    expect(order('face.eyebrows.over')).toEqual(['dev.bangs/main', 'dev.brow/main']);
+  });
+
   it('比較用に Slot 順と Layer の Slot を差し替えられる', () => {
     const brow = minimalPart({ id: 'dev.brow', category: 'face.eyebrows', layers: [layer('main', 'face.eyebrows')] });
     const bangs = minimalPart({ id: 'dev.bangs', category: 'hair.front', layers: [layer('main', 'hair.front')] });
     const lib = library(brow, bangs);
-    expect(drawn(planRender(lib, ['dev.brow', 'dev.bangs'], context()))).toEqual(['dev.bangs/main', 'dev.brow/main']);
-
-    const order = standardSlotOrder({ left: 'back', right: 'back' }).filter((s) => s !== 'face.eyebrows');
-    order.splice(order.indexOf('hair.front'), 0, 'face.eyebrows');
-    expect(drawn(planRender(lib, ['dev.brow', 'dev.bangs'], context(), { slotOrder: order }))).toEqual(['dev.brow/main', 'dev.bangs/main']);
+    const order = standardSlotOrder({ left: 'back', right: 'back' }).reverse();
+    expect(drawn(planRender(lib, ['dev.brow', 'dev.bangs'], context(), { slotOrder: order }))).toEqual(['dev.bangs/main', 'dev.brow/main']);
 
     const shoes = minimalPart({ id: 'dev.shoes', category: 'outfit.shoes', layers: [layer('main', 'outfit.shoes')] });
     const pants = minimalPart({ id: 'dev.pants', category: 'outfit.bottom', layers: [layer('main', 'outfit.bottom')] });

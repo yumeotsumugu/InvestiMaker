@@ -2,7 +2,7 @@
 
 import { conflictReasons } from './compat.ts';
 import type { Context } from './context.ts';
-import { armPlacements } from './context.ts';
+import { armLayout } from './context.ts';
 import { standardSlotOrder } from './drawOrder.ts';
 import type { Asset, Layer, PartManifest } from './manifest.ts';
 import { compatibleBodies } from './manifest.ts';
@@ -48,10 +48,16 @@ export interface PlanOptions {
   /** Layer の Slot を一時的に置き換える（比較切り替え用）。 */
   slotOf?: (part: PartManifest, layer: Layer) => string;
   /**
-   * 競合の Part を描画するか。仕様書は UI 挙動を別文書に委ねており未規定のため、選べるようにした。
+   * 競合の Part を描画するか。規格上は描画でき、止めるかどうかは UI 側の方針（§8）。
    * 既定は true（描画して警告だけ出す）。
    */
   drawConflicted?: boolean;
+}
+
+/** 現在のポーズでの標準描画順（§6.1、§6.2）。 */
+export function defaultSlotOrder(ctx: Context): string[] {
+  const { placement, order } = armLayout(ctx);
+  return standardSlotOrder(placement, order);
 }
 
 /**
@@ -64,7 +70,7 @@ export function planRender(
   ctx: Context,
   options: PlanOptions = {},
 ): RenderPlan {
-  const slotOrder = options.slotOrder ?? standardSlotOrder(armPlacements(ctx));
+  const slotOrder = options.slotOrder ?? defaultSlotOrder(ctx);
   const slotIndex = new Map(slotOrder.map((slot, i) => [slot, i]));
   const drawConflicted = options.drawConflicted ?? true;
 
