@@ -1,0 +1,410 @@
+{
+  "browser": "Chrome/154.0.8037.93",
+  "headless": true,
+  "platform": "win32 x64",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+  "note": "デスクトップ PC のヘッドレスブラウザでの値。スマホ実機の値ではない。",
+  "sizes": [
+    {
+      "canvas": [
+        1200,
+        1800
+      ],
+      "runs": 3,
+      "firstTotalMs": 78.4,
+      "firstLoadMs": 37.1,
+      "firstRecolorMs": 34.2,
+      "firstDrawMs": 7.2,
+      "firstLayers": 27,
+      "redrawMs": 9.1,
+      "colorChange": [
+        {
+          "label": "共有カラー skin.base（素体・輪郭・耳）",
+          "totalMs": 17.5,
+          "recolorMs": 8,
+          "recolored": 7,
+          "recoloredMpx": 0.54
+        },
+        {
+          "label": "コートの main（後ろ身頃・前身頃・両袖）",
+          "totalMs": 20.5,
+          "recolorMs": 11.1,
+          "recolored": 4,
+          "recoloredMpx": 0.63
+        },
+        {
+          "label": "共有カラー hair.base（前髪・後髪・眉）",
+          "totalMs": 11.2,
+          "recolorMs": 2.8,
+          "recolored": 3,
+          "recoloredMpx": 0.18
+        }
+      ],
+      "recolorAllMs": 44.4,
+      "recolorAllMpx": 1.97,
+      "poseChangeMs": 15.5,
+      "pngExportMs": 7.4,
+      "pngBytes": 168282,
+      "memory": {
+        "images": 52,
+        "sourceMpx": 3.94,
+        "cacheMpx": 1.97,
+        "canvasMpx": 2.16,
+        "estimatedMB": 30.8
+      },
+      "allAssetsMB": 20.2,
+      "fullCanvasLayersMB": 428.5
+    },
+    {
+      "canvas": [
+        1600,
+        2400
+      ],
+      "runs": 3,
+      "firstTotalMs": 114.6,
+      "firstLoadMs": 49.4,
+      "firstRecolorMs": 56.8,
+      "firstDrawMs": 8.3,
+      "firstLayers": 27,
+      "redrawMs": 15,
+      "colorChange": [
+        {
+          "label": "共有カラー skin.base（素体・輪郭・耳）",
+          "totalMs": 27.7,
+          "recolorMs": 13.2,
+          "recolored": 7,
+          "recoloredMpx": 0.95
+        },
+        {
+          "label": "コートの main（後ろ身頃・前身頃・両袖）",
+          "totalMs": 34.2,
+          "recolorMs": 19.1,
+          "recolored": 4,
+          "recoloredMpx": 1.13
+        },
+        {
+          "label": "共有カラー hair.base（前髪・後髪・眉）",
+          "totalMs": 19.6,
+          "recolorMs": 4.9,
+          "recolored": 3,
+          "recoloredMpx": 0.32
+        }
+      ],
+      "recolorAllMs": 70.6,
+      "recolorAllMpx": 3.49,
+      "poseChangeMs": 23,
+      "pngExportMs": 9.2,
+      "pngBytes": 242486,
+      "memory": {
+        "images": 52,
+        "sourceMpx": 6.97,
+        "cacheMpx": 3.49,
+        "canvasMpx": 3.84,
+        "estimatedMB": 54.5
+      },
+      "allAssetsMB": 35.7,
+      "fullCanvasLayersMB": 761.7
+    },
+    {
+      "canvas": [
+        2000,
+        3000
+      ],
+      "runs": 3,
+      "firstTotalMs": 156.8,
+      "firstLoadMs": 61.9,
+      "firstRecolorMs": 86.9,
+      "firstDrawMs": 7.9,
+      "firstLayers": 27,
+      "redrawMs": 23.8,
+      "colorChange": [
+        {
+          "label": "共有カラー skin.base（素体・輪郭・耳）",
+          "totalMs": 43.9,
+          "recolorMs": 20.4,
+          "recolored": 7,
+          "recoloredMpx": 1.48
+        },
+        {
+          "label": "コートの main（後ろ身頃・前身頃・両袖）",
+          "totalMs": 54.4,
+          "recolorMs": 29.8,
+          "recolored": 4,
+          "recoloredMpx": 1.76
+        },
+        {
+          "label": "共有カラー hair.base（前髪・後髪・眉）",
+          "totalMs": 30,
+          "recolorMs": 7.9,
+          "recolored": 3,
+          "recoloredMpx": 0.51
+        }
+      ],
+      "recolorAllMs": 109.6,
+      "recolorAllMpx": 5.46,
+      "poseChangeMs": 35.6,
+      "pngExportMs": 16.2,
+      "pngBytes": 334665,
+      "memory": {
+        "images": 52,
+        "sourceMpx": 10.92,
+        "cacheMpx": 5.46,
+        "canvasMpx": 6,
+        "estimatedMB": 85.4
+      },
+      "allAssetsMB": 55.9,
+      "fullCanvasLayersMB": 1190.2
+    }
+  ],
+  "sizesCpu4xSlower": [
+    {
+      "canvas": [
+        1200,
+        1800
+      ],
+      "runs": 3,
+      "firstTotalMs": 354.5,
+      "firstLoadMs": 192,
+      "firstRecolorMs": 157.1,
+      "firstDrawMs": 5.5,
+      "firstLayers": 27,
+      "redrawMs": 21.2,
+      "colorChange": [
+        {
+          "label": "共有カラー skin.base（素体・輪郭・耳）",
+          "totalMs": 55.1,
+          "recolorMs": 35.4,
+          "recolored": 7,
+          "recoloredMpx": 0.54
+        },
+        {
+          "label": "コートの main（後ろ身頃・前身頃・両袖）",
+          "totalMs": 69.8,
+          "recolorMs": 49.2,
+          "recolored": 4,
+          "recoloredMpx": 0.63
+        },
+        {
+          "label": "共有カラー hair.base（前髪・後髪・眉）",
+          "totalMs": 32,
+          "recolorMs": 12.3,
+          "recolored": 3,
+          "recoloredMpx": 0.18
+        }
+      ],
+      "recolorAllMs": 165.4,
+      "recolorAllMpx": 1.97,
+      "poseChangeMs": 41,
+      "pngExportMs": 51.1,
+      "pngBytes": 168282,
+      "memory": {
+        "images": 52,
+        "sourceMpx": 3.94,
+        "cacheMpx": 1.97,
+        "canvasMpx": 2.16,
+        "estimatedMB": 30.8
+      },
+      "allAssetsMB": 20.2,
+      "fullCanvasLayersMB": 428.5
+    },
+    {
+      "canvas": [
+        1600,
+        2400
+      ],
+      "runs": 3,
+      "firstTotalMs": 497.5,
+      "firstLoadMs": 243.6,
+      "firstRecolorMs": 244.2,
+      "firstDrawMs": 9.2,
+      "firstLayers": 27,
+      "redrawMs": 35.5,
+      "colorChange": [
+        {
+          "label": "共有カラー skin.base（素体・輪郭・耳）",
+          "totalMs": 92.3,
+          "recolorMs": 58.1,
+          "recolored": 7,
+          "recoloredMpx": 0.95
+        },
+        {
+          "label": "コートの main（後ろ身頃・前身頃・両袖）",
+          "totalMs": 119.5,
+          "recolorMs": 84.1,
+          "recolored": 4,
+          "recoloredMpx": 1.13
+        },
+        {
+          "label": "共有カラー hair.base（前髪・後髪・眉）",
+          "totalMs": 57,
+          "recolorMs": 21.4,
+          "recolored": 3,
+          "recoloredMpx": 0.32
+        }
+      ],
+      "recolorAllMs": 276.5,
+      "recolorAllMpx": 3.49,
+      "poseChangeMs": 61,
+      "pngExportMs": 60.9,
+      "pngBytes": 242486,
+      "memory": {
+        "images": 52,
+        "sourceMpx": 6.97,
+        "cacheMpx": 3.49,
+        "canvasMpx": 3.84,
+        "estimatedMB": 54.5
+      },
+      "allAssetsMB": 35.7,
+      "fullCanvasLayersMB": 761.7
+    },
+    {
+      "canvas": [
+        2000,
+        3000
+      ],
+      "runs": 3,
+      "firstTotalMs": 687.9,
+      "firstLoadMs": 291.2,
+      "firstRecolorMs": 391.4,
+      "firstDrawMs": 7.7,
+      "firstLayers": 27,
+      "redrawMs": 53.7,
+      "colorChange": [
+        {
+          "label": "共有カラー skin.base（素体・輪郭・耳）",
+          "totalMs": 146.2,
+          "recolorMs": 91.5,
+          "recolored": 7,
+          "recoloredMpx": 1.48
+        },
+        {
+          "label": "コートの main（後ろ身頃・前身頃・両袖）",
+          "totalMs": 187.9,
+          "recolorMs": 133.8,
+          "recolored": 4,
+          "recoloredMpx": 1.76
+        },
+        {
+          "label": "共有カラー hair.base（前髪・後髪・眉）",
+          "totalMs": 90.1,
+          "recolorMs": 36,
+          "recolored": 3,
+          "recoloredMpx": 0.51
+        }
+      ],
+      "recolorAllMs": 435.2,
+      "recolorAllMpx": 5.46,
+      "poseChangeMs": 90.3,
+      "pngExportMs": 72.3,
+      "pngBytes": 334665,
+      "memory": {
+        "images": 52,
+        "sourceMpx": 10.92,
+        "cacheMpx": 5.46,
+        "canvasMpx": 6,
+        "estimatedMB": 85.4
+      },
+      "allAssetsMB": 55.9,
+      "fullCanvasLayersMB": 1190.2
+    }
+  ],
+  "alphaProbe": [
+    {
+      "alpha": 0,
+      "alphaRead": 0,
+      "maxError": 255,
+      "exact": 0,
+      "distinct": 1
+    },
+    {
+      "alpha": 1,
+      "alphaRead": 1,
+      "maxError": 127,
+      "exact": 0,
+      "distinct": 2
+    },
+    {
+      "alpha": 2,
+      "alphaRead": 2,
+      "maxError": 64,
+      "exact": 0,
+      "distinct": 3
+    },
+    {
+      "alpha": 3,
+      "alphaRead": 3,
+      "maxError": 42,
+      "exact": 0,
+      "distinct": 4
+    },
+    {
+      "alpha": 5,
+      "alphaRead": 5,
+      "maxError": 25,
+      "exact": 0,
+      "distinct": 6
+    },
+    {
+      "alpha": 8,
+      "alphaRead": 8,
+      "maxError": 16,
+      "exact": 0,
+      "distinct": 9
+    },
+    {
+      "alpha": 16,
+      "alphaRead": 16,
+      "maxError": 8,
+      "exact": 0,
+      "distinct": 17
+    },
+    {
+      "alpha": 32,
+      "alphaRead": 32,
+      "maxError": 4,
+      "exact": 0,
+      "distinct": 33
+    },
+    {
+      "alpha": 64,
+      "alphaRead": 64,
+      "maxError": 2,
+      "exact": 0,
+      "distinct": 65
+    },
+    {
+      "alpha": 128,
+      "alphaRead": 128,
+      "maxError": 1,
+      "exact": 0.21875,
+      "distinct": 129
+    },
+    {
+      "alpha": 192,
+      "alphaRead": 192,
+      "maxError": 1,
+      "exact": 0.55078125,
+      "distinct": 193
+    },
+    {
+      "alpha": 254,
+      "alphaRead": 254,
+      "maxError": 1,
+      "exact": 0.98828125,
+      "distinct": 255
+    },
+    {
+      "alpha": 255,
+      "alphaRead": 255,
+      "maxError": 0,
+      "exact": 1,
+      "distinct": 256
+    }
+  ],
+  "exportVsReference": {
+    "pixels": 3840000,
+    "differing": 15182,
+    "maxDiff": 48,
+    "maxDiffOpaque": 2
+  }
+}

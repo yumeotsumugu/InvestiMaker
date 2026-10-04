@@ -1,0 +1,626 @@
+{
+  "lineColor": "#2A2630",
+  "lineLuminance": 0.155,
+  "rows": [
+    {
+      "color": "#3A3F4B",
+      "tint": {
+        "shadow64": {
+          "hex": "#1D2026",
+          "contrastToLine": 0.03
+        },
+        "base128": {
+          "hex": "#3A3F4B",
+          "contrastToLine": 0.091
+        },
+        "highlight198": {
+          "hex": "#A7A9AE",
+          "contrastToLine": 0.507
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#0F1013",
+          "contrastToLine": 0.092
+        },
+        "base128": {
+          "hex": "#1D2026",
+          "contrastToLine": 0.03
+        },
+        "highlight198": {
+          "hex": "#2D313A",
+          "contrastToLine": 0.036
+        }
+      }
+    },
+    {
+      "color": "#F4F4F0",
+      "tint": {
+        "shadow64": {
+          "hex": "#7A7A78",
+          "contrastToLine": 0.323
+        },
+        "base128": {
+          "hex": "#F4F4F0",
+          "contrastToLine": 0.801
+        },
+        "highlight198": {
+          "hex": "#FAFAF8",
+          "contrastToLine": 0.825
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#3D3D3C",
+          "contrastToLine": 0.084
+        },
+        "base128": {
+          "hex": "#7A7A78",
+          "contrastToLine": 0.323
+        },
+        "highlight198": {
+          "hex": "#BDBDBA",
+          "contrastToLine": 0.585
+        }
+      }
+    },
+    {
+      "color": "#FFFFFF",
+      "tint": {
+        "shadow64": {
+          "hex": "#808080",
+          "contrastToLine": 0.347
+        },
+        "base128": {
+          "hex": "#FFFFFF",
+          "contrastToLine": 0.845
+        },
+        "highlight198": {
+          "hex": "#FFFFFF",
+          "contrastToLine": 0.845
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#404040",
+          "contrastToLine": 0.096
+        },
+        "base128": {
+          "hex": "#808080",
+          "contrastToLine": 0.347
+        },
+        "highlight198": {
+          "hex": "#C6C6C6",
+          "contrastToLine": 0.621
+        }
+      }
+    },
+    {
+      "color": "#101014",
+      "tint": {
+        "shadow64": {
+          "hex": "#08080A",
+          "contrastToLine": 0.123
+        },
+        "base128": {
+          "hex": "#101014",
+          "contrastToLine": 0.091
+        },
+        "highlight198": {
+          "hex": "#949496",
+          "contrastToLine": 0.426
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#040405",
+          "contrastToLine": 0.139
+        },
+        "base128": {
+          "hex": "#08080A",
+          "contrastToLine": 0.123
+        },
+        "highlight198": {
+          "hex": "#0C0C10",
+          "contrastToLine": 0.107
+        }
+      }
+    },
+    {
+      "color": "#000000",
+      "tint": {
+        "shadow64": {
+          "hex": "#000000",
+          "contrastToLine": 0.155
+        },
+        "base128": {
+          "hex": "#000000",
+          "contrastToLine": 0.155
+        },
+        "highlight198": {
+          "hex": "#8D8D8D",
+          "contrastToLine": 0.398
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#000000",
+          "contrastToLine": 0.155
+        },
+        "base128": {
+          "hex": "#000000",
+          "contrastToLine": 0.155
+        },
+        "highlight198": {
+          "hex": "#000000",
+          "contrastToLine": 0.155
+        }
+      }
+    },
+    {
+      "color": "#E60033",
+      "tint": {
+        "shadow64": {
+          "hex": "#73001A",
+          "contrastToLine": 0.052
+        },
+        "base128": {
+          "hex": "#E60033",
+          "contrastToLine": 0.051
+        },
+        "highlight198": {
+          "hex": "#F48DA3",
+          "contrastToLine": 0.49
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#3A000D",
+          "contrastToLine": 0.103
+        },
+        "base128": {
+          "hex": "#73001A",
+          "contrastToLine": 0.052
+        },
+        "highlight198": {
+          "hex": "#B30028",
+          "contrastToLine": 0.005
+        }
+      }
+    },
+    {
+      "color": "#FFE000",
+      "tint": {
+        "shadow64": {
+          "hex": "#807000",
+          "contrastToLine": 0.266
+        },
+        "base128": {
+          "hex": "#FFE000",
+          "contrastToLine": 0.686
+        },
+        "highlight198": {
+          "hex": "#FFF18D",
+          "contrastToLine": 0.773
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#403800",
+          "contrastToLine": 0.055
+        },
+        "base128": {
+          "hex": "#807000",
+          "contrastToLine": 0.266
+        },
+        "highlight198": {
+          "hex": "#C6AE00",
+          "contrastToLine": 0.498
+        }
+      }
+    },
+    {
+      "color": "#0050FF",
+      "tint": {
+        "shadow64": {
+          "hex": "#002880",
+          "contrastToLine": 0.007
+        },
+        "base128": {
+          "hex": "#0050FF",
+          "contrastToLine": 0.141
+        },
+        "highlight198": {
+          "hex": "#8DB0FF",
+          "contrastToLine": 0.528
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#001440",
+          "contrastToLine": 0.081
+        },
+        "base128": {
+          "hex": "#002880",
+          "contrastToLine": 0.007
+        },
+        "highlight198": {
+          "hex": "#003EC6",
+          "contrastToLine": 0.075
+        }
+      }
+    },
+    {
+      "color": "#FFE8D6",
+      "tint": {
+        "shadow64": {
+          "hex": "#80746B",
+          "contrastToLine": 0.307
+        },
+        "base128": {
+          "hex": "#FFE8D6",
+          "contrastToLine": 0.769
+        },
+        "highlight198": {
+          "hex": "#FFF5ED",
+          "contrastToLine": 0.812
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#403A36",
+          "contrastToLine": 0.076
+        },
+        "base128": {
+          "hex": "#80746B",
+          "contrastToLine": 0.307
+        },
+        "highlight198": {
+          "hex": "#C6B4A6",
+          "contrastToLine": 0.562
+        }
+      }
+    },
+    {
+      "color": "#F2D3BD",
+      "tint": {
+        "shadow64": {
+          "hex": "#796A5F",
+          "contrastToLine": 0.27
+        },
+        "base128": {
+          "hex": "#F2D3BD",
+          "contrastToLine": 0.692
+        },
+        "highlight198": {
+          "hex": "#F9EBE1",
+          "contrastToLine": 0.775
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#3D352F",
+          "contrastToLine": 0.058
+        },
+        "base128": {
+          "hex": "#796A5F",
+          "contrastToLine": 0.27
+        },
+        "highlight198": {
+          "hex": "#BCA493",
+          "contrastToLine": 0.503
+        }
+      }
+    },
+    {
+      "color": "#D9A066",
+      "tint": {
+        "shadow64": {
+          "hex": "#6D5033",
+          "contrastToLine": 0.175
+        },
+        "base128": {
+          "hex": "#D9A066",
+          "contrastToLine": 0.503
+        },
+        "highlight198": {
+          "hex": "#EED4BA",
+          "contrastToLine": 0.691
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#36281A",
+          "contrastToLine": 0.009
+        },
+        "base128": {
+          "hex": "#6D5033",
+          "contrastToLine": 0.175
+        },
+        "highlight198": {
+          "hex": "#A87C4F",
+          "contrastToLine": 0.355
+        }
+      }
+    },
+    {
+      "color": "#A0673C",
+      "tint": {
+        "shadow64": {
+          "hex": "#50341E",
+          "contrastToLine": 0.066
+        },
+        "base128": {
+          "hex": "#A0673C",
+          "contrastToLine": 0.284
+        },
+        "highlight198": {
+          "hex": "#D4BBA7",
+          "contrastToLine": 0.593
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#281A0F",
+          "contrastToLine": 0.045
+        },
+        "base128": {
+          "hex": "#50341E",
+          "contrastToLine": 0.066
+        },
+        "highlight198": {
+          "hex": "#7C502F",
+          "contrastToLine": 0.186
+        }
+      }
+    },
+    {
+      "color": "#5C3A21",
+      "tint": {
+        "shadow64": {
+          "hex": "#2E1D11",
+          "contrastToLine": 0.031
+        },
+        "base128": {
+          "hex": "#5C3A21",
+          "contrastToLine": 0.094
+        },
+        "highlight198": {
+          "hex": "#B6A79B",
+          "contrastToLine": 0.509
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#170F08",
+          "contrastToLine": 0.092
+        },
+        "base128": {
+          "hex": "#2E1D11",
+          "contrastToLine": 0.031
+        },
+        "highlight198": {
+          "hex": "#472D1A",
+          "contrastToLine": 0.038
+        }
+      }
+    },
+    {
+      "color": "#2E1A0E",
+      "tint": {
+        "shadow64": {
+          "hex": "#170D07",
+          "contrastToLine": 0.098
+        },
+        "base128": {
+          "hex": "#2E1A0E",
+          "contrastToLine": 0.04
+        },
+        "highlight198": {
+          "hex": "#A19893",
+          "contrastToLine": 0.447
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#0C0704",
+          "contrastToLine": 0.124
+        },
+        "base128": {
+          "hex": "#170D07",
+          "contrastToLine": 0.098
+        },
+        "highlight198": {
+          "hex": "#24140B",
+          "contrastToLine": 0.066
+        }
+      }
+    },
+    {
+      "color": "#0A0A0A",
+      "tint": {
+        "shadow64": {
+          "hex": "#050505",
+          "contrastToLine": 0.136
+        },
+        "base128": {
+          "hex": "#0A0A0A",
+          "contrastToLine": 0.116
+        },
+        "highlight198": {
+          "hex": "#919191",
+          "contrastToLine": 0.413
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#030303",
+          "contrastToLine": 0.143
+        },
+        "base128": {
+          "hex": "#050505",
+          "contrastToLine": 0.136
+        },
+        "highlight198": {
+          "hex": "#080808",
+          "contrastToLine": 0.124
+        }
+      }
+    },
+    {
+      "color": "#5A3E2B",
+      "tint": {
+        "shadow64": {
+          "hex": "#2D1F16",
+          "contrastToLine": 0.024
+        },
+        "base128": {
+          "hex": "#5A3E2B",
+          "contrastToLine": 0.106
+        },
+        "highlight198": {
+          "hex": "#B5A8A0",
+          "contrastToLine": 0.512
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#17100B",
+          "contrastToLine": 0.088
+        },
+        "base128": {
+          "hex": "#2D1F16",
+          "contrastToLine": 0.024
+        },
+        "highlight198": {
+          "hex": "#463021",
+          "contrastToLine": 0.047
+        }
+      }
+    },
+    {
+      "color": "#E8D080",
+      "tint": {
+        "shadow64": {
+          "hex": "#746840",
+          "contrastToLine": 0.251
+        },
+        "base128": {
+          "hex": "#E8D080",
+          "contrastToLine": 0.658
+        },
+        "highlight198": {
+          "hex": "#F5EAC6",
+          "contrastToLine": 0.761
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#3A3420",
+          "contrastToLine": 0.048
+        },
+        "base128": {
+          "hex": "#746840",
+          "contrastToLine": 0.251
+        },
+        "highlight198": {
+          "hex": "#B4A263",
+          "contrastToLine": 0.477
+        }
+      }
+    },
+    {
+      "color": "#F8F8F8",
+      "tint": {
+        "shadow64": {
+          "hex": "#7C7C7C",
+          "contrastToLine": 0.331
+        },
+        "base128": {
+          "hex": "#F8F8F8",
+          "contrastToLine": 0.817
+        },
+        "highlight198": {
+          "hex": "#FCFCFC",
+          "contrastToLine": 0.833
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#3E3E3E",
+          "contrastToLine": 0.088
+        },
+        "base128": {
+          "hex": "#7C7C7C",
+          "contrastToLine": 0.331
+        },
+        "highlight198": {
+          "hex": "#C1C1C1",
+          "contrastToLine": 0.602
+        }
+      }
+    },
+    {
+      "color": "#FF70A0",
+      "tint": {
+        "shadow64": {
+          "hex": "#803850",
+          "contrastToLine": 0.131
+        },
+        "base128": {
+          "hex": "#FF70A0",
+          "contrastToLine": 0.417
+        },
+        "highlight198": {
+          "hex": "#FFBFD4",
+          "contrastToLine": 0.653
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#401C28",
+          "contrastToLine": 0.012
+        },
+        "base128": {
+          "hex": "#803850",
+          "contrastToLine": 0.131
+        },
+        "highlight198": {
+          "hex": "#C6577C",
+          "contrastToLine": 0.289
+        }
+      }
+    },
+    {
+      "color": "#2040C0",
+      "tint": {
+        "shadow64": {
+          "hex": "#102060",
+          "contrastToLine": 0.025
+        },
+        "base128": {
+          "hex": "#2040C0",
+          "contrastToLine": 0.105
+        },
+        "highlight198": {
+          "hex": "#9BA9E3",
+          "contrastToLine": 0.512
+        }
+      },
+      "multiply": {
+        "shadow64": {
+          "hex": "#081030",
+          "contrastToLine": 0.09
+        },
+        "base128": {
+          "hex": "#102060",
+          "contrastToLine": 0.025
+        },
+        "highlight198": {
+          "hex": "#193295",
+          "contrastToLine": 0.048
+        }
+      }
+    }
+  ]
+}
