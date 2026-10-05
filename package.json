@@ -15,7 +15,8 @@
     "gen:color-vectors": "node tools/generate-color-vectors.ts",
     "report:images": "node tools/render-report-images.ts",
     "bench:browser": "node tools/browser-bench.ts",
-    "smoke:app": "node tools/browser-smoke.ts"
+    "smoke:app": "node tools/browser-smoke.ts",
+    "wireframes": "node tools/render-wireframes.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",
