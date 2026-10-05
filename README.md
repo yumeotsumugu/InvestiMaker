@@ -24,6 +24,11 @@ TRPG 用の 2D キャラクター立ち絵・差分・アイコンを、既製�
 - 本体の最小 UI（`src/app/`）
 - [Phase 1-B 検証レポート](docs/reports/Phase1B_Verification_Report.md)
 
+**Phase 1-C（進行中）** では、最小 UI を実際に使える Creator UI にします。1-C-1（設計）が完了し、次は 1-C-2（実装）です。
+
+- [UI/UX 設計書](docs/design/InvestiMaker_Phase1C_UIUX_Design.md)
+- [ワイヤーフレームと操作判断](docs/design/Phase1C1_Wireframes.md)
+
 ## 起動方法
 
 Node.js 24 以降が必要です（`tools/` の TypeScript を Node の型除去で直接実行するため）。
@@ -62,7 +67,7 @@ npm run bench:browser   # ヘッドレスの Chrome / Edge で検証ページを
 
 ```text
 docs/specifications/  仕様書（唯一の正）。素材規格と、キャラクターの保存形式
-docs/design/          基本設計書 v0.1（背景理解用）
+docs/design/          基本設計書 v0.1（背景理解用）、Phase 1-C の UI/UX 設計書とワイヤーフレーム
 docs/instructions/    Phase 0 の作業指示書
 docs/reports/         検証レポートと比較画像
 src/core/             manifest 型・検証・Asset 解決・描画順・色合成・互換性（DOM 非依存。製品版に持ち越す）
