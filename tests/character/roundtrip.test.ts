@@ -12,6 +12,7 @@ import {
   planCharacter,
   relinkColor,
   removeInstance,
+  rename,
   resolveSlotColor,
   sameCharacter,
   serializeCharacter,
@@ -21,6 +22,7 @@ import {
   setInstanceColor,
   setPose,
   setSharedColor,
+  setView,
   stableStringify,
   stringifyCharacter,
   unlinkColor,
@@ -237,5 +239,15 @@ describe('完全復元（仮素材で描いて画素を比べる）', () => {
     const before = renderCharacterData(set, original).bitmap.data;
     const changed = renderCharacterData(set, setSharedColor(original, 'skin.base', '#F2D3BD')).bitmap.data;
     expect(Buffer.from(changed).equals(Buffer.from(before))).toBe(false);
+  });
+});
+
+describe('State の編集', () => {
+  it('fit は次元ごとに設定・解除でき、名前と VIEW も操作で変える', () => {
+    let c = createCharacter({ id: u(1), name: '', bodyPartId: 'im.body_01', bodyInstanceId: u(10) });
+    c = setFit(setFit(c, 'chest', 'large'), 'waist', 'wide');
+    expect(c.appearance.fit).toEqual({ chest: 'large', waist: 'wide' });
+    expect(setFit(c, 'chest', undefined).appearance.fit).toEqual({ waist: 'wide' });
+    expect(reload(setView(rename(c, 'ツムグ'), 'side_left'))).toMatchObject({ name: 'ツムグ', state: { view: 'side_left' } });
   });
 });

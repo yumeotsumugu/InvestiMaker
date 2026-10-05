@@ -1,4 +1,4 @@
-// 仮素材の読み込み。すべて同一オリジンの静的ファイルで、外部通信はしない。
+// 素材セットの読み込み（検証ページと本体 UI の共用）。すべて同一オリジンの静的ファイルで、外部通信はしない。
 
 import type { Body, PartManifest, ValidationResult } from '../core/index.ts';
 import { validateFitAgainstBodies, validateManifest } from '../core/index.ts';
@@ -6,7 +6,7 @@ import { validateFitAgainstBodies, validateManifest } from '../core/index.ts';
 export interface SetIndex {
   canvas: [number, number];
   body: string;
-  parts: { id: string; files: number; pixels: number }[];
+  parts: { id: string; default?: boolean; starter?: boolean; files: number; pixels: number }[];
 }
 
 export interface AssetSet {
@@ -21,6 +21,10 @@ export interface AssetSet {
   library: Map<string, PartManifest>;
   /** 一覧の順（既定の装備順）。 */
   order: string[];
+  /** 検証ページが最初に装備する Part。 */
+  defaults: string[];
+  /** 新規キャラクターが最初に装備する Part。 */
+  starter: string[];
   validation: Map<string, ValidationResult>;
 }
 
@@ -67,6 +71,8 @@ export async function loadSet(name: string): Promise<AssetSet> {
     index,
     library,
     order: index.parts.map((p) => p.id),
+    defaults: index.parts.filter((p) => p.default !== false).map((p) => p.id),
+    starter: index.parts.filter((p) => p.starter).map((p) => p.id),
     validation,
   };
 }

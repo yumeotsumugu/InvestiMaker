@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   publicDir: 'assets',
   server: { host: '127.0.0.1' },
-  build: { outDir: 'dist', assetsDir: '_app' },
+  build: { outDir: 'dist', assetsDir: '_app', rollupOptions: { input: ['index.html', 'lab.html'] } },
   test: {
     include: ['tests/**/*.test.ts'],
     environment: 'node',

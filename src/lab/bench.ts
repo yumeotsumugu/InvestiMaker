@@ -1,9 +1,9 @@
 // 計測（`?bench=1`、または画面の「計測を実行」）。§13-1 と §13-3 の材料を出す。
 
-import { Composer } from './composer.ts';
-import type { MemoryEstimate, RenderStats } from './composer.ts';
-import type { AssetSet } from './loader.ts';
-import { loadPixels } from './loader.ts';
+import { Composer } from '../web/composer.ts';
+import type { MemoryEstimate, RenderStats } from '../web/composer.ts';
+import type { AssetSet } from '../web/loader.ts';
+import { loadPixels } from '../web/loader.ts';
 import { PROBE_ALPHAS, PROBE_WIDTH, probePixel } from './probe-pattern.ts';
 import type { LabState } from './state.ts';
 import { initialState, planOf } from './state.ts';

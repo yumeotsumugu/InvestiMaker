@@ -1,9 +1,10 @@
 // 生成した仮素材でキャラクター 1 体を描く（テストとレポート用画像で共用）。
 
 import type { Bitmap, Character, ColorMode, Context, PartManifest, PlanOptions, RenderPlan, SlotColorOverride } from '../src/core/index.ts';
-import { instanceColors, planCharacter, planRender, resolvePartColors } from '../src/core/index.ts';
+import { instanceColors, instanceMatrices, planCharacter, planRender, resolvePartColors } from '../src/core/index.ts';
 import type { GeneratedSet } from './dev-assets.ts';
 import { defaultContext } from './dev-assets.ts';
+import { ALTERNATE_IDS } from './dev-parts.ts';
 import { renderPlan } from './render.ts';
 
 export interface CharacterState {
@@ -16,10 +17,10 @@ export interface CharacterState {
   overrides: Record<string, Record<string, SlotColorOverride>>;
 }
 
-/** 全 Part を装備した既定の状態。 */
+/** 既定の状態。同じ category の選択肢として足した Part 以外をすべて装備する。 */
 export function defaultState(set: GeneratedSet): CharacterState {
   return {
-    equipped: set.parts.map((p) => p.manifest.id),
+    equipped: set.parts.map((p) => p.manifest.id).filter((id) => !ALTERNATE_IDS.includes(id)),
     context: defaultContext(),
     shared: {},
     overrides: {},
@@ -66,6 +67,8 @@ export function renderCharacterData(
     library,
     image: (partId, file) => byId.get(partId)!.images.get(file)!,
     colors: instanceColors(character, library),
+    // 仮素材を縮小して生成した場合も、その大きさを座標系として扱う。
+    matrices: instanceMatrices(character, library, [set.width, set.height]),
     width: set.width,
     height: set.height,
   });

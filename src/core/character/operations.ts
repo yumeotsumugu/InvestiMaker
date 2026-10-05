@@ -2,9 +2,10 @@
 // 既存のオブジェクトを展開して作り直すので、未知のフィールドは保たれる。
 
 import { MASTER_CANVAS } from '../ids.ts';
-import type { ColorSlot } from '../manifest.ts';
+import type { ColorSlot, Transform } from '../manifest.ts';
 import { resolveSlotColor } from '../color.ts';
-import type { Character, EquipmentInstance } from './types.ts';
+import { conditionSize, conditionsOverlap, sameCondition } from './transform.ts';
+import type { Character, EquipmentInstance, TransformCondition } from './types.ts';
 
 function updateInstance(character: Character, instanceId: string, change: (inst: EquipmentInstance) => EquipmentInstance): Character {
   if (!character.equipment.some((i) => i.instanceId === instanceId)) throw new Error(`Equipment Instance がない: ${instanceId}`);
@@ -112,6 +113,44 @@ export function setExpression(character: Character, change: Partial<Character['s
   return { ...character, state: { ...character.state, expression: { ...character.state.expression, ...change } } };
 }
 
-export function setFit(character: Character, dimension: string, value: string): Character {
-  return { ...character, appearance: { ...character.appearance, fit: { ...character.appearance.fit, [dimension]: value } } };
+/** fit の値を設定する。`undefined` でその次元の指定をなくす。 */
+export function setFit(character: Character, dimension: string, value: string | undefined): Character {
+  const { [dimension]: _old, ...rest } = character.appearance.fit;
+  return { ...character, appearance: { ...character.appearance, fit: value === undefined ? rest : { ...rest, [dimension]: value } } };
+}
+
+export function rename(character: Character, name: string): Character {
+  return { ...character, name };
+}
+
+export function setView(character: Character, view: string): Character {
+  return { ...character, state: { ...character.state, view } };
+}
+
+/** 条件によらない基本の配置補正を設定する。`undefined` で消す。 */
+export function setTransform(character: Character, instanceId: string, transform: Transform | undefined): Character {
+  return updateInstance(character, instanceId, ({ transform: _old, ...rest }) => (transform ? { ...rest, transform } : rest));
+}
+
+/**
+ * 条件ごとの配置補正を設定する。同じ条件の補正があれば置き換え、なければ追加する。`undefined` でその条件の補正を消す。
+ * 追加した結果、どちらを使うか決まらない組み合わせができる場合は例外にする（保存しても読み込めない Character を作らない）。
+ */
+export function setTransformOverride(
+  character: Character,
+  instanceId: string,
+  when: TransformCondition,
+  transform: Transform | undefined,
+): Character {
+  if (conditionSize(when) === 0) throw new Error('条件を 1 つ以上指定する');
+  return updateInstance(character, instanceId, (inst) => {
+    const others = (inst.overrides?.transform ?? []).filter((e) => !sameCondition(e.when, when));
+    const clash = transform && others.find((e) => conditionSize(e.when) === conditionSize(when) && conditionsOverlap(e.when, when));
+    if (clash) throw new Error('同じ状態に同時に当てはまりうる補正が既にある');
+    const list = transform ? [...others, { when, transform }] : others;
+    const { transform: _old, ...restOverrides } = inst.overrides ?? {};
+    const overrides = list.length > 0 ? { ...restOverrides, transform: list } : restOverrides;
+    const { overrides: _o, ...rest } = inst;
+    return Object.keys(overrides).length > 0 ? { ...rest, overrides } : rest;
+  });
 }

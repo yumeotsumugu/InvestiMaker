@@ -3,7 +3,7 @@
 import type { Asset, Bitmap, Body, Context, Part, PartManifest } from '../src/core/index.ts';
 import { planRender, resolvePartColors } from '../src/core/index.ts';
 import type { AssetDef, PartDef } from './dev-parts.ts';
-import { BODY_ID, DEV_PARTS } from './dev-parts.ts';
+import { ALTERNATE_IDS, BODY_ID, DEV_PARTS, STARTER_IDS } from './dev-parts.ts';
 import type { Art, View } from './paint.ts';
 import { artBBox, rasterize } from './paint.ts';
 import { encodePng } from './png.ts';
@@ -172,6 +172,10 @@ export function buildIndex(set: GeneratedSet) {
       const images = [...p.images.values()];
       return {
         id: p.manifest.id,
+        // 検証ページが最初に装備するか（選択肢として足した Part は装備しない）
+        default: !ALTERNATE_IDS.includes(p.manifest.id),
+        // 新規キャラクターが最初に装備するか
+        starter: STARTER_IDS.includes(p.manifest.id),
         files: images.length,
         pixels: images.reduce((sum, img) => sum + img.width * img.height, 0),
       };

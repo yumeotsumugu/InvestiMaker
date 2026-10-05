@@ -4,16 +4,13 @@
 //
 // - ローカルにインストール済みのブラウザを使う（BROWSER_PATH で指定可）。
 // - 通信先は自分の PC 内（Vite の開発サーバーとブラウザの DevTools、どちらも 127.0.0.1）だけ。
-// - 依存を増やさないため、DevTools Protocol を Node 標準の WebSocket で直接話す。
 // - 結果は docs/reports/data/browser-bench.json と docs/reports/images/ に書く。
 
-import type { ChildProcess } from 'node:child_process';
-import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { createServer } from 'vite';
 import type { BenchResult } from '../src/lab/bench.ts';
+import { Page, launchBrowser } from './cdp.ts';
 import { defaultState, renderCharacter } from './character.ts';
 import { generateDevAssets } from './dev-assets.ts';
 import { decodePng } from './png.ts';
@@ -26,137 +23,6 @@ const SIZES: [number, number][] = [
 const RUNS = 3;
 const OUT_DATA = 'docs/reports/data';
 const OUT_IMAGES = 'docs/reports/images';
-
-function findBrowser(): string {
-  const candidates = [
-    process.env.BROWSER_PATH,
-    'C:/Program Files/Google/Chrome/Application/chrome.exe',
-    'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
-    'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-    'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
-    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-    '/usr/bin/google-chrome',
-    '/usr/bin/chromium',
-  ];
-  const found = candidates.find((p) => p && existsSync(p));
-  if (!found) throw new Error('Chrome / Edge が見つからない。BROWSER_PATH で実行ファイルを指定してください。');
-  return found;
-}
-
-/** DevTools Protocol の最小クライアント。 */
-class Cdp {
-  private nextId = 1;
-  private readonly waiting = new Map<number, { resolve(v: unknown): void; reject(e: Error): void }>();
-  private readonly ws: WebSocket;
-
-  private constructor(ws: WebSocket) {
-    this.ws = ws;
-    ws.addEventListener('message', (event) => {
-      const msg = JSON.parse(String(event.data)) as { id?: number; result?: unknown; error?: { message: string } };
-      if (msg.id === undefined) return;
-      const w = this.waiting.get(msg.id);
-      this.waiting.delete(msg.id);
-      if (msg.error) w?.reject(new Error(msg.error.message));
-      else w?.resolve(msg.result);
-    });
-  }
-
-  static connect(url: string): Promise<Cdp> {
-    return new Promise((resolve, reject) => {
-      const ws = new WebSocket(url);
-      ws.addEventListener('open', () => resolve(new Cdp(ws)));
-      ws.addEventListener('error', () => reject(new Error(`DevTools に接続できない: ${url}`)));
-    });
-  }
-
-  send<T = Record<string, unknown>>(method: string, params: object = {}, sessionId?: string): Promise<T> {
-    const id = this.nextId++;
-    return new Promise<T>((resolve, reject) => {
-      this.waiting.set(id, { resolve: resolve as (v: unknown) => void, reject });
-      this.ws.send(JSON.stringify({ id, method, params, sessionId }));
-    });
-  }
-
-  close() {
-    this.ws.close();
-  }
-}
-
-class Page {
-  private readonly cdp: Cdp;
-  private readonly sessionId: string;
-  private readonly targetId: string;
-
-  private constructor(cdp: Cdp, sessionId: string, targetId: string) {
-    this.cdp = cdp;
-    this.sessionId = sessionId;
-    this.targetId = targetId;
-  }
-
-  static async open(cdp: Cdp, url: string, viewport?: [number, number], cpuThrottle = 1): Promise<Page> {
-    const { targetId } = await cdp.send<{ targetId: string }>('Target.createTarget', { url: 'about:blank' });
-    const { sessionId } = await cdp.send<{ sessionId: string }>('Target.attachToTarget', { targetId, flatten: true });
-    const page = new Page(cdp, sessionId, targetId);
-    if (viewport) {
-      await page.send('Emulation.setDeviceMetricsOverride', { width: viewport[0], height: viewport[1], deviceScaleFactor: 1, mobile: false });
-    }
-    if (cpuThrottle !== 1) await page.send('Emulation.setCPUThrottlingRate', { rate: cpuThrottle });
-    await page.send('Page.enable');
-    await page.send('Page.navigate', { url });
-    return page;
-  }
-
-  send<T = Record<string, unknown>>(method: string, params: object = {}): Promise<T> {
-    return this.cdp.send<T>(method, params, this.sessionId);
-  }
-
-  /** ページ内で式を評価する。Promise なら解決を待つ。 */
-  async evaluate<T>(expression: string): Promise<T> {
-    const res = await this.send<{ result: { value: T }; exceptionDetails?: { text: string; exception?: { description?: string } } }>(
-      'Runtime.evaluate',
-      { expression, awaitPromise: true, returnByValue: true },
-    );
-    if (res.exceptionDetails) throw new Error(res.exceptionDetails.exception?.description ?? res.exceptionDetails.text);
-    return res.result.value;
-  }
-
-  /** `window` のプロパティが現れるまで待って、その値を返す。 */
-  waitFor<T>(name: string): Promise<T> {
-    return this.evaluate<T>(
-      `new Promise((resolve) => { const t = setInterval(() => { if (window.${name}) { clearInterval(t); resolve(window.${name}); } }, 50); })`,
-    );
-  }
-
-  async screenshot(path: string): Promise<void> {
-    const { data } = await this.send<{ data: string }>('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });
-    writeFileSync(path, Buffer.from(data, 'base64'));
-  }
-
-  async close(): Promise<void> {
-    await this.cdp.send('Target.closeTarget', { targetId: this.targetId });
-  }
-}
-
-function launch(path: string, profile: string): Promise<{ process: ChildProcess; wsUrl: string }> {
-  const child = spawn(
-    path,
-    ['--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check', '--disable-extensions', 'about:blank'],
-    { stdio: ['ignore', 'ignore', 'pipe'] },
-  );
-  return new Promise((resolve, reject) => {
-    let buffer = '';
-    const timer = setTimeout(() => reject(new Error('ブラウザが起動しない')), 30_000);
-    child.stderr!.on('data', (chunk: Buffer) => {
-      buffer += chunk.toString();
-      const m = /DevTools listening on (ws:\/\/\S+)/.exec(buffer);
-      if (m) {
-        clearTimeout(timer);
-        resolve({ process: child, wsUrl: m[1]! });
-      }
-    });
-    child.on('error', reject);
-  });
-}
 
 const median = (values: number[]) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)]!;
 
@@ -244,13 +110,11 @@ const address = server.httpServer!.address();
 if (!address || typeof address === 'string') throw new Error('開発サーバーのアドレスが取れない');
 const base = `http://127.0.0.1:${address.port}/`;
 
-const browserPath = findBrowser();
-const profile = mkdtempSync(join(tmpdir(), 'investimaker-bench-'));
-const browser = await launch(browserPath, profile);
-const cdp = await Cdp.connect(browser.wsUrl);
+const browser = await launchBrowser();
+const cdp = browser.cdp;
 
 try {
-  const version = await cdp.send<{ product: string }>('Browser.getVersion');
+  const version = { product: browser.product };
   console.log(`${version.product}（ヘッドレス） / ${base}`);
 
   const measure = async (throttle: number) => {
@@ -259,7 +123,7 @@ try {
       const runs: BenchResult[] = [];
       for (let i = 0; i < RUNS; i++) {
         // 毎回新しいタブで開き、読み込み前の状態から測る。
-        const page = await Page.open(cdp, `${base}?set=bench/${w}x${h}&bench=1`, undefined, throttle);
+        const page = await Page.open(cdp, `${base}lab.html?set=bench/${w}x${h}&bench=1`, undefined, throttle);
         runs.push(await page.waitFor<BenchResult>('__benchResult'));
         await page.close();
       }
@@ -276,7 +140,7 @@ try {
   const throttled = await measure(4);
 
   // 画面のスクリーンショットと、ブラウザからの書き出し。
-  const page = await Page.open(cdp, base, [1500, 1100]);
+  const page = await Page.open(cdp, `${base}lab.html`, [1500, 1100]);
   await page.waitFor('__lab');
   await page.screenshot(`${OUT_IMAGES}/lab_default.png`);
   const exported = await page.evaluate<string>('window.__lab.exportPng()');
@@ -299,9 +163,6 @@ try {
   writeFileSync(`${OUT_DATA}/browser-bench.json`, JSON.stringify(result, null, 2) + '\n');
   console.log(`${OUT_DATA}/browser-bench.json を書き出した`);
 } finally {
-  cdp.close();
-  browser.process.kill();
+  await browser.close();
   await server.close();
-  await new Promise((r) => setTimeout(r, 500));
-  rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
 }
