@@ -196,9 +196,54 @@
         "validity": "UNRESOLVED",
         "notice": "unknown-pose.json を読み込んだ（requirements が現在の内容と一致しない（保存時に作り直す））",
         "exportDisabled": true,
-        "blocked": "描画と PNG 出力ができない: この実装の Pose Definition にないポーズ: arm.right = crossed",
+        "blocked": "PNG 出力ができない: この実装の Pose Definition にないポーズ: arm.right = crossed",
         "issues": [
           "未解決: この実装の Pose Definition にないポーズ: arm.right = crossed"
+        ],
+        "equipped": [
+          "dev.body_adult_standard",
+          "dev.face_head_01",
+          "dev.face_ears_01",
+          "dev.face_nose_01",
+          "dev.eyes_01",
+          "dev.eyebrows_01",
+          "dev.mouth_01",
+          "dev.hair_back_01",
+          "dev.socks_01",
+          "dev.shoes_01",
+          "dev.pants_01",
+          "dev.shirt_02",
+          "dev.hair_front_02",
+          "dev.glasses_01"
+        ],
+        "missingListed": [],
+        "duplicates": [],
+        "drawn": 0,
+        "opaque": 0
+      }
+    },
+    {
+      "step": "描画される Layer が 0 件",
+      "result": {
+        "validity": "VALID",
+        "notice": "saved-again.json を読み込んだ",
+        "exportDisabled": true,
+        "blocked": "PNG 出力ができない: 描画できる Layer がありません",
+        "issues": [
+          "dev.body_adult_standard: Layer が未解決: base, arm_l, hand_l, arm_r（描画されない）",
+          "dev.face_head_01: Layer が未解決: head（描画されない）",
+          "dev.face_ears_01: Layer が未解決: ears（描画されない）",
+          "dev.face_nose_01: Layer が未解決: nose（描画されない）",
+          "dev.eyes_01: Layer が未解決: eyes（描画されない）",
+          "dev.eyebrows_01: Layer が未解決: eyebrows（描画されない）",
+          "dev.mouth_01: Layer が未解決: mouth（描画されない）",
+          "dev.hair_back_01: Layer が未解決: back（描画されない）",
+          "dev.socks_01: Layer が未解決: socks（描画されない）",
+          "dev.shoes_01: Layer が未解決: shoes（描画されない）",
+          "dev.pants_01: Layer が未解決: pants（描画されない）",
+          "dev.shirt_02: Layer が未解決: body, sleeve_l, sleeve_r（描画されない）",
+          "dev.hair_front_02: Layer が未解決: front（描画されない）",
+          "dev.glasses_01: Layer が未解決: glasses（描画されない）"
         ],
         "equipped": [
           "dev.body_adult_standard",
@@ -228,7 +273,7 @@
         "validity": "UNRESOLVED",
         "notice": "invalid.json は読み込めない（現在のキャラクターはそのまま）: canvas: canvas は [1600, 2400] でなければならない: [2000, 3000]",
         "exportDisabled": true,
-        "blocked": "描画と PNG 出力ができない: この実装の Pose Definition にないポーズ: arm.right = crossed",
+        "blocked": "PNG 出力ができない: この実装の Pose Definition にないポーズ: arm.right = crossed",
         "issues": [
           "未解決: この実装の Pose Definition にないポーズ: arm.right = crossed"
         ],

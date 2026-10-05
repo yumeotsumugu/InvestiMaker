@@ -105,7 +105,7 @@ export function loadCharacterText(session: Session, text: string): LoadOutcome {
 
 export interface Inspection {
   evaluation: Evaluation;
-  /** 描画できないとき（実装が知らないポーズを含むとき）は null。 */
+  /** 描画順が決まらないとき（実装が知らないポーズを含むとき）は null。 */
   plan: RenderPlan | null;
   colors: Record<string, Record<string, string>>;
   matrices: Record<string, Matrix>;
@@ -127,6 +127,8 @@ export function inspect(character: Character, catalog: Catalog): Inspection {
     return { evaluation, plan: null, colors: {}, matrices: {}, export: { allowed: false, reason, warnings: [] } };
   }
   const plan = planCharacter(character, catalog.library);
+  // 書き出しの事前条件：描画される Layer が 1 枚以上あること（Character の評価とは別の条件）。
+  const drawn = plan.entries.filter((e) => e.status === 'draw').length;
   const warnings = [
     ...evaluation.issues.filter((i) => i.effect === 'unresolved' && i.code !== 'part-missing').map((i) => i.message),
     ...plan.parts.filter((p) => p.status !== 'ok').map((p) => `${p.partId}: ${p.reasons.join(' / ')}${p.drawn ? '（描画はする）' : '（描画されない）'}`),
@@ -136,6 +138,6 @@ export function inspect(character: Character, catalog: Catalog): Inspection {
     plan,
     colors: instanceColors(character, catalog.library),
     matrices: instanceMatrices(character, catalog.library),
-    export: { allowed: true, warnings },
+    export: drawn > 0 ? { allowed: true, warnings } : { allowed: false, reason: '描画できる Layer がありません', warnings },
   };
 }

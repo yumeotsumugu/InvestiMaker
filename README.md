@@ -15,11 +15,11 @@ TRPG 用の 2D キャラクター立ち絵・差分・アイコンを、既製�
 
 **Phase 1-A（完了）** では、キャラクターの保存形式を設計しました。まだキャラクタークリエイターの UI はありません。
 
-- [Character Schema v1 草案](docs/specifications/InvestiMaker_Character_Schema_v1.md) と `schemas/character.schema.json`
+- [Character Schema v1（RC1）](docs/specifications/InvestiMaker_Character_Schema_v1.md) と `schemas/character.schema.json`
 - 保存・読込・検証・編集の実装（`src/core/character/`）
 - [Phase 1-A 検証レポート](docs/reports/Phase1A_Verification_Report.md)
 
-**Phase 1-B（検証済み・判定待ち）** では、Character を正本とする最小 UI を作りました。新規作成 → Part 選択 → 色変更 → Transform → JSON 保存 → JSON 読込 → PNG 出力 を一通り行えます。デザインや使い勝手は最小限です。
+**Phase 1-B（完了）** では、Character を正本とする最小 UI を作りました。新規作成 → Part 選択 → 色変更 → Transform → JSON 保存 → JSON 読込 → PNG 出力 を一通り行えます。デザインや使い勝手は最小限です。
 
 - 本体の最小 UI（`src/app/`）
 - [Phase 1-B 検証レポート](docs/reports/Phase1B_Verification_Report.md)

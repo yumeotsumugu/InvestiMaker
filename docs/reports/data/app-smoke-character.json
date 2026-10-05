@@ -1,14 +1,14 @@
 {
   "format": "INVESTIMAKER_CHARACTER",
   "formatVersion": 1,
-  "id": "7583ce7d-9565-4838-a120-b5281114fb02",
+  "id": "f980904e-5fdf-4679-879d-594d1bc11770",
   "name": "夢生ツムグ",
   "canvas": [
     1600,
     2400
   ],
   "appearance": {
-    "body": "cf4968f5-4ae0-4bf3-a276-420f0012c2d9",
+    "body": "bec686e8-09ff-4825-8389-f675613eb9fb",
     "fit": {
       "chest": "large"
     }
@@ -18,37 +18,37 @@
   },
   "equipment": [
     {
-      "instanceId": "cf4968f5-4ae0-4bf3-a276-420f0012c2d9",
+      "instanceId": "bec686e8-09ff-4825-8389-f675613eb9fb",
       "partId": "dev.body_adult_standard",
       "equipped": true,
       "colors": {}
     },
     {
-      "instanceId": "a8803f4f-8be7-48ad-bb85-34aba4257868",
+      "instanceId": "73be42cc-fdad-42fe-9046-4695cef8e855",
       "partId": "dev.face_head_01",
       "equipped": true,
       "colors": {}
     },
     {
-      "instanceId": "ed14433c-7458-4cdb-93ac-2e00dfe78d79",
+      "instanceId": "e30062f1-73bf-4bda-bb51-5a5c8c3428e2",
       "partId": "dev.face_ears_01",
       "equipped": true,
       "colors": {}
     },
     {
-      "instanceId": "f7861020-8032-4dbd-b773-c3aaee19a626",
+      "instanceId": "d9189a76-aa33-485e-9067-a7abb3820f81",
       "partId": "dev.face_nose_01",
       "equipped": true,
       "colors": {}
     },
     {
-      "instanceId": "e17d48ff-b20e-4eb4-8227-de34f645b43c",
+      "instanceId": "14f67423-28b4-40bf-8e07-321ef02a73de",
       "partId": "dev.eyes_01",
       "equipped": true,
       "colors": {}
     },
     {
-      "instanceId": "7171114b-2349-4111-b237-e72b3a8172be",
+      "instanceId": "f4d08c07-4d4a-4765-bc90-de8f8d244a5b",
       "partId": "dev.eyebrows_01",
       "equipped": true,
       "colors": {
@@ -59,49 +59,49 @@
       }
     },
     {
-      "instanceId": "523377b4-7c77-4bb0-934e-74b96230864a",
+      "instanceId": "d9c4590b-56a0-4121-954d-d3eb3a777e67",
       "partId": "dev.mouth_01",
       "equipped": true,
       "colors": {}
     },
     {
-      "instanceId": "d018c5b0-a2a6-49b4-b1c6-776691ec07ad",
+      "instanceId": "e5cae8a9-69e4-4d33-8981-9b12e131bc16",
       "partId": "dev.hair_back_01",
       "equipped": true,
       "colors": {}
     },
     {
-      "instanceId": "622b3bdd-a642-4afe-8a93-14e6ea8bc072",
+      "instanceId": "cca79781-3978-4356-a5b6-47641c29d3d9",
       "partId": "dev.hair_front_01",
       "equipped": false,
       "colors": {}
     },
     {
-      "instanceId": "241e9976-cb07-4158-b87e-16bcee9c0814",
+      "instanceId": "37e26377-519a-4c62-b562-294337c80588",
       "partId": "dev.socks_01",
       "equipped": true,
       "colors": {}
     },
     {
-      "instanceId": "2a9cd739-a2f7-47d8-8472-23f58769b085",
+      "instanceId": "0b9ec7f5-2387-4f0d-aef5-e52209b81221",
       "partId": "dev.shoes_01",
       "equipped": true,
       "colors": {}
     },
     {
-      "instanceId": "6d72bb5f-89ab-4647-98ba-fb187b2417df",
+      "instanceId": "365a946b-f525-4952-b390-3259c82af407",
       "partId": "dev.pants_01",
       "equipped": true,
       "colors": {}
     },
     {
-      "instanceId": "17a6b077-264e-4756-a01b-1ca61ec2de21",
+      "instanceId": "d1d637ea-1702-413d-9427-8ed5a68f9a80",
       "partId": "dev.shirt_01",
       "equipped": false,
       "colors": {}
     },
     {
-      "instanceId": "8cc1494b-6332-48b6-acf9-872cc6fd03ba",
+      "instanceId": "0152fa21-1c08-4df5-8c9f-c5dea59763ca",
       "partId": "dev.shirt_02",
       "equipped": true,
       "colors": {
@@ -111,13 +111,13 @@
       }
     },
     {
-      "instanceId": "eb7d6359-a46e-49fe-aa06-fbb7713fe686",
+      "instanceId": "15d9685c-f7e3-4409-91cc-890b7136d179",
       "partId": "dev.hair_front_02",
       "equipped": true,
       "colors": {}
     },
     {
-      "instanceId": "fc5c6b00-0779-4711-a9b4-629c6559760f",
+      "instanceId": "6f0a489b-0ccc-4de3-be74-b0765532448c",
       "partId": "dev.glasses_01",
       "equipped": true,
       "colors": {},

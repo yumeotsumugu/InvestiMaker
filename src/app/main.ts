@@ -226,7 +226,7 @@ async function main() {
     fill(statusPanel, 
       tag(h('span', { className: `validity ${evaluation.validity}` }, evaluation.validity), { role: 'validity' }),
       notice && tag(h('p', { className: notice.kind }, notice.text), { role: 'notice' }),
-      !view.export.allowed && tag(h('p', { className: 'error' }, `描画と PNG 出力ができない: ${view.export.reason}`), { role: 'export-blocked' }),
+      !view.export.allowed && tag(h('p', { className: 'error' }, `PNG 出力ができない: ${view.export.reason}`), { role: 'export-blocked' }),
       h(
         'ul',
         { className: 'issues' },

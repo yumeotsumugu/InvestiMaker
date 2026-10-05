@@ -203,6 +203,16 @@ try {
   check(s.opaque === 0, '描画順が決まらないので、何も描かない');
   check(JSON.parse(s.character).state.pose['arm.right'] === 'crossed', '未知のポーズの値は保持する');
 
+  // 7b) 描画される Layer が 0 件：Character は VALID のまま、PNG 出力だけができない
+  await loadFile('saved-again.json', saved);
+  await input('[data-state="view"]', 'side_left');
+  s = await record('描画される Layer が 0 件');
+  check(s.validity === 'VALID' && s.drawn === 0 && s.exportDisabled, '素材のない VIEW では PNG 出力ができない');
+  check(s.blocked !== null && s.blocked.includes('描画できる Layer がありません'), '出力できない理由が表示される');
+  await input('[data-state="view"]', 'front');
+  check(!(await snapshot()).exportDisabled, 'VIEW を戻すと出力できる');
+  await loadFile('unknown-pose-again.json', JSON.stringify(unknownPose));
+
   // 8) INVALID：現在のキャラクターを置き換えない
   const beforeInvalid = (await snapshot()).character;
   const invalid = JSON.parse(saved);

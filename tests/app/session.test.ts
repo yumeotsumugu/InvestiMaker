@@ -15,6 +15,7 @@ import {
   setSharedColor,
   setTransform,
   setTransformOverride,
+  setView,
   stableStringify,
   stringifyCharacter,
   unlinkColor,
@@ -275,6 +276,25 @@ describe('不足 Part と UNRESOLVED', () => {
     expect(view.export.reason).toContain('crossed');
     const again = loadCharacterText(fresh(), stringifyCharacter(c));
     expect(again.loaded && again.session.character.state.pose['arm.right']).toBe('crossed');
+  });
+});
+
+describe('書き出しの事前条件', () => {
+  it('描画される Layer が 0 件なら PNG を出力できない。Character の評価は変わらない', () => {
+    // 素材のない VIEW：全 Part が非対応になり、何も描かれない
+    const side = setView(fresh().character, 'side_left');
+    const view = inspect(side, catalog);
+    expect(view.evaluation.validity).toBe('VALID');
+    expect(view.plan!.parts.every((p) => p.status === 'unsupported')).toBe(true);
+    expect(view.export).toMatchObject({ allowed: false, reason: '描画できる Layer がありません' });
+    // 1 枚でも描画されるなら出力できる
+    expect(inspect(setView(side, 'front'), catalog).export.allowed).toBe(true);
+  });
+
+  it('描画できる Part が 1 つもない環境（素材が読み込まれていない）でも同じ', () => {
+    const view = inspect(fresh().character, { ...catalog, library: new Map() });
+    expect(view.evaluation.validity).toBe('UNRESOLVED');
+    expect(view.export).toMatchObject({ allowed: false, reason: '描画できる Layer がありません' });
   });
 });
 

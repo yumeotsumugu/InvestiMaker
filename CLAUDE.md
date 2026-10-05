@@ -4,7 +4,7 @@ TRPG 用 2D キャラクター立ち絵を既製パーツの組み合わせで�
 
 ## 唯一の正
 
-素材規格は `docs/specifications/InvestiMaker_Asset_Specification_v1.md`（仕様書）が**唯一の正**。キャラクターの保存形式は同じフォルダの `InvestiMaker_Character_Schema_v1.md`（草案）が定める。`docs/design/` の基本設計書は背景理解用で、食い違う箇所は仕様書が優先する。
+素材規格は `docs/specifications/InvestiMaker_Asset_Specification_v1.md`（仕様書）が**唯一の正**。キャラクターの保存形式は同じフォルダの `InvestiMaker_Character_Schema_v1.md`（RC1）が定める。`docs/design/` の基本設計書は背景理解用で、食い違う箇所は仕様書が優先する。
 
 ## 守ること
 
