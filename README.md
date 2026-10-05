@@ -32,6 +32,14 @@ TRPG 用の 2D キャラクター立ち絵・差分・アイコンを、既製�
 
 ## 起動方法
 
+### すぐに触る（インストール不要）
+
+リポジトリ直下の **`index.html` をダブルクリックで開く**と、Creator UI が使えます（Chrome か Edge）。Node.js も開発サーバーも要りません。
+
+これは、Creator UI と仮素材を 1 つのファイルにまとめた単体版（`standalone/index.html`）です。`index.html` をファイルとして開くと、自動でそこへ移ります。`src/app/` や素材を変えたときは、`npm run build:standalone` で作り直します。
+
+### 開発する
+
 Node.js 24 以降が必要です（`tools/` の TypeScript を Node の型除去で直接実行するため）。
 
 ```sh

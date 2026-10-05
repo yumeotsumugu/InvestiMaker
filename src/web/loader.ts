@@ -2,6 +2,7 @@
 
 import type { Body, PartManifest, ValidationResult } from '../core/index.ts';
 import { validateFitAgainstBodies, validateManifest } from '../core/index.ts';
+import { assetUrl, embeddedJson } from './embedded.ts';
 
 export interface SetIndex {
   canvas: [number, number];
@@ -29,6 +30,9 @@ export interface AssetSet {
 }
 
 async function fetchJson(url: string): Promise<unknown> {
+  // 単体版では、HTML に埋め込まれた内容を使う。
+  const embedded = embeddedJson(url);
+  if (embedded !== undefined) return embedded;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: ${res.status}`);
   return res.json();
@@ -79,7 +83,7 @@ export async function loadSet(name: string): Promise<AssetSet> {
 
 /** PNG を復号する。色空間変換とアルファ乗算はできる限り止める。 */
 export async function loadBitmap(url: string): Promise<ImageBitmap> {
-  const res = await fetch(url);
+  const res = await fetch(assetUrl(url));
   if (!res.ok) throw new Error(`${url}: ${res.status}`);
   return createImageBitmap(await res.blob(), { premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
 }

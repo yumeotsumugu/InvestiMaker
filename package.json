@@ -17,7 +17,8 @@
     "bench:browser": "node tools/browser-bench.ts",
     "wireframes": "node tools/render-wireframes.ts",
     "smoke:minimal": "node tools/browser-smoke.ts",
-    "smoke:creator": "node tools/creator-smoke.ts"
+    "smoke:creator": "node tools/creator-smoke.ts",
+    "build:standalone": "node tools/build-standalone.ts --check"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",

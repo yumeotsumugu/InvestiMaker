@@ -28,6 +28,7 @@ import {
   unlinkColor,
 } from '../core/index.ts';
 import { Composer } from '../web/composer.ts';
+import { assetUrl } from '../web/embedded.ts';
 import type { AssetSet } from '../web/loader.ts';
 import { loadSet } from '../web/loader.ts';
 import type { MajorView } from './catalog.ts';
@@ -117,7 +118,7 @@ async function main() {
   }
   const majors: MajorView[] = visibleMajors(set.library);
   const firstBody = bodies(set)[0]?.id ?? set.body;
-  const thumbUrl = (partId: string) => `${set.baseUrl}${partId}/preview.png`;
+  const thumbUrl = (partId: string) => assetUrl(`${set.baseUrl}${partId}/preview.png`);
 
   // 【Phase 1-C-3 の検証用】通知の置き場所を URL で切り替える。置き場所が決まったら、採用した案だけを残して消す。
   //   ?notices=under（現状：プレビューの下）／ side（右ペインの上）／ overlay（プレビューに重ねる）／ chip（「注意 n 件」から開く）

@@ -30,6 +30,7 @@ TRPG 用 2D キャラクター立ち絵を既製パーツの組み合わせで�
 ## コマンド
 
 - `npm run dev` 検証ページ / `npm test` テスト / `npm run typecheck` 型検査
+- `npm run build:standalone` 単体版（`standalone/index.html`。`index.html` をファイルとして開くとここへ移る）を作り直す。**`src/app/`・`src/web/`・`src/core/`・素材を変えたら、コミットの前に作り直す。**
 - `npm run gen:assets` 仮素材の再生成（`-- --width 1200 --height 1800 --out <dir>` でサイズ変更）
 
 ## コードの約束

@@ -6,6 +6,11 @@
     <title>InvestiMaker</title>
   </head>
   <body>
+    <script>
+      // このファイルを直接開いたとき（ダブルクリック、file://）は、1 ファイルにまとめた単体版へ移る。
+      // ブラウザは、直接開いたファイルからのモジュールの読み込みや素材の取得を制限するため。
+      if (location.protocol === 'file:') location.replace('standalone/index.html' + location.search);
+    </script>
     <div id="app"></div>
     <script type="module" src="/src/app/main.ts"></script>
   </body>
