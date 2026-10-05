@@ -43,12 +43,12 @@ Package (.impart)
 
 | 軸 | 選択方式 | category（v1） |
 | --- | --- | --- |
-| APPEARANCE | 固定（OUTFIT から上書き可） | `body` / `face.head` / `face.ears` / `face.eyes` / `face.eyebrows` / `face.nose` / `face.mouth` / `hair.front` / `hair.side` / `hair.back` / `hair.extra`* / `detail`* |
-| OUTFIT | スロット式 | `outfit.inner` / `outfit.top` / `outfit.vest` / `outfit.outer` / `outfit.bottom` / `outfit.socks` / `outfit.shoes` / `outfit.glove` / `outfit.neck` / `outfit.eyewear` / `outfit.head` / `outfit.ear`* / `outfit.accessory`* |
+| APPEARANCE | 固定（OUTFIT から上書き可） | `body` / `face.head` / `face.ears` / `face.eyes` / `face.eyebrows` / `face.nose` / `face.mouth` / `hair.front` / `hair.side` / `hair.back` / `hair.extra`\* / `detail`\* |
+| OUTFIT | スロット式 | `outfit.inner` / `outfit.top` / `outfit.vest` / `outfit.outer` / `outfit.bottom` / `outfit.socks` / `outfit.shoes` / `outfit.glove` / `outfit.neck` / `outfit.eyewear` / `outfit.head` / `outfit.ear`\* / `outfit.accessory`\* |
 | EXPRESSION | 単一選択 | Part を持たない（§6.3） |
 | POSE | 単一選択 | Part を持たない（§6.2） |
 | VIEW | 単一選択 | Part を持たない |
-| ITEM | 複数選択 | `item`* |
+| ITEM | 複数選択 | `item`\* |
 | OVERLAY | 複数選択 | `overlay`*（赤面・汗・涙・血・汚れ・負傷等） |
 
 \* は同一 category に複数の Part を同時装備できる。それ以外は 1 category につき 1 Part。
