@@ -1,22 +1,23 @@
-// 単体版を作る：standalone/index.html（Creator UI と仮素材を 1 つの HTML にまとめたもの）。
+// 配布用の index.html を作る（Creator UI と仮素材を 1 つの HTML にまとめたもの）。
 //
 //   node tools/build-standalone.ts [--check]
 //
-// ファイルを直接開いても（ダブルクリック、file://）動く。開発サーバーも Node も要らない。
-// リポジトリ直下の index.html をファイルとして開くと、この単体版へ移る。
-// --check を付けると、ヘッドレスの Chrome / Edge で index.html をファイルとして開き、動くことを確かめる。
+// この 1 ファイルだけで動く。ダブルクリックで開けばよく、インストールも開発サーバーも要らない。
+// ほかのファイルを参照しないので、index.html だけを人に渡しても使える。
+// --check を付けると、index.html だけを別のフォルダへ写し、ヘッドレスの Chrome / Edge でファイルとして開いて確かめる。
 //
 // src/app/ や素材を変えたら、作り直すこと（内容は自動では更新されない）。
 
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { copyFileSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { build } from 'vite';
 import { Page, launchBrowser } from './cdp.ts';
 
 const ASSET_ROOT = 'assets';
 const SET = 'development';
-const OUT = 'standalone/index.html';
+const OUT = 'index.html';
 
 // ---- 素材を集める（JSON はそのまま、画像は data URL にする）
 const embedded: Record<string, unknown> = {};
@@ -54,7 +55,8 @@ const html = `<!doctype html>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>InvestiMaker</title>
-    <!-- tools/build-standalone.ts が生成したファイル。手で編集しない。 -->
+    <!-- tools/build-standalone.ts が生成したファイル。手で編集しない（npm run build:standalone で作り直す）。
+         この 1 ファイルだけで動く。開発用の入口は dev.html。 -->
     <style>${String(style.source)}</style>
   </head>
   <body>
@@ -64,7 +66,6 @@ const html = `<!doctype html>
   </body>
 </html>
 `;
-mkdirSync('standalone', { recursive: true });
 writeFileSync(OUT, html);
 console.log(`${OUT}: ${(html.length / 1024).toFixed(0)} KB（素材 ${Object.keys(embedded).length} ファイルを埋め込み）`);
 
@@ -72,8 +73,10 @@ console.log(`${OUT}: ${(html.length / 1024).toFixed(0)} KB（素材 ${Object.key
 if (process.argv.includes('--check')) {
   const browser = await launchBrowser();
   try {
-    // リポジトリ直下の index.html をファイルとして開く（単体版へ移るはず）。
-    const page = await Page.open(browser.cdp, `${pathToFileURL(resolve('index.html')).href}?notices=side`, [1280, 800]);
+    // index.html だけを別のフォルダへ写して開く（ほかのファイルに頼っていないことを確かめる）。
+    const alone = mkdtempSync(join(tmpdir(), 'investimaker-alone-'));
+    copyFileSync(OUT, join(alone, 'index.html'));
+    const page = await Page.open(browser.cdp, `${pathToFileURL(resolve(alone, 'index.html')).href}?notices=side`, [1280, 800]);
     // 単体版へ移る間は評価が中断されるので、移り終わるまで待ち直す。
     for (let attempt = 0; ; attempt++) {
       try {
@@ -105,11 +108,12 @@ if (process.argv.includes('--check')) {
       png: (window.__creator.hooks.lastPng || '').length,
       notices: document.querySelector('#app').dataset.notices,
     })`)) as { url: string; drawn: number; equipped: number; thumbs: number; png: number; notices: string };
-    if (!state.url.includes('/standalone/index.html') || state.drawn === 0 || state.thumbs > 0 || state.png < 1000 || state.notices !== 'side') {
+    if (state.drawn === 0 || state.thumbs > 0 || state.png < 1000 || state.notices !== 'side') {
       throw new Error(`単体版が動かない: ${JSON.stringify(state)}`);
     }
-    console.log(`確認：index.html をファイルとして開くと単体版へ移り、キャラクターの表示（${state.drawn} 枚）と PNG の書き出しができる`);
+    console.log(`確認：index.html だけを別のフォルダに置いて開いても、キャラクターの表示（${state.drawn} 枚）と PNG の書き出しができる`);
     await page.close();
+    rmSync(alone, { recursive: true, force: true });
   } finally {
     await browser.close();
   }

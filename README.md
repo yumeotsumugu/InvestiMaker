@@ -32,11 +32,13 @@ TRPG 用の 2D キャラクター立ち絵・差分・アイコンを、既製�
 
 ## 起動方法
 
-### すぐに触る（インストール不要）
+### 使う（インストール不要）
 
-リポジトリ直下の **`index.html` をダブルクリックで開く**と、Creator UI が使えます（Chrome か Edge）。Node.js も開発サーバーも要りません。
+**`index.html` を開くだけです。** ダブルクリックで、Chrome か Edge で開いてください。インストールも、コマンドの実行も要りません。
 
-これは、Creator UI と仮素材を 1 つのファイルにまとめた単体版（`standalone/index.html`）です。`index.html` をファイルとして開くと、自動でそこへ移ります。`src/app/` や素材を変えたときは、`npm run build:standalone` で作り直します。
+`index.html` は、アプリと素材をすべて 1 つにまとめたファイルです。ほかのファイルを必要としないので、**`index.html` だけを人に渡しても、そのまま使えます。** 通信もしません。
+
+（開発する人へ：`index.html` は生成物です。`src/app/` や素材を変えたら、`npm run build:standalone` で作り直します。）
 
 ### 開発する
 
@@ -44,7 +46,7 @@ Node.js 24 以降が必要です（`tools/` の TypeScript を Node の型除去
 
 ```sh
 npm install
-npm run dev        # http://127.0.0.1:5173/ が Creator UI。/minimal.html は Phase 1-B の最小 UI、/lab.html は検証ページ
+npm run dev        # http://127.0.0.1:5173/dev.html が開発中の Creator UI。/minimal.html は Phase 1-B の最小 UI、/lab.html は検証ページ
 npm test           # 単体テストと規格適合性テスト（§6.6 の T1〜T12、§5.3 の色計算の参照ベクタを含む）
 npm run typecheck  # 型検査
 ```

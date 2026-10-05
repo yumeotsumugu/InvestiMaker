@@ -1,4 +1,4 @@
-// Creator UI（index.html）を、ヘッドレスの Chrome / Edge で実際に操作して確かめる。
+// Creator UI（開発用の入口 dev.html）を、ヘッドレスの Chrome / Edge で実際に操作して確かめる。
 //
 //   node tools/creator-smoke.ts [--write]
 //
@@ -38,7 +38,7 @@ const temp = mkdtempSync(join(tmpdir(), 'investimaker-creator-'));
 
 try {
   console.log(`${browser.product}（ヘッドレス） / ${base}`);
-  const page = await Page.open(browser.cdp, base, [1280, 800]);
+  const page = await Page.open(browser.cdp, `${base}dev.html`, [1280, 800]);
   await page.waitFor('__creator');
 
   // ---- 画面の操作
@@ -358,7 +358,7 @@ try {
 
   // 15) 【検証用】通知の置き場所の 4 方式。現状以外は、通知が出ても消えてもプレビューの大きさが変わらない
   for (const mode of ['under', 'side', 'overlay', 'chip'] as const) {
-    const p = await Page.open(browser.cdp, `${base}?notices=${mode}`, [1280, 800]);
+    const p = await Page.open(browser.cdp, `${base}dev.html?notices=${mode}`, [1280, 800]);
     await p.waitFor('__creator');
     const wait = async () => {
       await p.evaluate<void>('window.__creator.idle()');
