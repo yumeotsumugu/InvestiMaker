@@ -1,0 +1,118 @@
+{
+  "format": "INVESTIMAKER_CHARACTER",
+  "formatVersion": 1,
+  "id": "00000000-0000-4000-8000-000000000002",
+  "name": "夢生ツムグ",
+  "appearance": {
+    "body": "00000000-0000-4000-8000-000000000020",
+    "fit": {
+      "chest": "medium"
+    }
+  },
+  "sharedColors": {
+    "skin.base": "#F2D3BD",
+    "hair.base": "#202028",
+    "eyes.left": "#405070",
+    "eyes.right": "#405070"
+  },
+  "equipment": [
+    {
+      "instanceId": "00000000-0000-4000-8000-000000000020",
+      "partId": "im.body_01",
+      "equipped": true,
+      "colors": {}
+    },
+    {
+      "instanceId": "00000000-0000-4000-8000-000000000021",
+      "partId": "author.special_coat",
+      "equipped": true,
+      "colors": {
+        "main": {
+          "color": "#7A1F2B"
+        },
+        "lapel": {
+          "color": "#101014"
+        },
+        "lining": {
+          "linked": false,
+          "color": "#C8A85A"
+        }
+      },
+      "transform": {
+        "x": 4,
+        "y": -12,
+        "scaleX": 1.02,
+        "scaleY": 1.02,
+        "rotation": 1.5,
+        "pivot": [
+          800,
+          900
+        ]
+      },
+      "overrides": {
+        "note": "v1 は解釈しない"
+      }
+    },
+    {
+      "instanceId": "00000000-0000-4000-8000-000000000022",
+      "partId": "im.hair_01",
+      "equipped": true,
+      "colors": {
+        "base": {
+          "linked": false,
+          "color": "#5A3E2B"
+        }
+      }
+    }
+  ],
+  "state": {
+    "view": "front",
+    "pose": {
+      "torso": "stand",
+      "arm.left": "down",
+      "arm.right": "down"
+    },
+    "expression": {
+      "eyes": "smile",
+      "eyebrows": "relaxed",
+      "mouth": "smile_open"
+    }
+  },
+  "requirements": {
+    "parts": [
+      "author.special_coat",
+      "im.body_01",
+      "im.hair_01"
+    ],
+    "view": [
+      "front"
+    ],
+    "pose": {
+      "arm.left": [
+        "down"
+      ],
+      "arm.right": [
+        "down"
+      ],
+      "torso": [
+        "stand"
+      ]
+    },
+    "fit": {
+      "chest": [
+        "medium"
+      ]
+    },
+    "state": {
+      "eyebrows": [
+        "relaxed"
+      ],
+      "eyes": [
+        "smile"
+      ],
+      "mouth": [
+        "smile_open"
+      ]
+    }
+  }
+}

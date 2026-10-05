@@ -79,7 +79,7 @@ export class Composer {
   }
 
   /**
-   * @param colors Part ID → スロット ID → `#RRGGBB`
+   * @param colors 装備の識別子（`PlanEntry.instanceId`）→ スロット ID → `#RRGGBB`
    * @param modeOverride 比較用。`fixed` 以外のスロットの合成モードを差し替える
    */
   async render(
@@ -120,7 +120,7 @@ export class Composer {
       const part = this.set.library.get(item.entry.partId)!;
       const inputs = item.masks.map((mask, i) => ({
         data: item.maskPixels[i]!.data,
-        channels: maskChannelColors(part, mask, colors[part.id] ?? {}, modeOverride),
+        channels: maskChannelColors(part, mask, colors[item.entry.instanceId] ?? {}, modeOverride),
       }));
       const cacheId = this.url(part.id, item.entry.asset!.file);
       const key = JSON.stringify(inputs.map((m) => m.channels));

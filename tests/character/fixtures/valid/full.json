@@ -1,0 +1,97 @@
+{
+  "format": "INVESTIMAKER_CHARACTER",
+  "formatVersion": 1,
+  "id": "00000000-0000-4000-8000-000000000003",
+  "name": "全項目の例",
+  "appearance": {
+    "body": "00000000-0000-4000-8000-000000000030",
+    "fit": {
+      "chest": "large"
+    },
+    "futureAppearanceField": {
+      "age": "unknown"
+    }
+  },
+  "sharedColors": {
+    "skin.base": "#c68642",
+    "hair.base": "#E8D080",
+    "future.key": "#123456"
+  },
+  "equipment": [
+    {
+      "instanceId": "00000000-0000-4000-8000-000000000030",
+      "partId": "im.body_01",
+      "equipped": true,
+      "colors": {
+        "skin": {
+          "linked": true
+        }
+      }
+    },
+    {
+      "instanceId": "00000000-0000-4000-8000-000000000031",
+      "partId": "im.hair_01",
+      "equipped": true
+    },
+    {
+      "instanceId": "00000000-0000-4000-8000-000000000032",
+      "partId": "im.hat_01",
+      "equipped": false,
+      "colors": {
+        "main": {
+          "color": "#ff0040"
+        }
+      },
+      "futureInstanceField": 7
+    },
+    {
+      "instanceId": "00000000-0000-4000-8000-000000000033",
+      "partId": "im.overlay_01",
+      "equipped": true,
+      "colors": {
+        "color": {
+          "color": "#F08A8A"
+        }
+      }
+    },
+    {
+      "instanceId": "00000000-0000-4000-8000-000000000034",
+      "partId": "im.overlay_01",
+      "equipped": true,
+      "colors": {
+        "color": {
+          "color": "#8AF0C0",
+          "futureColorField": "x"
+        }
+      },
+      "transform": {
+        "x": 30
+      }
+    }
+  ],
+  "state": {
+    "view": "front",
+    "pose": {
+      "torso": "stand",
+      "arm.left": "down",
+      "arm.right": "pocket"
+    },
+    "expression": {
+      "eyes": "wide",
+      "eyebrows": "sad",
+      "mouth": "closed"
+    },
+    "futureStateField": [
+      1,
+      2,
+      3
+    ]
+  },
+  "composition": {
+    "crop": "bust",
+    "zoom": 1.5
+  },
+  "futureTopLevelField": {
+    "nested": true
+  }
+}

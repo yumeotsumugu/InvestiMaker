@@ -257,8 +257,8 @@ async function main() {
           checkbox(`共有 ${slot.link}`, state.overrides[partId]?.[slot.id]?.linked !== false, (on) => {
             const override = overrideOf();
             override.linked = on;
-            // 解除した瞬間は見た目を変えない（そのときの共有色を個別色の初期値にする）。
-            if (!on) override.color ??= state.shared[slot.link!] ?? slot.default;
+            // 解除した瞬間は見た目を変えない（そのときの共有色を個別色にコピーする）。
+            if (!on) override.color = state.shared[slot.link!] ?? slot.default;
             syncLinkedInputs();
             void update('color');
           });
