@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>InvestiMaker Phase 1-C-1 ワイヤーフレーム</title>
+<!--
+  Phase 1-C-1 のワイヤーフレーム。レイアウトと操作の位置を比べるためのもので、色・書体・余白は仮。
+  サムネイルとプレビューには仮素材（assets/development）の画像を使っている。外部の資源は読み込まない。
+  画像化：npm run wireframes（docs/design/wireframes/images/ に書き出す）
+-->
+<style>
+  :root { --line: #9aa3b2; --soft: #d5dae3; --ink: #2b3342; --muted: #6b7486; --fill: #eef1f5; --accent: #3b6fd4; --warn: #b7791f; --bad: #b3261e; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px; background: #cfd4dc; color: var(--ink); font: 13px/1.5 system-ui, 'Segoe UI', 'Yu Gothic UI', 'Hiragino Sans', sans-serif; }
+  h2 { margin: 32px 0 6px; font-size: 15px; }
+  p.caption { margin: 0 0 10px; color: #3d4556; max-width: 1280px; }
+  .frame { width: 1280px; height: 800px; background: #fff; border: 2px solid var(--ink); display: grid; grid-template-rows: 48px 1fr 44px; overflow: hidden; }
+  /* ヘッダー */
+  .hd { display: flex; align-items: center; gap: 12px; padding: 0 14px; border-bottom: 2px solid var(--ink); }
+  .brand { font-weight: 700; font-size: 16px; margin-right: 12px; }
+  .name { flex: 0 0 300px; border: 1px solid var(--line); border-radius: 4px; padding: 5px 8px; }
+  .sp { flex: 1; }
+  .btn { border: 1px solid var(--ink); border-radius: 4px; padding: 4px 12px; background: #fff; white-space: nowrap; }
+  .btn.primary { background: var(--ink); color: #fff; }
+  .btn.off { border-color: var(--soft); color: var(--line); }
+  .chip { border-radius: 10px; padding: 1px 10px; font-size: 12px; border: 1px solid var(--warn); color: var(--warn); background: #fff8e8; }
+  .chip.bad { border-color: var(--bad); color: var(--bad); background: #fdecea; }
+  /* 下段のステップ */
+  .steps { display: grid; grid-template-columns: repeat(5, 1fr); border-top: 2px solid var(--ink); }
+  .step { display: flex; align-items: center; justify-content: center; gap: 6px; border-right: 1px solid var(--soft); color: var(--line); letter-spacing: .06em; }
+  .step.on { color: #fff; background: var(--ink); font-weight: 700; }
+  .step.open { color: var(--ink); }
+  .step small { font-size: 10px; letter-spacing: 0; }
+  /* 本体 */
+  .body { display: grid; min-height: 0; }
+  .pane { border-right: 1px solid var(--line); padding: 10px; min-height: 0; overflow: hidden; }
+  .pane:last-child { border-right: 0; }
+  .pane h3 { margin: 0 0 8px; font-size: 13px; }
+  .pane h4 { margin: 12px 0 6px; font-size: 12px; color: var(--muted); font-weight: 600; }
+  .nav .item { padding: 7px 10px; border-radius: 4px; margin-bottom: 2px; }
+  .nav .item.on { background: var(--ink); color: #fff; font-weight: 700; }
+  .nav .sub { padding: 4px 10px 4px 24px; color: var(--muted); }
+  .nav .sub.on { color: var(--ink); font-weight: 700; border-left: 3px solid var(--ink); }
+  .rail { padding: 6px; }
+  .rail .item { text-align: center; padding: 9px 2px; }
+  .tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+  .tab { border: 1px solid var(--line); border-radius: 12px; padding: 1px 10px; color: var(--muted); }
+  .tab.on { border-color: var(--ink); background: var(--ink); color: #fff; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .grid.two { grid-template-columns: repeat(2, 1fr); }
+  .strip { display: flex; gap: 6px; }
+  .card { border: 1px solid var(--line); border-radius: 4px; padding: 3px; text-align: center; font-size: 11px; position: relative; background: #fff; }
+  .strip .card { flex: 0 0 84px; }
+  .card .th { aspect-ratio: 1; background: var(--fill); display: flex; align-items: center; justify-content: center; color: var(--line); overflow: hidden; }
+  .card img { width: 100%; height: 100%; object-fit: contain; }
+  .card.on { border: 3px solid var(--accent); padding: 1px; }
+  .card.on::after { content: '✓'; position: absolute; top: 2px; right: 4px; color: #fff; background: var(--accent); border-radius: 50%; width: 16px; height: 16px; line-height: 16px; font-size: 11px; }
+  .card.off { opacity: .45; }
+  .card .why { color: var(--bad); font-size: 10px; }
+  .preview { display: flex; flex-direction: column; align-items: center; background: var(--fill); padding: 10px; }
+  .canvas { flex: 1; min-height: 0; aspect-ratio: 2 / 3; border: 1px solid var(--line); background: repeating-conic-gradient(#dfe3ea 0% 25%, #fff 0% 50%) 0 0 / 18px 18px; display: flex; align-items: center; justify-content: center; }
+  .canvas { max-width: 100%; }
+  .canvas img { height: 100%; max-width: 100%; object-fit: contain; }
+  .canvas .empty { color: var(--muted); text-align: center; }
+  .under { margin-top: 6px; display: flex; gap: 8px; align-items: center; min-height: 24px; }
+  .row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+  .sw { width: 30px; height: 22px; border: 1px solid var(--ink); border-radius: 3px; flex: none; }
+  .field { border: 1px solid var(--line); border-radius: 3px; padding: 2px 8px; min-width: 70px; background: #fff; }
+  .field.wide { flex: 1; }
+  .box { border: 1px solid var(--soft); border-radius: 4px; padding: 8px; margin-top: 8px; }
+  .box.adv { border-style: dashed; border-color: var(--line); background: #fafbfc; }
+  .box.warn { border-color: var(--warn); background: #fff8e8; }
+  .box.bad { border-color: var(--bad); background: #fdecea; }
+  .muted { color: var(--muted); }
+  .small { font-size: 11px; }
+  .check { width: 14px; height: 14px; border: 1px solid var(--ink); border-radius: 2px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; flex: none; }
+  .note { position: absolute; background: #fff3b0; border: 1px solid #c9a200; border-radius: 3px; padding: 2px 6px; font-size: 11px; max-width: 220px; z-index: 2; }
+  .rel { position: relative; }
+  .center { display: flex; align-items: center; justify-content: center; }
+</style>
+</head>
+<body>
+<script>
+const ASSET = '../../../assets/development/';
+const SAMPLE = '../../reports/images/default_1600x2400.png';
+const thumb = (id) => `<img src="${ASSET}${id}/preview.png" alt="">`;
+
+const MAJOR = ['素体', '顔', '髪', '服', '装飾', '表情', 'ポーズ・向き', 'その他'];
+const SUBS = {
+  顔: ['輪郭', '目', '眉', '鼻', '口', '耳', 'ほくろ等'],
+  髪: ['前髪', '横髪', '後髪', '追加'],
+  服: ['トップス', 'ボトムス', 'アウター', 'インナー', 'ベスト', '靴下', '靴', '手袋', '首元'],
+  装飾: ['眼鏡', '帽子', '耳飾り', 'アクセサリー'],
+  その他: ['持ち物', '効果'],
+};
+
+function header({ chip = '', name = '夢生ツムグ' } = {}) {
+  return `<div class="hd"><span class="brand">InvestiMaker</span><span class="name">${name}</span>${chip}<span class="sp"></span>
+    <span class="btn">保存</span><span class="btn">読込</span><span class="btn">設定</span></div>`;
+}
+function steps(active) {
+  const all = [['CREATE', ''], ['CUSTOMIZE', ''], ['VARIANT', '準備中'], ['PORTRAIT', '準備中'], ['EXPORT', '']];
+  return `<div class="steps">${all.map(([s, soon]) => `<div class="step ${s === active ? 'on' : soon ? '' : 'open'}">${s}${soon ? `<small>${soon}</small>` : ''}</div>`).join('')}</div>`;
+}
+function card(label, { id, on, off, why, none } = {}) {
+  return `<div class="card ${on ? 'on' : ''} ${off ? 'off' : ''}"><div class="th">${id ? thumb(id) : none ? 'なし' : ''}</div>${label}${why ? `<div class="why">${why}</div>` : ''}</div>`;
+}
+const HAIR = [card('前髪 01', { id: 'dev.hair_front_01' }), card('前髪 02', { id: 'dev.hair_front_02', on: true }), card('前髪 03'), card('前髪 04'), card('前髪 05'), card('前髪 06'), card('前髪 07'), card('前髪 08'), card('前髪 09')];
+function preview({ empty, under = '' } = {}) {
+  return `<div class="pane preview"><div class="canvas">${empty ? `<div class="empty">${empty}</div>` : `<img src="${SAMPLE}" alt="">`}</div><div class="under">${under}</div></div>`;
+}
+function colorRow(label, color, extra = '') {
+  return `<div class="row"><span class="sw" style="background:${color}"></span><span>${label}</span>${extra}</div>`;
+}
+const linkOn = `<span class="sp"></span><span class="check"></span><span class="small muted">このパーツだけ色を変える</span>`;
+const linkOff = `<span class="sp"></span><span class="check">✓</span><span class="small">このパーツだけ色を変える</span>`;
+function editHair() {
+  return `<h3>前髪 02</h3>
+    <h4>色</h4>${colorRow('髪色（全体）', '#5A3E2B', linkOn)}
+    <div class="small muted">後髪・眉など、髪色を使うすべてのパーツが一緒に変わる</div>
+    <div class="box adv muted">▸ 詳細設定（Advanced）</div>`;
+}
+/** 大分類だけの細い列 */
+function rail(active) {
+  return `<div class="pane nav rail">${MAJOR.map((m) => `<div class="item ${m === active ? 'on' : ''}">${m}</div>`).join('')}</div>`;
+}
+/** 大分類と小分類を縦に並べた列 */
+function tree(active, sub) {
+  return `<div class="pane nav">${MAJOR.map((m) => `<div class="item ${m === active ? 'on' : ''}">${m}</div>${m === active ? (SUBS[m] || []).map((s) => `<div class="sub ${s === sub ? 'on' : ''}">${s}</div>`).join('') : ''}`).join('')}</div>`;
+}
+function tabs(major, sub) {
+  return `<div class="tabs">${(SUBS[major] || []).map((s) => `<span class="tab ${s === sub ? 'on' : ''}">${s}</span>`).join('')}</div>`;
+}
+/** 案 B の左側：大分類の列 ＋ 選ぶ列 */
+function pickerB(major, sub, inner) {
+  return `${rail(major)}<div class="pane">${tabs(major, sub)}${inner}</div>`;
+}
+const colsB = 'grid-template-columns: 104px 316px 1fr 300px';
+function frameB(active, left, mid, right, opts = {}) {
+  return `${header(opts)}<div class="body" style="${colsB}">${left}${mid}<div class="pane">${right}</div></div>${steps(active)}`;
+}
+
+const frames = [
+  // ---------------------------------------------------------------- レイアウトの比較
+  { id: 'layout-a', title: '案 A：左はカテゴリだけ、Part の一覧は右ペインの上', caption: '設計書 §3 の図に最も近い。左が細く、プレビューが広い。右ペインに「選ぶ」と「編集する」が縦に並ぶので、一覧が長いと色の設定が下に押し出される。',
+    html: `${header()}<div class="body" style="grid-template-columns: 190px 1fr 400px">${tree('髪', '前髪')}${preview()}
+      <div class="pane"><h3>前髪を選ぶ</h3><div class="grid">${HAIR.slice(0, 6).join('')}</div><div class="small muted" style="margin:4px 0 0">▾ さらに表示</div>
+      <div style="border-top:1px solid var(--line);margin-top:10px;padding-top:8px">${editHair()}</div></div></div>${steps('CUSTOMIZE')}` },
+  { id: 'layout-b', title: '案 B：左で選ぶ（大分類の列 ＋ 一覧）、右は編集だけ', caption: '「左で選び、右で調整する」に役割が分かれる。一覧が広く取れ、右ペインは選択中のものの設定だけになる。プレビューの幅は 3 案で最も狭いが、縦長の絵なので高さは変わらない。',
+    html: frameB('CUSTOMIZE', pickerB('髪', '前髪', `<div class="grid">${HAIR.join('')}</div>`), preview(), editHair()) },
+  { id: 'layout-c', title: '案 C：左はカテゴリ、Part の一覧はプレビューの下に横並び', caption: '左右が細く、横に長い一覧を流し見できる。ただしプレビューは縦長（2:3）なので、下の帯の分だけ絵が小さくなる。一度に見える Part の数も少ない。',
+    html: `${header()}<div class="body" style="grid-template-columns: 190px 1fr 300px">${tree('髪', '前髪')}
+      <div class="pane preview" style="padding-bottom:0"><div class="canvas"><img src="${SAMPLE}" alt=""></div>
+      <div style="align-self:stretch;border-top:1px solid var(--line);margin-top:8px;padding:8px 0;background:#fff"><div class="strip">${HAIR.slice(0, 7).join('')}<div class="center muted">▶</div></div></div></div>
+      <div class="pane">${editHair()}</div></div>${steps('CUSTOMIZE')}` },
+
+  // ---------------------------------------------------------------- 案 B での操作の流れ
+  { id: 'flow-1-create', title: '流れ 1：CREATE（新しいキャラクター）', caption: '名前と素体を決めて始める。素体が 1 種類しかない間も、この画面は「何から始まるか」を示す場所として残す。「基本のパーツを付けて始める」を外すと素体だけで始まる。',
+    html: `${header({ name: '（名前を入力）' })}<div class="body" style="grid-template-columns: 1fr 420px">
+      <div class="pane"><h3>新しいキャラクターを作る</h3>
+        <div class="row"><span style="width:70px">名前</span><span class="field wide">夢生ツムグ</span></div>
+        <h4>素体を選ぶ</h4><div class="grid" style="grid-template-columns:repeat(5,1fr)">${card('成人・標準', { id: 'dev.body_adult_standard', on: true })}${card('（今後追加）', { off: true })}${card('（今後追加）', { off: true })}</div>
+        <div class="row" style="margin-top:14px"><span class="check">✓</span><span>基本のパーツ（顔・髪・服）を付けて始める</span></div>
+        <div class="row" style="margin-top:18px"><span class="btn primary">この内容で始める</span><span class="btn">保存したキャラクターを読み込む</span></div>
+        <div class="box small muted" style="margin-top:20px">編集中のキャラクターがあるときは、「現在の内容は保存されていません。新しく作りますか？」と確認する。</div></div>
+      ${preview()}</div>${steps('CREATE')}` },
+  { id: 'flow-2-top-color', title: '流れ 2：服を選び、色を変える', caption: '1 つだけ選べる分類では、別のカードを選ぶと入れ替わる。先頭の「なし」で外す。カードを選ぶと、そのパーツが右ペインの編集対象になる。使えないパーツは薄く表示し、理由を添える。',
+    html: frameB('CUSTOMIZE', pickerB('服', 'トップス', `<div class="grid">${card('なし', { none: true })}${card('シャツ', { id: 'dev.shirt_01' })}${card('Tシャツ', { id: 'dev.shirt_02', on: true })}${card('ブラウス')}${card('ニット')}${card('パーカー', { off: true, why: 'このポーズには未対応' })}</div>
+        <div class="box small muted">入れ替える前のパーツの色は覚えている（選び直すと元の色で戻る）。</div>`),
+      preview(), `<h3>Tシャツ</h3><h4>色</h4>${colorRow('本体', '#E60033')}${colorRow('帯', '#F4F4F0')}
+      <div class="box small"><b>色の選び方</b><div class="row"><span class="sw" style="background:linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f)"></span><span class="field">#E60033</span><span class="muted">最近使った色 ■ ■ ■</span></div></div>
+      <div class="box adv muted">▸ 詳細設定（Advanced）</div>`) },
+  { id: 'flow-3-shared-color', title: '流れ 3：全体の色と、パーツだけの色', caption: '素体を選ぶと、肌・髪・瞳の「全体の色」と体型（fit）を編集できる。髪や眉のパーツ側では「このパーツだけ色を変える」に印を付けると、その時点の色のまま全体の色から切り離される。',
+    html: frameB('CUSTOMIZE', pickerB('素体', '', `<div class="grid">${card('成人・標準', { id: 'dev.body_adult_standard', on: true })}</div>`),
+      preview(), `<h3>素体：成人・標準</h3><h4>全体の色</h4>${colorRow('肌', '#F2D3BD')}${colorRow('髪', '#5A3E2B')}${colorRow('左目', '#4A6FA5')}${colorRow('右目', '#4A6FA5')}
+      <div class="small muted">この色を使っているパーツがまとめて変わる</div>
+      <h4>体型</h4><div class="row"><span>胸</span><span class="tab">指定なし</span><span class="tab">小</span><span class="tab on">中</span><span class="tab">大</span></div>
+      <div class="box"><div class="small muted">参考：眉を選んだときの右ペイン</div><b>眉</b>${colorRow('眉の色', '#202028', linkOff)}<div class="small muted">印を外すと、全体の髪色に戻る</div></div>`) },
+  { id: 'flow-4-expression', title: '流れ 4：表情', caption: '左で表情のプリセットを選び、右で目・眉・口を個別に変える。個別に変えてプリセットから外れると、左の選択は「カスタム」になる。保存されるのは目・眉・口の状態だけ。',
+    html: frameB('CUSTOMIZE', `${rail('表情')}<div class="pane"><h3>表情</h3><div class="grid">${card('通常')}${card('笑顔', { on: true })}${card('怒り')}${card('悲しみ')}${card('驚き')}${card('恐怖')}${card('カスタム', { off: true })}</div>
+        <div class="box small muted">プリセットは Asset 仕様 §6.3 の標準表情 6 種。サムネイルは顔のアップを自動で作る。</div></div>`,
+      preview(), `<h3>表情：笑顔</h3>
+      <h4>目</h4><div class="tabs"><span class="tab">開く</span><span class="tab">半目</span><span class="tab">閉じる</span><span class="tab on">笑い目</span><span class="tab">見開く</span><span class="tab">にらむ</span></div>
+      <h4>眉</h4><div class="tabs"><span class="tab">普通</span><span class="tab on">ゆるむ</span><span class="tab">怒り</span><span class="tab">困り</span><span class="tab">上げる</span></div>
+      <h4>口</h4><div class="tabs"><span class="tab">閉じる</span><span class="tab">ほほえむ</span><span class="tab on">笑う</span><span class="tab">開く</span><span class="tab">への字</span><span class="tab">叫ぶ</span></div>`) },
+  { id: 'flow-5-pose-view', title: '流れ 5：ポーズと向き', caption: 'ポーズは胴体・左腕・右腕を別々に選ぶ。向きは同じ大分類に置き、素材のない向きは選べない状態で「素材なし」と示す。ポーズを変えて使えなくなるパーツがあれば、その場で知らせる。',
+    html: frameB('CUSTOMIZE', `${rail('ポーズ・向き')}<div class="pane"><h3>ポーズ</h3>
+        <h4>胴体・脚</h4><div class="tabs"><span class="tab on">立つ</span></div>
+        <h4>右腕</h4><div class="tabs"><span class="tab">下ろす</span><span class="tab on">ポケット</span></div>
+        <h4>左腕</h4><div class="tabs"><span class="tab on">下ろす</span><span class="tab">ポケット</span></div>
+        <div class="small muted">名前付きのポーズ（腕組みなど）は、この組み合わせのプリセットとして後で追加する。</div>
+        <h3 style="margin-top:14px">向き</h3><div class="grid">${card('正面', { on: true })}${card('斜め左', { off: true, why: '素材なし' })}${card('斜め右', { off: true, why: '素材なし' })}${card('左', { off: true, why: '素材なし' })}${card('右', { off: true, why: '素材なし' })}</div></div>`,
+      preview({ under: `<span class="chip">使えないパーツ 1 件</span>` }), `<h3>ポーズ：右腕 ポケット</h3>
+      <div class="box warn"><b>このポーズでは表示できないパーツ</b><div class="row"><span>コート</span><span class="sp"></span><span class="btn">外す</span></div><div class="small muted">ポケットに入れた腕の袖の絵がないため。ポーズを戻すと表示される。</div></div>`) },
+  { id: 'flow-6-advanced', title: '流れ 6：詳細設定（Advanced）を開いた状態', caption: '右ペインの下に、選択中のパーツの配置補正を開く。「いつ使うか」で、いつも・このポーズのときだけ、を選ぶ。閉じても値は残る。内部の ID はここでだけ見える。',
+    html: frameB('CUSTOMIZE', pickerB('装飾', '眼鏡', `<div class="grid">${card('なし', { none: true })}${card('メガネ', { id: 'dev.glasses_01', on: true })}${card('丸メガネ')}</div>`),
+      preview(), `<h3>メガネ</h3><h4>色</h4>${colorRow('フレーム', '#30343C')}
+      <div class="box adv"><b>▾ 詳細設定（Advanced）</b>
+        <h4>位置・大きさ・回転</h4>
+        <div class="row"><span style="width:64px">いつ使うか</span><span class="field wide">いつも ▾</span></div>
+        <div class="small muted">選択肢：いつも ／ 右腕がポケットのとき ／ いまの向きとポーズのとき</div>
+        <div class="row"><span style="width:64px">位置</span><span class="field">X 0</span><span class="field">Y -40</span></div>
+        <div class="row"><span style="width:64px">大きさ</span><span class="field">横 1.00</span><span class="field">縦 1.00</span></div>
+        <div class="row"><span style="width:64px">回転</span><span class="field">10°</span><span class="sp"></span><span class="btn">元に戻す</span></div>
+        <div class="row"><span style="width:64px">中心</span><span class="field wide">パーツの中心 ▾</span></div>
+        <h4>内部情報</h4><div class="small muted">dev.glasses_01 ／ outfit.eyewear<br>20538d0f-3ff3-4057-90d1-f1a51f7c8388</div></div>`) },
+  { id: 'flow-7-warning', title: '流れ 7：見つからない素材があるとき', caption: 'いつもは状態を出さない。問題があるときだけ、名前の横に印を出し、内容をプレビューの下に並べる。編集・保存・PNG 出力はそのままできる。見つからない素材の設定は保存データに残る。',
+    html: frameB('CUSTOMIZE', pickerB('服', 'アウター', `<div class="grid">${card('なし', { none: true })}${card('コート', { id: 'dev.coat_01' })}</div>
+        <div class="box warn small"><b>見つからない素材</b><div class="row"><span>author.special_coat</span><span class="sp"></span><span class="btn">外す</span></div>この素材を入れると、色や位置はそのまま戻る。</div>`),
+      preview({ under: `<span class="chip">注意 1 件</span><span class="small muted">見つからない素材があります（表示されません）</span>` }),
+      `<h3>注意</h3><div class="box warn"><b>見つからない素材が 1 件あります</b><div class="small">author.special_coat は読み込まれていないため、表示されません。保存データには残ります。</div></div>
+      <div class="box small muted">読み込めないファイル（壊れている、対応していない形式）は、開かずに理由を知らせる。編集中のキャラクターは変わらない。</div>`,
+      { chip: `<span class="chip">注意 1 件</span>` }) },
+  { id: 'flow-8-export', title: '流れ 8：EXPORT（1 枚の PNG）', caption: 'Phase 1-C の EXPORT は、いまの状態を透過 PNG で 1 枚出すだけの画面。注意があればここでもう一度示す。',
+    html: `${header()}<div class="body" style="grid-template-columns: 1fr 420px">${preview()}
+      <div class="pane"><h3>画像を書き出す</h3>
+        <div class="row"><span style="width:70px">大きさ</span><span>1600 × 2400</span></div><div class="row"><span style="width:70px">背景</span><span>透明</span></div><div class="row"><span style="width:70px">形式</span><span>PNG</span></div>
+        <div class="row" style="margin-top:14px"><span class="btn primary">PNG を保存</span></div>
+        <div class="box warn small" style="margin-top:16px"><b>注意</b><br>見つからない素材が 1 件あります。その素材は画像に含まれません。</div>
+        <div class="box small muted" style="margin-top:16px">全身・バストアップ・アイコン、背景色、まとめて書き出しは後のフェーズ。</div></div></div>${steps('EXPORT')}` },
+  { id: 'flow-9-export-blocked', title: '流れ 9：書き出せないとき', caption: '表示できるものが 1 つもないときと、この版が知らないポーズを含むときは、PNG を保存できない。理由と、直すための操作を示す。キャラクターの保存はできる。',
+    html: `${header({ chip: `<span class="chip bad">書き出せません</span>` })}<div class="body" style="grid-template-columns: 1fr 420px">${preview({ empty: '表示できる素材がありません' })}
+      <div class="pane"><h3>画像を書き出す</h3>
+        <div class="row" style="margin-top:14px"><span class="btn off">PNG を保存</span></div>
+        <div class="box bad small" style="margin-top:16px"><b>表示できる素材がありません</b><br>選んでいる向き「左」に対応した素材がありません。<div class="row"><span class="btn">向きを正面に戻す</span></div></div>
+        <div class="box small muted" style="margin-top:16px">もう 1 つの場合：「このキャラクターは、新しい InvestiMaker のポーズを使っています。この版では表示できません。」（保存はできる）</div></div></div>${steps('EXPORT')}` },
+];
+
+document.body.innerHTML += `<h1 style="font-size:18px;margin:0">InvestiMaker Phase 1-C-1 ワイヤーフレーム</h1>
+  <p class="caption">配置と操作の位置を比べるためのもの。色・書体・余白は仮で、サムネイルとプレビューは仮素材。画面の大きさは 1280 × 800。</p>` +
+  frames.map((f) => `<h2>${f.title}</h2><p class="caption">${f.caption}</p><div class="frame" id="${f.id}">${f.html}</div>`).join('');
+window.__frames = frames.map(({ id, title, caption }) => ({ id, title, caption }));
+</script>
+</body>
+</html>
