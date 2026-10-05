@@ -90,7 +90,7 @@ export interface StartOptions {
 }
 
 /**
- * スタート画面で選ぶ「はじめのセット」。最初に装備するパーツの組であって、Character の属性ではない
+ * スタート画面で選ぶ「プリセット」。最初に装備するパーツの組であって、Character の属性ではない
  * （選んだセットは保存されない。保存されるのは、その結果として装備されたパーツだけである）。
  */
 export interface Preset extends Omit<StartOptions, 'name'> {

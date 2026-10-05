@@ -108,7 +108,7 @@ interface UiState {
   savedSnapshot: string | null;
   recentColors: string[];
   message: { kind: 'info' | 'error'; text: string; detail?: string } | null;
-  /** スタート画面で入力中の値。`preset` は、はじめのセットの ID。 */
+  /** スタート画面で入力中の値。`preset` は、プリセットの ID。 */
   draft: { name: string; preset: string };
   /** 「設定」で選ぶ：詳細設定を常に開く。 */
   alwaysAdvanced: boolean;
@@ -519,7 +519,7 @@ async function main() {
 
   // ---------------------------------------------------------------- CREATE
 
-  /** 選んでいる「はじめのセット」から、これから作るキャラクターを組み立てる。 */
+  /** 選んでいる「プリセット」から、これから作るキャラクターを組み立てる。 */
   function draftCharacter(): Character | null {
     const preset = presetList.find((p) => p.id === ui.draft.preset);
     return preset ? startCharacter(set, newId, { name: ui.draft.name.trim(), bodyId: preset.bodyId, withStarter: preset.withStarter }) : null;
@@ -576,9 +576,9 @@ async function main() {
           button('続きから編集する', () => go('customize'), { action: 'resume' })), { role: 'resume' }),
         h('h2', {}, '新しいキャラクターを作る'),
         h('label', { className: 'start-label' }, 'キャラクターの名前', nameInput),
-        h('div', { className: 'start-label' }, 'はじめのセット'),
+        h('div', { className: 'start-label' }, 'プリセット'),
         h('div', { className: 'presets' }, ...presetList.map(presetButton)),
-        h('p', { className: 'muted small' }, 'どのセットで始めても、あとからすべて変えられます。'),
+        h('p', { className: 'muted small' }, 'どのプリセットで始めても、あとからすべて変えられます。'),
         h('div', { className: 'start-actions' },
           button('作成を開始', start, { action: 'start' }, { primary: true }),
           button('保存データを読み込む', () => confirmDiscard(() => fileInput.click()), { action: 'create-load' })),

@@ -218,8 +218,8 @@ class Flow {
       broken: [...document.images].filter((i) => i.naturalWidth === 0).length,
     })`);
     check(start.header === 'none' && start.steps === 'none' && !start.character, `${label}: index.html はスタート画面で、まだキャラクターはない`);
-    check(['キャラクターの名前', 'はじめのセット', '作成を開始', '保存データを読み込む'].every((t) => start.text.includes(t)), `${label}: スタート画面に、名前・はじめのセット・「作成を開始」・「保存データを読み込む」がある`);
-    check(start.presets.length === 2 && start.drawn > 0, `${label}: はじめのセットを選べて、選んだセットの見た目が出る`);
+    check(['キャラクターの名前', 'プリセット', '作成を開始', '保存データを読み込む'].every((t) => start.text.includes(t)), `${label}: スタート画面に、名前・プリセット・「作成を開始」・「保存データを読み込む」がある`);
+    check(start.presets.length === 2 && start.drawn > 0, `${label}: プリセットを選べて、選んだセットの見た目が出る`);
 
     // CREATE：名前とセットを決めて始める
     await this.type('[data-create="name"]', '夢生ツムグ');

@@ -76,7 +76,7 @@ const card = (c: Character, category: string, partId: string) => cardStates(c, c
 /** 利用者向けの文に出てはいけない内部の語。 */
 const INTERNAL = /UNRESOLVED|INVALID|VALID|Instance|Layer|manifest|category|未解決|requires|conflicts/;
 
-describe('はじめのセット（スタート画面）', () => {
+describe('プリセット（スタート画面）', () => {
   it('素体ごとに、基本のパーツを付けたものと、素体だけのものを選べる', () => {
     expect(presets(catalog)).toEqual([
       { id: `${BODY}:starter`, bodyId: BODY, withStarter: true },
