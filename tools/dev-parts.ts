@@ -313,6 +313,21 @@ const hairFront: PartDef = {
   layers: [{ id: 'front', slot: 'hair.front', assets: [{ name: 'front', art: { regions: [paint(bangs, 0)] }, channels: { r: 'base' } }] }],
 };
 
+// 前髪の 2 種類目。眉の下でまっすぐ切りそろえた形（Part の選択を確かめるための別形状）。
+const hairFront2: PartDef = {
+  id: 'dev.hair_front_02',
+  name: '仮・前髪（ぱっつん）',
+  category: 'hair.front',
+  colorSlots: [HAIR],
+  layers: [
+    {
+      id: 'front',
+      slot: 'hair.front',
+      assets: [{ name: 'front', art: { regions: [paint(intersect(ellipse(800, 372, 164, 204), above(372)), 0)] }, channels: { r: 'base' } }],
+    },
+  ],
+};
+
 // 頭頂から立つ毛。帽子の hides で消えることの確認用。
 const hairExtra: PartDef = {
   id: 'dev.hair_extra_01',
@@ -366,6 +381,43 @@ const shirt: PartDef = {
       assets: [
         { name: 'sleeve_r_down', when: { pose: 'down' }, art: { regions: [paint(mirrorX(shirtSleeve), 0)] }, channels: { r: 'main' } },
         { name: 'sleeve_r_pocket', when: { pose: 'pocket' }, art: { regions: [paint(polyline([[632, 700], [560, 990], [660, 1212]], 56), 0)] }, channels: { r: 'main' } },
+      ],
+    },
+  ],
+};
+
+// トップスの 2 種類目。半袖で、胸に帯が入る。
+const stripe = (bodyShape: Shape) => paint(intersect(bodyShape, above(960), below(860)), 1, { shade: false });
+const shortSleeve = capsule(968, 700, 986, 880, 58);
+
+const shirt2: PartDef = {
+  id: 'dev.shirt_02',
+  name: '仮・Tシャツ',
+  category: 'outfit.top',
+  colorSlots: [
+    { id: 'main', name: '本体', mode: 'tint', default: '#7FA7C9' },
+    { id: 'stripe', name: '帯', mode: 'tint', default: '#F4F4F0' },
+  ],
+  layers: [
+    {
+      id: 'body',
+      slot: 'outfit.top',
+      assets: [
+        { name: 'body', art: { regions: [paint(shirtBody, 0), stripe(shirtBody)] }, channels: { r: 'main', g: 'stripe' } },
+        { name: 'body_chest_l', when: { fit: { chest: 'large' } }, art: { regions: [paint(shirtBodyChestL, 0), stripe(shirtBodyChestL)] }, channels: { r: 'main', g: 'stripe' } },
+      ],
+    },
+    {
+      id: 'sleeve_l',
+      slot: 'arm.left.sleeve.top',
+      assets: [{ name: 'sleeve_l_down', when: { pose: 'down' }, art: { regions: [paint(shortSleeve, 0)] }, channels: { r: 'main' } }],
+    },
+    {
+      id: 'sleeve_r',
+      slot: 'arm.right.sleeve.top',
+      assets: [
+        { name: 'sleeve_r_down', when: { pose: 'down' }, art: { regions: [paint(mirrorX(shortSleeve), 0)] }, channels: { r: 'main' } },
+        { name: 'sleeve_r_pocket', when: { pose: 'pocket' }, art: { regions: [paint(capsule(632, 700, 598, 838, 58), 0)] }, channels: { r: 'main' } },
       ],
     },
   ],
@@ -546,6 +598,26 @@ const blush: PartDef = {
   ],
 };
 
+/** 同じ category の選択肢として足した Part。既定では装備しない。 */
+export const ALTERNATE_IDS: readonly string[] = ['dev.hair_front_02', 'dev.shirt_02'];
+
+/** 新規キャラクターが最初に装備する Part（素体・顔・髪・基本の服）。 */
+export const STARTER_IDS: readonly string[] = [
+  BODY_ID,
+  'dev.face_head_01',
+  'dev.face_ears_01',
+  'dev.face_nose_01',
+  'dev.eyes_01',
+  'dev.eyebrows_01',
+  'dev.mouth_01',
+  'dev.hair_back_01',
+  'dev.hair_front_01',
+  'dev.socks_01',
+  'dev.shoes_01',
+  'dev.pants_01',
+  'dev.shirt_01',
+];
+
 /** 仮素材の一覧。並びは検証ページでの既定の装備順になる。 */
 export const DEV_PARTS: readonly PartDef[] = [
   body,
@@ -557,11 +629,13 @@ export const DEV_PARTS: readonly PartDef[] = [
   mouth,
   hairBack,
   hairFront,
+  hairFront2,
   hairExtra,
   socks,
   shoes,
   pants,
   shirt,
+  shirt2,
   coat,
   glasses,
   hat,

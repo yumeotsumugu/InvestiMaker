@@ -36,9 +36,9 @@ describe('character.schema.json', () => {
     expect(validateSchema(fixture(file))).toBe(false);
   });
 
-  it('Schema で表せない規則（instanceId の重複、appearance.body の参照先）は検証器だけが拒否する', () => {
+  it('Schema で表せない規則（instanceId の重複、appearance.body の参照先、条件別の補正の重複）は検証器だけが拒否する', () => {
     const beyond = cases.invalid.filter((c) => !c.schema);
-    expect(beyond.map((c) => c.code).sort()).toEqual(['appearance-body-ref', 'appearance-body-ref', 'instance-id-duplicate']);
+    expect(beyond.map((c) => c.code).sort()).toEqual(['appearance-body-ref', 'appearance-body-ref', 'instance-id-duplicate', 'override-overlap', 'override-overlap']);
     for (const { file } of beyond) expect(validateSchema(fixture(file)), file).toBe(true);
   });
 

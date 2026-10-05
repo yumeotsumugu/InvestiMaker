@@ -1,7 +1,7 @@
-// Canvas 2D による合成。色変更は getImageData で得た画素を core の recolor で演算し、
+// Canvas 2D による合成（検証ページと本体 UI の共用）。色変更は getImageData で得た画素を core の recolor で演算し、
 // 結果を Asset ごとにキャッシュする。
 
-import type { ColorMode, RenderPlan } from '../core/index.ts';
+import type { ColorMode, Matrix, RenderPlan } from '../core/index.ts';
 import { maskChannelColors, masksOf, recolor } from '../core/index.ts';
 import type { AssetSet } from './loader.ts';
 import { loadBitmap, loadPixels } from './loader.ts';
@@ -81,11 +81,13 @@ export class Composer {
   /**
    * @param colors 装備の識別子（`PlanEntry.instanceId`）→ スロット ID → `#RRGGBB`
    * @param modeOverride 比較用。`fixed` 以外のスロットの合成モードを差し替える
+   * @param matrices 装備の識別子 → 配置補正の行列。ないものは補正なし
    */
   async render(
     plan: RenderPlan,
     colors: Readonly<Record<string, Readonly<Record<string, string>>>>,
     modeOverride?: ColorMode,
+    matrices?: Readonly<Record<string, Matrix>>,
   ): Promise<RenderStats> {
     const t0 = performance.now();
     const entries = plan.entries.filter((e) => e.status === 'draw' && e.asset);
@@ -144,7 +146,10 @@ export class Composer {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     loaded.forEach(({ entry }, i) => {
       const [ox, oy] = entry.asset!.offset ?? [0, 0];
+      const matrix = matrices?.[entry.instanceId];
+      if (matrix) this.ctx.setTransform(...matrix);
       this.ctx.drawImage(sources[i]!, ox, oy);
+      if (matrix) this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     });
     this.ctx.getImageData(0, 0, 1, 1); // GPU 側の描画を確定させてから時間を測る
     const t3 = performance.now();

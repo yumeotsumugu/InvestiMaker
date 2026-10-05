@@ -26,6 +26,8 @@ export interface CharacterIssue {
   /** `unresolved` は UNRESOLVED の原因。`warning` は判定に影響しない注意。 */
   effect: 'unresolved' | 'warning';
   instanceId?: string;
+  /** category-duplicate のときの category。 */
+  category?: string;
   message: string;
 }
 
@@ -80,7 +82,7 @@ export function evaluateCharacter(character: Character, env: Environment): Evalu
   }
   for (const [category, instances] of equippedByCategory) {
     if (instances.length > 1 && !isMultiCategory(category)) {
-      issues.push({ code: 'category-duplicate', effect: 'warning', message: `1 Part だけ装備できる category に複数装備している: ${category}（${instances.map((i) => i.partId).join(', ')}）` });
+      issues.push({ code: 'category-duplicate', effect: 'warning', category, message: `1 Part だけ装備できる category に複数装備している: ${category}（${instances.map((i) => i.partId).join(', ')}）` });
     }
   }
 
@@ -136,4 +138,13 @@ export function instanceColors(character: Character, library: ReadonlyMap<string
     if (inst.equipped && part) colors[inst.instanceId] = resolvePartColors(part, inst.colors, character.sharedColors);
   }
   return colors;
+}
+
+/**
+ * 描画（と画像の書き出し）ができるか。
+ * 実装が知らないポーズを含むと、腕グループの置き場所と順序が決まらないので描画できない。
+ * Part の不足など、それ以外の UNRESOLVED は描画できる（不足している Part が描かれないだけ）。
+ */
+export function canRender(evaluation: Evaluation): boolean {
+  return !evaluation.issues.some((i) => i.code === 'pose-unknown');
 }

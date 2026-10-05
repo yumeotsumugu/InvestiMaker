@@ -2,7 +2,7 @@
 
 import type { Context, Expression, RenderPlan, SlotColorOverride } from '../core/index.ts';
 import { planRender, resolvePartColors } from '../core/index.ts';
-import type { AssetSet } from './loader.ts';
+import type { AssetSet } from '../web/loader.ts';
 
 export interface LabState {
   /** 装備中の Part ID（素体を含む）。並びが装備順。 */
@@ -34,7 +34,7 @@ export const DEFAULT_SHARED: Readonly<Record<string, string>> = {
 
 export function initialState(set: AssetSet): LabState {
   return {
-    equipped: set.order.filter((id) => set.library.has(id)),
+    equipped: set.defaults.filter((id) => set.library.has(id)),
     armRight: 'down',
     chest: 'medium',
     expression: { id: 'normal', eyes: 'open', eyebrows: 'neutral', mouth: 'closed' },
