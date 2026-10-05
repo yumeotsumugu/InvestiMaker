@@ -438,11 +438,17 @@ async function main() {
 
   // ---------------------------------------------------------------- CUSTOMIZE：左（選ぶ）
 
-  function card(text: string, image: string | null, options: { on?: boolean; off?: boolean; why?: string; data: Record<string, string>; onPick?: () => void }) {
+  /**
+   * カード。サムネイルがあれば画像と名前、なければ名前だけにする（同じ名前を 2 回出さない）。
+   * `placeholder` は、画像のカードと並べるときに絵の位置へ文字を置く（「なし」のカード）。
+   */
+  function card(text: string, image: string | null, options: { on?: boolean; off?: boolean; why?: string; placeholder?: boolean; data: Record<string, string>; onPick?: () => void }) {
+    const textOnly = !image && !options.placeholder;
     const el = mark(
-      h('button', { type: 'button', className: `card${options.on ? ' on' : ''}${options.off ? ' off' : ''}`, disabled: options.off ?? false },
-        h('span', { className: 'thumb' }, image ? h('img', { src: image, alt: '', loading: 'lazy' }) : h('span', { className: 'thumb-text' }, text)),
-        h('span', { className: 'card-name' }, text),
+      h('button', { type: 'button', className: `card${options.on ? ' on' : ''}${options.off ? ' off' : ''}${textOnly ? ' text-only' : ''}`, disabled: options.off ?? false },
+        image && h('span', { className: 'thumb' }, h('img', { src: image, alt: '', loading: 'lazy' })),
+        options.placeholder && h('span', { className: 'thumb' }, h('span', { className: 'thumb-text' }, text)),
+        !options.placeholder && h('span', { className: 'card-name' }, text),
         options.why && h('span', { className: 'why' }, options.why)),
       { ...options.data, selected: String(!!options.on), available: String(!options.off) },
     );
@@ -520,7 +526,7 @@ async function main() {
         render('picker');
       }, 'sub'),
       h('div', { className: 'grid' },
-        canBeNone && card('なし', null, { on: noneSelected(c, set, sub.category), data: { card: 'none' }, onPick: () => {
+        canBeNone && card('なし', null, { on: noneSelected(c, set, sub.category), placeholder: true, data: { card: 'none' }, onPick: () => {
           ui.target = null;
           apply((x) => chooseNone(x, set, sub.category), 'picker');
         } }),

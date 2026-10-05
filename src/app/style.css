@@ -290,6 +290,18 @@ h4 {
   line-height: 16px;
 }
 
+/* 絵のないカード（表情・向き）は、名前だけを出す。 */
+.card.text-only {
+  justify-content: center;
+  min-height: 44px;
+  padding: 6px 4px;
+  font-size: 13px;
+}
+
+.card.text-only.on {
+  padding: 4px 2px;
+}
+
 .card.off {
   opacity: 0.5;
   cursor: default;
