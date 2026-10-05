@@ -241,8 +241,9 @@ try {
   // 6) 詳細設定：位置と回転、条件つきの調整、中心
   await click('[data-major="accessory"]');
   await click('[data-card="dev.glasses_01"]');
-  check(!(await snapshot()).text.includes('dev.glasses_01'), '詳細設定を開くまで、内部の ID は見えない');
-  await click('[data-action="advanced"]');
+  check(!(await snapshot()).text.includes('dev.glasses_01'), '内部情報を開くまで、内部の ID は見えない');
+  check((await page.evaluate<boolean>(`!!document.querySelector('[data-tf="y"]')`)), '詳細設定は、最初から開いている');
+  await click('[data-action="internal"]');
   const plain = await preview();
   await input('[data-tf="y"]', '-40');
   await input('[data-tf="rotation"]', '10');
@@ -252,7 +253,7 @@ try {
   check(glasses.transform?.y === -40 && glasses.transform.rotation === 10, '調整が保存される');
   check(Array.isArray(glasses.transform.pivot) && Math.abs(glasses.transform.pivot[0] - 800) <= 1 && Math.abs(glasses.transform.pivot[1] - 405) <= 2, `中心は「パーツの中心」（メガネの位置）になる: ${glasses.transform.pivot}`);
   check((await page.evaluate<string>(`document.querySelector('[data-tf="pivot-mode"]').value`)) === 'part', '中心の選択は「パーツの中心」と表示される');
-  check(s.text.includes('dev.glasses_01'), '詳細設定の中でだけ、内部の ID が見える');
+  check(s.text.includes('dev.glasses_01'), '内部情報を開いたときだけ、内部の ID が見える');
   await shot('8_advanced');
   await input('[data-tf="scope"]', 'arm.right');
   check((await page.evaluate<string>(`document.querySelector('[data-tf="y"]').value`)) === '-40', '条件つきの調整は、いまの調整の値から始まる');
@@ -270,6 +271,10 @@ try {
   check(noPivot.overrides!.transform[0]!.transform.pivot === undefined, '「キャンバスの中心」では、中心を保存しない');
   await input('[data-tf="pivot-mode"]', 'part');
   await record('詳細設定');
+  await click('[data-action="internal"]');
+  // 詳細設定は閉じられ、閉じたことはページを移っても覚えている（後で開き直す）。
+  await click('[data-action="advanced"]');
+  check(!(await page.evaluate<boolean>(`!!document.querySelector('[data-tf="y"]')`)), '詳細設定は閉じられる');
   await click('[data-action="advanced"]');
 
   // 7) 保存 → 新規作成（確認が出る）→ 読込 → EXPORT で同じ画像
@@ -378,9 +383,7 @@ try {
   check((JSON.parse(s.character!) as { equipment: { partId: string; equipped: boolean; colors: Record<string, { color?: string }> }[] }).equipment.find((i) => i.partId === 'dev.shirt_02' && i.equipped)!.colors.main!.color === '#202028', '最近使った色を押すと、その欄に適用される');
 
   // 14) 設定：外したパーツの設定は、ここで見て削除できる（詳細設定には出ない）
-  await click('[data-action="advanced"]');
   check((await page.evaluate<number>(`document.querySelectorAll('.edit [data-action="forget"]').length`)) === 0, '詳細設定に、外したパーツの設定は出ない');
-  await click('[data-action="advanced"]');
   check((await snapshot()).kept.includes('dev.shirt_01'), '外したシャツの設定を覚えている');
   await click('[data-action="settings"]');
   await shot('14_settings');
@@ -390,7 +393,30 @@ try {
   await click('[data-action="settings-close"]');
   await page.close();
 
-  // 15) 【検証用】通知の置き場所の 4 方式。現状以外は、通知が出ても消えてもプレビューの大きさが変わらない
+  // 15) 画面の大きさを変えても、プレビューは 2:3 のまま（細くなったり、伸びたりしない）
+  for (const [width, height] of [[1024, 768], [1280, 800], [1600, 900], [1920, 1080]] as const) {
+    const p = await Page.open(browser.cdp, `${base}dev/index.html`, [width, height]);
+    await waitPage(p, 'index.html');
+    const ratio = () => p.evaluate<number>(`(() => { const r = document.querySelector('[data-role="preview"]').getBoundingClientRect(); return r.width / r.height; })()`);
+    const sizes: string[] = [];
+    for (const [action, file] of [[null, 'index.html'], ['[data-action="start"]', 'customize.html'], ['[data-step="export"]', 'export.html']] as const) {
+      if (action) {
+        await p.evaluate(`document.querySelector(${JSON.stringify(action)}).click()`);
+        await waitPage(p, file);
+      }
+      const value = await ratio();
+      check(Math.abs(value - 2 / 3) < 0.005, `プレビューの縦横比が 2:3（${width}×${height}、${file}）: ${value.toFixed(3)}`);
+      check((await p.evaluate<number>('document.documentElement.scrollWidth')) <= width, `横にはみ出さない（${width}×${height}、${file}）`);
+      sizes.push(await p.evaluate<string>(`(() => { const r = document.querySelector('[data-role="preview"]').getBoundingClientRect(); return Math.round(r.width) + '×' + Math.round(r.height); })()`));
+    }
+    if (WRITE && width === 1024) await p.screenshot(`${OUT_IMAGES}/creator_width_1024.png`);
+    steps.push({ step: `画面の大きさ ${width}×${height}`, result: sizes });
+    console.log(`  画面 ${width}×${height}: プレビュー ${sizes.join(' / ')}（スタート / 作成 / 書き出し）`);
+    await p.evaluate('sessionStorage.clear()');
+    await p.close();
+  }
+
+  // 16) 【検証用】通知の置き場所の 4 方式。現状以外は、通知が出ても消えてもプレビューの大きさが変わらない
   for (const mode of ['under', 'side', 'overlay', 'chip'] as const) {
     const p = await Page.open(browser.cdp, `${base}dev/index.html?notices=${mode}`, [1280, 800]);
     await waitPage(p, 'index.html');

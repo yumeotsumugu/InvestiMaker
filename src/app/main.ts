@@ -110,8 +110,8 @@ interface UiState {
   message: { kind: 'info' | 'error'; text: string; detail?: string } | null;
   /** スタート画面で入力中の値。`preset` は、プリセットの ID。 */
   draft: { name: string; preset: string };
-  /** 「設定」で選ぶ：詳細設定を常に開く。 */
-  alwaysAdvanced: boolean;
+  /** 詳細設定の中の「内部情報」を開いているか。 */
+  internalOpen: boolean;
   /** 【検証用】「注意 n 件」から開く方式で、一覧を開いているか。 */
   noticesOpen: boolean;
 }
@@ -130,12 +130,12 @@ async function main() {
   const thumbUrl = (partId: string) => assetUrl(`${set.baseUrl}${partId}/preview.png`);
 
   // 【Phase 1-C-3 の検証用】通知の置き場所を URL で切り替える。置き場所が決まったら、採用した案だけを残して消す。
-  //   ?notices=under（現状：プレビューの下）／ side（右ペインの上）／ overlay（プレビューに重ねる）／ chip（「注意 n 件」から開く）
+  //   ?notices=side（既定：右ペインの上）／ under（プレビューの下。プレビューが縮む）／ overlay（プレビューに重ねる）／ chip（「注意 n 件」から開く）
   type NoticeMode = 'under' | 'side' | 'overlay' | 'chip';
   // 指定はページを移っても引き継ぐ（?notices=under で現状に戻す）。
   const stored = readStore();
-  const requested = new URLSearchParams(location.search).get('notices') ?? stored.ui.notices ?? 'under';
-  const noticeMode: NoticeMode = requested === 'side' || requested === 'overlay' || requested === 'chip' ? requested : 'under';
+  const requested = new URLSearchParams(location.search).get('notices') ?? stored.ui.notices ?? 'side';
+  const noticeMode: NoticeMode = requested === 'under' || requested === 'overlay' || requested === 'chip' ? requested : 'side';
   const dataPage = document.body.dataset.page;
   const pageStep: Step = dataPage === 'customize' || dataPage === 'export' ? dataPage : 'create';
 
@@ -148,13 +148,14 @@ async function main() {
     major: stored.ui.major && majors.some((m) => m.major.id === stored.ui.major) ? stored.ui.major : majors.some((m) => m.major.id === 'hair') ? 'hair' : majors[0]!.major.id,
     sub: stored.ui.sub ?? {},
     target: stored.ui.target === 'expression' ? { kind: 'expression' } : stored.ui.target === 'pose' ? { kind: 'pose' } : stored.ui.target ? { kind: 'instance', instanceId: stored.ui.target } : null,
-    advancedOpen: stored.ui.advancedOpen ?? false,
+    // 詳細設定は、最初から開いておく（要らなければ閉じられる。閉じたことは覚える）。
+    advancedOpen: stored.ui.advancedOpen ?? true,
     scope: 'always',
     savedSnapshot: stored.savedSnapshot,
     recentColors: stored.ui.recentColors ?? [],
     message: stored.flash ? { kind: 'info', text: stored.flash } : null,
     draft: { name: '', preset: presetList[0]?.id ?? '' },
-    alwaysAdvanced: stored.ui.alwaysAdvanced ?? false,
+    internalOpen: false,
     noticesOpen: false,
   };
 
@@ -181,7 +182,6 @@ async function main() {
         sub: ui.sub,
         target: ui.target === null ? null : ui.target.kind === 'instance' ? ui.target.instanceId : ui.target.kind,
         advancedOpen: ui.advancedOpen,
-        alwaysAdvanced: ui.alwaysAdvanced,
         recentColors: ui.recentColors,
         notices: noticeMode,
       },
@@ -201,9 +201,8 @@ async function main() {
   const composer = new Composer(set, canvas);
   const header = h('header', { className: 'hd' });
   const body = h('div', { className: 'body' });
-  const stepBar = h('nav', { className: 'steps' });
   const modalHost = h('div');
-  root.append(h('div', { className: 'frame' }, header, body, stepBar), modalHost);
+  root.append(h('div', { className: 'frame' }, header, body), modalHost);
 
   // 段ごとに並べ替える領域。中身は領域ごとに描き直す。
   const railEl = h('div', { className: 'pane rail' });
@@ -211,7 +210,7 @@ async function main() {
   const emptyEl = mark(h('div', { className: 'canvas-empty' }), { role: 'empty' });
   const underEl = h('div', { className: 'under' });
   const overlayEl = mark(h('div', { className: 'notice-overlay' }), { role: 'notice-overlay' });
-  const previewEl = h('div', { className: 'pane preview' }, h('div', { className: 'canvas-wrap' }, canvas, emptyEl, overlayEl), underEl);
+  const previewEl = h('div', { className: 'pane preview' }, h('div', { className: 'stage' }, h('div', { className: 'canvas-wrap' }, canvas, emptyEl, overlayEl)), underEl);
   const popoverEl = mark(h('div', { className: 'notice-popover' }), { role: 'notice-popover' });
   root.dataset.notices = noticeMode;
   root.dataset.page = pageStep;
@@ -268,7 +267,6 @@ async function main() {
 
   function render(region: Region) {
     renderHeader();
-    renderSteps();
     if (region === 'all') renderBody();
     else if (ui.step === 'customize') {
       if (region === 'picker') renderPicker();
@@ -392,15 +390,8 @@ async function main() {
   }
 
   function openSettings() {
-    const always = mark(h('input', { type: 'checkbox', checked: ui.alwaysAdvanced }), { setting: 'always-advanced' });
-    always.addEventListener('change', () => {
-      ui.alwaysAdvanced = always.checked;
-      if (always.checked) ui.advancedOpen = true;
-      render('all');
-    });
     const kept = character ? keptInstances(character) : [];
     modal('設定', [
-      h('label', { className: 'row' }, always, '詳細設定を常に開く'),
       mark(h('div', {},
         h('h4', {}, '外したパーツの設定'),
         kept.length === 0
@@ -440,32 +431,28 @@ async function main() {
     if (document.activeElement !== nameEl) nameEl.value = character?.name ?? '';
     nameEl.hidden = character === null;
     const count = notices.length;
+    // ページの移動は、ヘッダーのボタンで行う。次に進む先（画像の書き出し）は、右端に目立つ色で置く。
+    const toExport = button('画像を書き出す →', () => go('export'), { step: 'export' }, { primary: true });
+    toExport.classList.add('accent');
     fill(header,
       h('span', { className: 'brand' }, 'InvestiMaker'),
+      ui.step === 'export' && button('← 編集に戻る', () => go('customize'), { step: 'customize' }),
       nameEl,
       count > 0 && noticeChip(count),
       h('span', { className: 'spacer' }),
-      button('保存', save, { action: 'save' }, { disabled: !character }),
-      button('読込', () => confirmDiscard(() => fileInput.click()), { action: 'load' }),
+      button('スタート画面', () => go('create'), { step: 'create' }),
+      button('キャラクターを保存', save, { action: 'save' }, { disabled: !character }),
+      button('読み込む', () => confirmDiscard(() => fileInput.click()), { action: 'load' }),
       button('設定', openSettings, { action: 'settings' }),
+      ui.step === 'customize' && toExport,
       fileInput,
       noticeMode === 'chip' && popoverEl,
     );
   }
 
-  function renderSteps() {
-    const item = (step: string, enabled: boolean, soon = false) => {
-      const el = mark(h('button', { type: 'button', className: `step${ui.step === step ? ' on' : ''}`, disabled: !enabled }, label('step', step), soon && h('small', {}, '準備中')), { step });
-      if (enabled) el.addEventListener('click', () => go(step as Step));
-      return el;
-    };
-    fill(stepBar, item('create', true), item('customize', character !== null), item('variant', false, true), item('portrait', false, true), item('export', character !== null));
-  }
-
   // ---------------------------------------------------------------- 本体
 
   function renderBody() {
-    if (ui.alwaysAdvanced) ui.advancedOpen = true;
     body.className = `body step-${ui.step}`;
     if (ui.step === 'create') {
       fill(body, renderCreate(), previewEl);
@@ -490,7 +477,7 @@ async function main() {
     fill(underEl,
       // 1 行分の高さを常に確保する（「保存しました」などが出ても、プレビューの大きさが変わらないようにする）。
       h('div', { className: 'message-line' },
-        ui.step !== 'create' && ui.message && mark(h('p', { className: `message ${ui.message.kind}` }, ui.message.text, ui.message.detail && ui.advancedOpen && h('span', { className: 'detail' }, ui.message.detail)), { role: 'message' })),
+        ui.step !== 'create' && ui.message && mark(h('p', { className: `message ${ui.message.kind}` }, ui.message.text, ui.message.detail && ui.internalOpen && h('span', { className: 'detail' }, ui.message.detail)), { role: 'message' })),
       ...(noticeMode === 'under' ? shown.map((n) => noticeBox(n)) : []),
     );
     fill(overlayEl, ...(noticeMode === 'overlay' ? shown.map((n) => noticeBox(n)) : []));
@@ -507,7 +494,7 @@ async function main() {
       h('div', { className: 'notice' },
         h('div', { className: 'notice-text' }, n.text),
         n.note && h('div', { className: 'small muted' }, n.note),
-        n.detail && ui.advancedOpen && h('div', { className: 'detail' }, n.detail),
+        n.detail && ui.internalOpen && h('div', { className: 'detail' }, n.detail),
         n.action && button(n.action.label, () => {
           const action = n.action!;
           if (action.kind === 'unequip') apply((c) => setEquipped(c, action.instanceId, false));
@@ -613,9 +600,7 @@ async function main() {
       const el = mark(h('button', { type: 'button', className: `rail-item${ui.major === major.id ? ' on' : ''}` }, label('major', major.id)), { major: major.id });
       el.addEventListener('click', () => {
         ui.major = major.id;
-        if (major.kind === 'expression') ui.target = { kind: 'expression' };
-        else if (major.kind === 'pose') ui.target = { kind: 'pose' };
-        else if (major.id === 'body' && character) ui.target = { kind: 'instance', instanceId: character.appearance.body };
+        targetCurrent();
         render('all');
       });
       return el;
@@ -624,6 +609,23 @@ async function main() {
 
   function currentMajor(): MajorView {
     return majors.find((m) => m.major.id === ui.major) ?? majors[0]!;
+  }
+
+  /**
+   * 開いている分類で装備中のパーツを、編集対象にする（装備がなければ、何も選んでいない状態にする）。
+   * 分類を切り替えたのに、右側が前の分類のパーツを指したままにならないようにする。
+   */
+  function targetCurrent() {
+    if (!character) return;
+    const { major, subs } = currentMajor();
+    if (major.kind === 'expression') ui.target = { kind: 'expression' };
+    else if (major.kind === 'pose') ui.target = { kind: 'pose' };
+    else if (major.id === 'body') ui.target = { kind: 'instance', instanceId: character.appearance.body };
+    else {
+      const category = (subs.find((sub) => sub.category === ui.sub[major.id]) ?? subs[0])?.category;
+      const inst = character.equipment.findLast((i) => i.equipped && set.library.get(i.partId)?.category === category);
+      ui.target = inst ? { kind: 'instance', instanceId: inst.instanceId } : null;
+    }
   }
 
   function renderPicker() {
@@ -675,6 +677,7 @@ async function main() {
     fill(pickerEl,
       subs.length > 1 && choices(subs.map((s) => [s.category, label('category', s.category)] as const), sub.category, (category) => {
         ui.sub[major.id] = category;
+        targetCurrent();
         render('picker');
       }, 'sub'),
       h('div', { className: 'grid' },
@@ -806,6 +809,12 @@ async function main() {
     if (!inst) return h('div', { className: 'box adv' }, toggle);
 
     const part = set.library.get(inst.partId);
+    // 内部の ID などは、開いたときだけ見せる（通常の画面には出さない）。
+    const internalToggle = mark(h('button', { type: 'button', className: 'adv-toggle sub' }, `${ui.internalOpen ? '▾' : '▸'} 内部情報`), { action: 'internal' });
+    internalToggle.addEventListener('click', () => {
+      ui.internalOpen = !ui.internalOpen;
+      render('all');
+    });
     const stored = storedTransform(inst, ui.scope, c.state);
     // 条件つきの調整がまだないときは、写して始める元（いつもの調整）の値を見せる。
     const shown: Transform | undefined = stored ?? (ui.scope === 'always' ? undefined : inst.transform);
@@ -874,8 +883,8 @@ async function main() {
         button('元に戻す', () => apply((x) => clearTransform(x, inst.instanceId, ui.scope), 'edit'), { action: 'tf-clear' }, { disabled: !stored })),
       h('div', { className: 'row' }, h('span', { className: 'lbl' }, '中心'), pivotSelect),
       pivotInputs,
-      h('h4', {}, '内部情報'),
-      mark(h('p', { className: 'muted small internal' }, `${inst.partId} ／ ${part?.category ?? '（不明）'}`, h('br'), inst.instanceId), { role: 'internal' }),
+      internalToggle,
+      ui.internalOpen && mark(h('p', { className: 'muted small internal' }, `${inst.partId} ／ ${part?.category ?? '（不明）'}`, h('br'), inst.instanceId), { role: 'internal' }),
     );
   }
 
@@ -893,6 +902,7 @@ async function main() {
         render('status');
       });
     }, { action: 'export' }, { primary: true, disabled: blocked !== null });
+    exportButton.classList.add('accent');
     fill(sideEl,
       h('h2', {}, '画像を書き出す'),
       h('div', { className: 'row' }, h('span', { className: 'lbl' }, '大きさ'), `${c.canvas[0]} × ${c.canvas[1]}`),

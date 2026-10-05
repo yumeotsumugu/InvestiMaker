@@ -98,6 +98,20 @@
               "r": "main"
             }
           }
+        },
+        {
+          "when": {
+            "view": "front",
+            "pose": "pocket"
+          },
+          "file": "assets/front/sleeve_l_pocket.png",
+          "offset": [910, 642],
+          "mask": {
+            "file": "assets/front/sleeve_l_pocket.mask.png",
+            "channels": {
+              "r": "main"
+            }
+          }
         }
       ]
     },

@@ -107,12 +107,27 @@
               "r": "skin"
             }
           }
+        },
+        {
+          "when": {
+            "view": "front",
+            "pose": "pocket"
+          },
+          "file": "assets/front/arm_l_pocket.png",
+          "offset": [886, 654],
+          "mask": {
+            "file": "assets/front/arm_l_pocket.mask.png",
+            "channels": {
+              "r": "skin"
+            }
+          }
         }
       ]
     },
     {
       "id": "hand_l",
       "slot": "arm.left.hand",
+      "optional": true,
       "assets": [
         {
           "when": {

@@ -6,8 +6,8 @@
       "id": "dev.body_adult_standard",
       "default": true,
       "starter": true,
-      "files": 14,
-      "pixels": 3117712
+      "files": 16,
+      "pixels": 3368512
     },
     {
       "id": "dev.face_head_01",
@@ -104,15 +104,15 @@
       "id": "dev.shirt_01",
       "default": true,
       "starter": true,
-      "files": 10,
-      "pixels": 1552960
+      "files": 12,
+      "pixels": 1817536
     },
     {
       "id": "dev.shirt_02",
       "default": false,
       "starter": false,
-      "files": 10,
-      "pixels": 1153576
+      "files": 12,
+      "pixels": 1229776
     },
     {
       "id": "dev.coat_01",

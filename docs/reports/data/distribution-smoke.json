@@ -2,34 +2,34 @@
   "browser": "Chrome/154.0.8037.93",
   "zip": {
     "path": "release/InvestiMaker.zip",
-    "bytes": 625663,
-    "sha256": "121c0556c414e0095fab4477e86f914e4cf82c0a665d8dc1d5f00bdb03e0a21e",
+    "bytes": 671527,
+    "sha256": "d0068a429168728720e3939612c485457fd7b921f33d08764b1c0c967a34fe98",
     "extractedWith": "Windows 付属の tar"
   },
   "files": {
     "app/assets.js": {
-      "bytes": 879114,
-      "sha256": "c172c3ce1353a9ecbf3171f1c4fd37bdbb6c7956cd63a8be866893fd43e1a2f7"
+      "bytes": 942522,
+      "sha256": "b3ad5d298df3dc42dd83876e046a7199ab1009c986785c1770bc810574ba45ae"
     },
     "app/investimaker.css": {
-      "bytes": 7994,
-      "sha256": "c3400bc8b8017abe8742c93123fdd430441ca074ec97ed60730ec9a213d0d550"
+      "bytes": 7998,
+      "sha256": "096f20cd73b98c60ec4476666caab56ca110895af09d6ceece061c86f2fd27a1"
     },
     "app/investimaker.js": {
-      "bytes": 71783,
-      "sha256": "e5a4c2eb60b264dfe8ced9fc248e381c0165f1558a6945b023c9544db353b648"
+      "bytes": 71884,
+      "sha256": "7a9d95249e9a0c05b147e92463f3525f75bed88940031e04cdd5a9106c835879"
     },
     "customize.html": {
       "bytes": 602,
-      "sha256": "0cda3e8e439cb0c80630c6da7a4fe5a024d3f4d23afdc3f9dfc82fc048abbf00"
+      "sha256": "ec939b96ed3f45dace718a65f4205bd2fe94d74daeaa89d85353a4ea6bd96643"
     },
     "export.html": {
       "bytes": 602,
-      "sha256": "ba0f8b446ccf32942da9abe1d72c7ae737d16e1209f21fcb522138d1661372a3"
+      "sha256": "c9881dce5f71fa1c159da26835237712294b15b8b9ac2b572d2e58434fb7181b"
     },
     "index.html": {
       "bytes": 576,
-      "sha256": "e1154017880473fc0afed4ad301bd0680a33283074d4021f92170c8d86c44ca9"
+      "sha256": "91cb26fb90ba5b598b79946861221f977c57026753fb5cc6f6a485f1b5b06869"
     }
   },
   "local": {
@@ -44,7 +44,7 @@
     "outside": 0
   },
   "result": {
-    "characterJsonSha256": "c3ad175ea16bab37da013679b446c98025b555df61e91e405616785e1a6bcaf5",
+    "characterJsonSha256": "a65d0ac9c897b5cc27b2dec4eb8ec5b3aff4d5d1a0854cd70c6636b3123ccc55",
     "pngSha256": "876fdc7c12a42dae7e5754214a8e47e72df64873ce5185307f230e2bcecfd6ec"
   },
   "checks": [
@@ -61,6 +61,7 @@
     "ローカル（file://・オフライン）: index.html はスタート画面で、まだキャラクターはない",
     "ローカル（file://・オフライン）: スタート画面に、名前・プリセット・「作成を開始」・「保存データを読み込む」がある",
     "ローカル（file://・オフライン）: プリセットを選べて、選んだセットの見た目が出る",
+    "ローカル（file://・オフライン）: スタート画面のプレビューの縦横比が 2:3",
     "ローカル（file://・オフライン）: 「作成を開始」でページが移り、基本のセットを付けたキャラクターができる",
     "ローカル（file://・オフライン）: パーツを選ぶと、装備と表示が変わる",
     "ローカル（file://・オフライン）: キャラクターを JSON に保存できる",
@@ -72,6 +73,7 @@
     "Web（静的 HTTP）: index.html はスタート画面で、まだキャラクターはない",
     "Web（静的 HTTP）: スタート画面に、名前・プリセット・「作成を開始」・「保存データを読み込む」がある",
     "Web（静的 HTTP）: プリセットを選べて、選んだセットの見た目が出る",
+    "Web（静的 HTTP）: スタート画面のプレビューの縦横比が 2:3",
     "Web（静的 HTTP）: 「作成を開始」でページが移り、基本のセットを付けたキャラクターができる",
     "Web（静的 HTTP）: パーツを選ぶと、装備と表示が変わる",
     "Web（静的 HTTP）: キャラクターを JSON に保存できる",

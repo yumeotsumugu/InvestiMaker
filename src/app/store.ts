@@ -13,7 +13,6 @@ export interface StoredUi {
   /** 編集対象。Instance の ID、または 'expression' / 'pose'。 */
   target?: string | null;
   advancedOpen?: boolean;
-  alwaysAdvanced?: boolean;
   recentColors?: string[];
   /** 【検証用】通知の置き場所。 */
   notices?: string;

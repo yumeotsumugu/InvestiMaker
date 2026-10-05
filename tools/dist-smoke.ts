@@ -208,18 +208,20 @@ class Flow {
   async run(): Promise<FlowResult> {
     const { label } = this;
     await this.at('create');
-    const start = await this.get<{ header: string; steps: string; presets: string[]; drawn: number; character: boolean; text: string; broken: number }>(`({
+    const start = await this.get<{ header: string; ratio: number; presets: string[]; drawn: number; character: boolean; text: string; broken: number }>(`({
       header: getComputedStyle(document.querySelector('.hd')).display,
-      steps: getComputedStyle(document.querySelector('.steps')).display,
+      ratio: (() => { const r = document.querySelector('[data-role="preview"]').getBoundingClientRect(); return r.width / r.height; })(),
       presets: [...document.querySelectorAll('[data-preset]')].map((el) => el.dataset.preset),
       drawn: window.__creator.inspection ? window.__creator.inspection.drawn : 0,
       character: window.__creator.character !== null,
       text: document.querySelector('#app').innerText,
       broken: [...document.images].filter((i) => i.naturalWidth === 0).length,
     })`);
-    check(start.header === 'none' && start.steps === 'none' && !start.character, `${label}: index.html はスタート画面で、まだキャラクターはない`);
+    check(start.header === 'none' && !start.character, `${label}: index.html はスタート画面で、まだキャラクターはない`);
     check(['キャラクターの名前', 'プリセット', '作成を開始', '保存データを読み込む'].every((t) => start.text.includes(t)), `${label}: スタート画面に、名前・プリセット・「作成を開始」・「保存データを読み込む」がある`);
     check(start.presets.length === 2 && start.drawn > 0, `${label}: プリセットを選べて、選んだセットの見た目が出る`);
+
+    check(Math.abs(start.ratio - 2 / 3) < 0.005, `${label}: スタート画面のプレビューの縦横比が 2:3`);
 
     // CREATE：名前とセットを決めて始める
     await this.type('[data-create="name"]', '夢生ツムグ');
