@@ -49,6 +49,8 @@ export interface Character {
   /** UUID。 */
   id: string;
   name: string;
+  /** 座標系の基準になるキャンバスサイズ。v1 はマスターキャンバス（1600×2400）だけ。 */
+  canvas: [number, number];
   appearance: {
     /** 素体の Equipment Instance の instanceId。 */
     body: string;

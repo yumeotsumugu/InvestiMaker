@@ -119,6 +119,21 @@
       "file": "invalid/composition-not-object.json",
       "code": "composition",
       "schema": true
+    },
+    {
+      "file": "invalid/canvas-missing.json",
+      "code": "canvas",
+      "schema": true
+    },
+    {
+      "file": "invalid/canvas-other-size.json",
+      "code": "canvas-mismatch",
+      "schema": true
+    },
+    {
+      "file": "invalid/canvas-not-array.json",
+      "code": "canvas",
+      "schema": true
     }
   ]
 }

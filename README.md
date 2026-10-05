@@ -13,7 +13,7 @@ TRPG 用の 2D キャラクター立ち絵・差分・アイコンを、既製�
 - それを操作して確かめる検証ページ（`src/lab/`）
 - 結果をまとめた[検証レポート](docs/reports/Phase0_Verification_Report.md)
 
-**Phase 1-A（進行中）** では、キャラクターの保存形式を設計しています。まだキャラクタークリエイターの UI はありません。
+**Phase 1-A（完了）** では、キャラクターの保存形式を設計しました。まだキャラクタークリエイターの UI はありません。
 
 - [Character Schema v1 草案](docs/specifications/InvestiMaker_Character_Schema_v1.md) と `schemas/character.schema.json`
 - 保存・読込・検証・編集の実装（`src/core/character/`）

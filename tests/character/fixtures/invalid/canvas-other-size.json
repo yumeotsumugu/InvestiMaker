@@ -4,8 +4,8 @@
   "id": "00000000-0000-4000-8000-000000000001",
   "name": "",
   "canvas": [
-    1600,
-    2400
+    2000,
+    3000
   ],
   "appearance": {
     "body": "00000000-0000-4000-8000-000000000010"
@@ -27,7 +27,8 @@
     },
     "expression": {
       "eyes": "open",
-      "eyebrows": "neutral"
+      "eyebrows": "neutral",
+      "mouth": "closed"
     }
   }
 }

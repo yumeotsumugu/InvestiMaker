@@ -3,7 +3,9 @@
 Character JSON Schema v1 — Data Architecture & Persistence Prototype
 
 作成日：2026-10-05
-対象：`docs/specifications/InvestiMaker_Character_Schema_v1.md`（草案 0.1）
+対象：`docs/specifications/InvestiMaker_Character_Schema_v1.md`（検証時は草案 0.1。決定を反映して草案 0.2）
+
+> **Phase 1-A は完了。** §4 の判断事項は決定され、Character Schema は草案 0.2 になった（決定内容は本書の §8）。RC1 の判定は Phase 1-B の終了時に行う。
 指示書：`docs/instructions/Phase1A_Character_Schema_Instructions.md`
 
 ## 0. 要約
@@ -13,13 +15,13 @@ Character JSON Schema v1 — Data Architecture & Persistence Prototype
 | 完了条件 | 結果 | 根拠 |
 | --- | --- | --- |
 | 1. Character Schema v1 の草案がある | 満たした | `docs/specifications/InvestiMaker_Character_Schema_v1.md` |
-| 2. `character.schema.json` で基本構造を検証できる | 満たした | `tests/character/schema.test.ts`（有効 3 件・不正 23 件の fixtures で、Schema と検証器の判定が一致） |
+| 2. `character.schema.json` で基本構造を検証できる | 満たした | `tests/character/schema.test.ts`（有効 3 件・不正 26 件の fixtures で、Schema と検証器の判定が一致） |
 | 3. serialize → deserialize → serialize が意味的に一致する | 満たした | `tests/character/roundtrip.test.ts`（JSON の一致に加え、仮素材で描いた画像が画素単位で一致） |
 | 4. 不足 Part を挟んだ round-trip で Instance 情報が失われない | 満たした | `tests/character/missing-parts.test.ts` |
 | 5. VALID / INVALID / UNRESOLVED をテストできる | 満たした | `tests/character/validity.test.ts` |
 | 6. 確定できる事項・判断が必要な事項・持ち越す事項が明記されている | 満たした | 本書 §3・§4・§5 |
 
-`npm test` は 228 件すべて通過（Phase 0 の 131 件を含む）。
+`npm test` は検証時 228 件、草案 0.2 の反映後 236 件がすべて通過（Phase 0 の 131 件を含む）。
 
 ## 1. 設計の要点
 
@@ -172,6 +174,32 @@ Character JSON Schema v1 — Data Architecture & Persistence Prototype
 
 ```sh
 npm install
-npm test                         # 228 件
+npm test                         # 236 件
 npx vitest run tests/character   # Phase 1-A の分だけ
 ```
+
+## 8. 決定記録（2026-10-05）
+
+§4 の判断事項に対する決定と、草案 0.2 への反映。
+
+| # | 項目 | 決定 |
+| --- | --- | --- |
+| 5 | キャンバスサイズの宣言 | **`canvas` をトップレベルの必須にする。v1 は `[1600, 2400]` 以外を INVALID とする。** 将来の変更は migration で扱う |
+| 1 | 付け直したときの装備順 | **元の位置に戻る。** 同じ Instance を再利用し、`equipment` の中の位置も変えない |
+| 2 | category の重複 | **INVALID にせず、注意を出して両方描画する。** 読み込み時に片方を無効にしない（環境に依存する判定で Character の意味を変えない）。重複を防ぐのは UI の役割 |
+| 6 | UUID | **v4 を推奨。** Schema はバージョンを固定しない |
+| 7 | 外している Instance の上限 | **設けない。** Phase 1-B で完全削除を用意する |
+| 4 | `requirements.parts` の範囲 | **装備中だけ。** 素材同梱（`.imchar`）で必要な一覧は別の概念として扱う |
+| 3 | 条件ごとの配置補正 | Phase 1-B で Transform を実装するときに確定する |
+| 8 | UNRESOLVED での画像の書き出し | Phase 1-B の UI 仕様で決める。第一候補は「描画できる状態なら警告つきで可」 |
+| 9 | 未知のポーズの扱いの非対称 | 今は触らない。Capability を正式化するときにまとめて解決する |
+
+あわせて、Asset 仕様 RC1 の §9 を「キャラクター側の補正の保存形式とキーの構造は Character Schema v1 が定める」という書き方に直した。規定の内容は変えていない。Transform を実装するときに 2 つの仕様書が衝突しないようにするためである。
+
+草案 0.2 に合わせた実装の変更：
+
+- `canvas` の検証（`canvas` / `canvas-mismatch`）と、新規作成時の既定値。`schemas/character.schema.json` にも反映。
+- fixtures に `canvas` を追加し、不正なケースを 3 件足した。
+- 「後から別の Part を装備していても、付け直した Instance の位置は変わらない」ことのテストを追加。
+
+タグ `character-schema-v1-rc1` はまだ打たない。Phase 1-B で実際の UI から「新規作成 → Part 選択 → 色変更 → 保存 → 再読込 → PNG」を通した後に、RC1 とするかを判定する。

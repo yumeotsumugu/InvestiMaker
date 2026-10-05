@@ -48,6 +48,18 @@ describe('3 状態', () => {
   });
 });
 
+describe('canvas', () => {
+  it('1600×2400 以外は INVALID。環境には左右されない', () => {
+    const other = patched('valid/missing-part.json', (c) => (c.canvas = [2000, 3000]));
+    for (const e of [env(), { library: new Map() }]) {
+      const result = checkCharacter(other, e);
+      expect(result.validity).toBe('INVALID');
+      expect(result.validity === 'INVALID' && result.errors.map((x) => x.code)).toEqual(['canvas-mismatch']);
+    }
+    expect(checkCharacter(patched('valid/missing-part.json', (c) => delete c.canvas), env()).validity).toBe('INVALID');
+  });
+});
+
 describe('UNRESOLVED の原因', () => {
   it('この実装が知らないポーズ（Capability の不足）', () => {
     const json = patched('valid/missing-part.json', (c) => (c.state.pose['arm.right'] = 'crossed'));

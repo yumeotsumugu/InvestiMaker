@@ -1,10 +1,10 @@
-# InvestiMaker Character Schema v1（草案 0.1）
+# InvestiMaker Character Schema v1（草案 0.2）
 
-2026-10-05 / Phase 1-A の実装と検証に基づく
+2026-10-05 / Phase 1-A の実装と検証、およびその後の決定に基づく
 
 この文書は、InvestiMaker で作ったキャラクター 1 体を保存する形式を定める。素材（Part）の規格は `InvestiMaker_Asset_Specification_v1.md`（以下「Asset 仕様」）が定め、本書はそれを参照する。
 
-**【要判断】** と付いた箇所は、人間の判断が必要なまま実装側の選択で仮に決めたものである。一覧は §11 にまとめる。
+草案 0.1 で判断待ちだった事項の決定と、Phase 1-B へ持ち越す事項は §11 にまとめる。本書を RC1 とするかどうかは、Phase 1-B で実際の UI から保存・読込を通した後に判定する。
 
 ---
 
@@ -35,6 +35,7 @@ MUST / SHOULD / MAY の意味は Asset 仕様 §0 と同じである。
   "formatVersion": 1,
   "id": "0f6f2a3e-6c1d-4b8e-9a51-2f7d3c4b5a60",
   "name": "夢生ツムグ",
+  "canvas": [1600, 2400],
   "appearance": {
     "body": "00000000-0000-4000-8000-000000000020",
     "fit": { "chest": "medium" }
@@ -83,6 +84,7 @@ MUST / SHOULD / MAY の意味は Asset 仕様 §0 と同じである。
 | `formatVersion` | MUST | `1`（§9） |
 | `id` | MUST | キャラクターの識別子。UUID（§3） |
 | `name` | MUST | 表示名。200 文字以内。空文字列でもよい |
+| `canvas` | MUST | 座標系の基準になるキャンバスサイズ。v1 は `[1600, 2400]` だけ（§2.1） |
 | `appearance` | MUST | 素体への参照と fit（§4） |
 | `sharedColors` | MUST | 共有カラー（§6）。空でもよい |
 | `equipment` | MUST | Equipment Instance の配列（§5）。並びが装備順の正本 |
@@ -92,9 +94,16 @@ MUST / SHOULD / MAY の意味は Asset 仕様 §0 と同じである。
 
 文字コードは UTF-8（BOM なし）とする。キーの順序と空白に意味はない。
 
+### 2.1 canvas
+
+- Character は、座標系の基準にしたキャンバスサイズを `canvas: [1600, 2400]` として宣言する（MUST）。配置補正（`transform`）の値は画素であり、キャンバスが決まらないと意味が定まらないためである。
+- **v1 では `[1600, 2400]` 以外の Character は不正とする**（MUST）。Asset 仕様 §4.1 のマスターキャンバスと同じ値である。
+- 将来キャンバスの規格を変える場合は、保存データの移行（migration）で扱う。
+
 ## 3. ID
 
-- `id` と `instanceId` は UUID とし、`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` の形で小文字の 16 進数で書く（MUST）。バージョンは問わない。
+- `id` と `instanceId` は UUID とし、`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` の形で小文字の 16 進数で書く（MUST）。
+- 新しく作るときは UUID v4（乱数）を使う（SHOULD）。識別子に時系列の意味は持たせない。読み込み側は UUID のバージョンを検査しない（MUST NOT）。意味は「一意な識別子」であることだけである。
 - `instanceId` はキャラクター内で一意（MUST）。重複する Character は不正とする。
 - `partId` は Asset 仕様 §3 の Part ID（`<namespace>.<name>`）。
 - ポーズ・VIEW・状態名・fit の次元と値・共有カラーキー・スロット ID は、Asset 仕様 §3 の ID 書式（`[a-z0-9_]` のセグメントを `.` で連結）に従う（MUST）。**値が既知かどうかは構造の検証では問わない**（§10）。
@@ -142,18 +151,23 @@ MUST / SHOULD / MAY の意味は Asset 仕様 §0 と同じである。
 ### 5.1 装備順
 
 - **`equipment` の並びが装備順の正本である**（MUST）。Asset 仕様 §6.1 の「同値なら装備順で描く」は、この並びの先頭側を奥として適用する。
-- 外している Instance も並びの中に位置を持つ。付け直したときは同じ位置に戻る【要判断】。
+- 外している Instance も並びの中に位置を持つ。
+- **外した Part を付け直すときは、同じ Instance を再利用し、`equipment` の中の位置も変えない**（MUST）。「外す」は削除ではなく、色や配置補正と同じく装備順も覚えておく対象だからである。
+- 手前に装備し直したい場合は、並びを変えるか、Instance を削除して新しく装備する。
 - 並び替えは `equipment` の並びを変えることで表す。
 
 ### 5.2 同じ Part の複数装備
 
 - 同じ `partId` を持つ Instance を複数置ける（MAY）。それぞれが別の色・配置補正を持つ。
-- 1 つの category に装備できる Part の数（Asset 仕様 §2）は、Part の manifest がないと分からない。**category の重複は Character を不正にしない**。環境に照らした評価で注意として挙げる（§10.3）【要判断】。
+- 1 つの category に装備できる Part の数（Asset 仕様 §2）は、Part の manifest がないと分からない。**category の重複は Character を不正にしない**（MUST NOT）。
+- 1 Part だけ装備できる category に複数の Part が装備されている場合、実装は**どちらも無効にせず、両方を描画し、注意として知らせる**（MUST）。読み込み時に片方を外すなど、環境に依存する判定で Character の意味を変えてはならない。
+- 通常の操作で重複装備が起きないようにするのは UI の役割である。外部で編集された JSON などで重複が生じた場合も、データは保持する。
 
 ### 5.3 外している Instance
 
 - `equipped: false` の Instance は描画されず、Requirements にも入らない。色などの設定は保持する。
 - 外すことと、Instance を削除することは別の操作である。削除すると設定は失われる。
+- 外している Instance の数に上限は設けない。通常の付け外しでは同じ Instance が再利用されるので増えない。不要になった Instance は削除する。
 - 素体の Instance は外せず、削除もできない（§4）。
 
 ### 5.4 読み込まれていない Part
@@ -165,7 +179,7 @@ MUST / SHOULD / MAY の意味は Asset 仕様 §0 と同じである。
 ### 5.5 配置補正
 
 - `transform` は装備インスタンスの値であり、Part 既定に対する差分として合成する（Asset 仕様 §9）。
-- Asset 仕様 §9 は「キャラクター側の補正は `view × ポーズ` を最小キーとして保持する」と定める。v1 草案は、条件によらない 1 つの `transform` だけを定義し、条件ごとの補正は `overrides` に予約する【要判断】。
+- 本草案は、条件によらない 1 つの `transform` だけを定義する。VIEW やポーズごとの補正は `overrides` に予約し、**キーの構造は Transform を実装する Phase 1-B で確定する**（最小の単位は `view × ポーズ`。Asset 仕様 §9）。
 - v1 の実装は `transform` を保存・復元するだけで、描画には適用しない（Asset 仕様側の Transform が未実装のため）。
 
 ## 6. 色
@@ -248,7 +262,7 @@ MUST / SHOULD / MAY の意味は Asset 仕様 §0 と同じである。
 - 省略してよい（MAY）。
 - 用途は、Character を開かずに「何が必要か」を一覧できるようにすることである（ファイルを配る前の確認、不足 Part の案内など）。
 
-外している Instance の Part は `parts` に入れない【要判断】。
+外している Instance の Part は `parts` に入れない。Requirements は「完全に再現するために必要なもの」であり、外している Part はそれに当たらない。素材を同梱する形式（`.imchar`）で必要になる一覧は、別の概念として扱う。
 
 正式な Capability の仕様（必要な InvestiMaker のバージョンの表現など）は本書では定めない。
 
@@ -278,6 +292,7 @@ Character の状態は次の 3 つのいずれかである。
 - JSON として読めない、またはオブジェクトでない。
 - §2〜§7 の必須フィールドがない、型や書式が合わない。
 - `formatVersion` が実装の対応範囲より新しい。
+- `canvas` が `[1600, 2400]` でない。
 - `instanceId` が重複している。
 - `appearance.body` が `equipment` にない Instance を指している、またはその Instance が `equipped: false` である。
 
@@ -297,30 +312,48 @@ Requirements のうち、環境が満たせないものがあるとき。
 
 UNRESOLVED の Character も、読み込み・編集・保存ができる（MUST）。描画できる部分は描画してよいが、実装が知らないポーズを含む場合は描画順を決められないので描画しない。
 
+UNRESOLVED のまま画像を書き出せるかどうかは UI 挙動の文書で定める。方向性は「描画できる状態なら、警告つきで書き出せる」である（Part が 1 つ不足しているだけで、キャラクター全体の書き出しを止めない）。
+
 ### 10.3 状態に影響しない注意
 
 次は VALID のまま、注意として知らせる。
 
 - 外している Instance の Part が読み込まれていない。
 - Part が宣言していないスロットの色を持っている（保持する）。
-- 1 Part だけ装備できる category に、複数の Part を装備している【要判断】。
+- 1 Part だけ装備できる category に、複数の Part を装備している（§5.2。両方描画する）。
 - 保存されていた `requirements` が現在の内容と一致しない、または形が崩れている。
 
 ### 10.4 描画時の状態との関係
 
 Asset 仕様 §8 の「不足 / 非対応 / 競合」は Part ごとの描画時の状態であり、本書の 3 状態とは別の軸である。Part が非対応や競合であっても、Character は VALID でありうる（例：右腕が `pocket` のとき、`pocket` の袖を持たないコートは非対応になるが、Character に問題はない）。
 
-## 11. 未確定事項
+## 11. 決定事項と残課題
 
-| # | 項目 | 草案の扱い | 判断に必要なこと |
-| --- | --- | --- | --- |
-| 1 | 付け直したときの装備順 | 外す前の位置に戻る | 「最後に装備したものが手前」を優先するなら末尾へ移す。UI での見え方で決める |
-| 2 | category の重複 | 不正にせず注意にとどめ、両方描画する | 後から装備した方だけを有効にするか、UI で防ぐだけにするか |
-| 3 | 条件ごとの配置補正 | `transform` は 1 つだけ。`view × ポーズ` ごとの補正は `overrides` に予約 | Asset 仕様 §9 の規定をいつ・どの形で入れるか。Transform の実装と合わせて決める |
-| 4 | `requirements.parts` の範囲 | 装備中の Part だけ | 外している Part も「あれば復元できるもの」として別枠で持つか |
-| 5 | キャンバスサイズの宣言 | 持たない（Asset 仕様の 1600×2400 を前提にする） | `transform` の数値は画素なので、キャンバスが変わると意味が変わる。Character にも宣言を持たせるか |
-| 6 | UUID のバージョン | 問わない | 生成方法（v4 / v7）を規定するか |
-| 7 | 外している Instance の上限 | なし | 付け外しを繰り返すと Instance が増える。同じ Part の外した Instance は 1 つに保つ等の方針 |
-| 8 | VARIANT・OUTFIT の継承 | 定義しない。`state` は 1 組だけ | 複数の差分を 1 ファイルに持つ形。`requirements` の値を配列にしてあるのはその準備 |
-| 9 | `composition` | 予約のみ | COMPOSITION / PORTRAIT の仕様 |
-| 10 | Capability の正式な表現 | 定義しない | 必要な InvestiMaker のバージョン、Pose Definition の版などの書き方。Asset 仕様 §14.2 と合わせて決める |
+### 11.1 草案 0.2 で決定した事項
+
+| 項目 | 決定 | 該当節 |
+| --- | --- | --- |
+| キャンバスサイズの宣言 | `canvas` をトップレベルの必須フィールドにする。v1 は `[1600, 2400]` 以外を不正とする | §2.1 |
+| 付け直したときの装備順 | 同じ Instance を再利用し、`equipment` の中の位置を変えない | §5.1 |
+| category の重複 | 不正にしない。両方を描画し、注意として知らせる。環境に依存する判定で Character の意味を変えない | §5.2 |
+| UUID | v4 を推奨。Schema はバージョンを固定しない | §3 |
+| 外している Instance の上限 | 設けない。完全な削除は UI が提供する | §5.3 |
+| `requirements.parts` の範囲 | 装備中の Part だけ | §8 |
+
+### 11.2 Phase 1-B で確定する事項
+
+| 項目 | 現在の扱い | 確定の方法 |
+| --- | --- | --- |
+| 条件ごとの配置補正 | `transform` は 1 つ。VIEW・ポーズごとの補正は `overrides` に予約 | Transform を実装するときに `overrides` のキー構造を決める |
+| UNRESOLVED での画像の書き出し | 仕様では定めない。方向性は「描画できるなら警告つきで可」 | UI 挙動の文書 |
+| 本書の RC1 判定 | 草案 0.2 | 実際の UI から「新規作成 → Part 選択 → 色変更 → 保存 → 再読込 → PNG」を通し、使いにくさが見つからないことを確かめる |
+
+### 11.3 後のフェーズへ持ち越す事項
+
+| 項目 | 現在の扱い | 再開の条件 |
+| --- | --- | --- |
+| Capability の正式な表現 | 定義しない。`requirements` の語彙だけ Asset 仕様と揃えてある | Asset 仕様 §14.2 と合わせて決める |
+| 未知のポーズの扱いの非対称 | Character では UNRESOLVED、Part の manifest では不正（Asset 仕様 §6.2） | Capability を正式化するときにまとめて解決する |
+| VARIANT・OUTFIT の継承 | 定義しない。`state` は 1 組だけ | 複数の差分を 1 ファイルに持つ形を決めるとき |
+| `composition` | 予約のみ | COMPOSITION / PORTRAIT の仕様 |
+| キャンバス規格の変更 | v1 は 1600×2400 だけ | 変更するときは migration の対象にする |

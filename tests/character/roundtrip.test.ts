@@ -91,6 +91,12 @@ describe('round-trip', () => {
     expect(stableStringify(result.ok && serializeCharacter(result.character))).toBe(stableStringify(fixture('valid/missing-part.json')));
   });
 
+  it('canvas は必須で、新規作成したキャラクターはマスターキャンバスを持つ', () => {
+    const c = createCharacter({ id: u(1), name: '', bodyPartId: 'im.body_01', bodyInstanceId: u(10) });
+    expect(c.canvas).toEqual([1600, 2400]);
+    expect(serializeCharacter(reload(c)).canvas).toEqual([1600, 2400]);
+  });
+
   it('保存 JSON の先頭に format と formatVersion、末尾に requirements を書く', () => {
     const keys = Object.keys(serializeCharacter(load('valid/full.json')));
     expect(keys.slice(0, 2)).toEqual(['format', 'formatVersion']);
@@ -157,6 +163,9 @@ describe('色', () => {
     c = equipPart(c, 'im.hat_01', u(99));
     // 新しい Instance は作られず、同じ Instance が同じ位置で戻る
     expect(c.equipment).toHaveLength(2);
+    // 後から別の Part を装備していても、付け直した Instance の位置は変わらない
+    const later = equipPart(addInstance(setEquipped(c, u(11), false), 'im.overlay_01', u(12)), 'im.hat_01', u(98));
+    expect(later.equipment.map((i) => i.instanceId)).toEqual([u(10), u(11), u(12)]);
     expect(c.equipment[1]).toMatchObject({ instanceId: u(11), equipped: true });
     expect(shown(c, u(11), hatSlot)).toBe('#FF0040');
   });

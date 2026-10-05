@@ -4,7 +4,7 @@ import { deriveRequirements } from './requirements.ts';
 import type { Character, CharacterJson } from './types.ts';
 import { CHARACTER_FORMAT, SUPPORTED_CHARACTER_FORMAT_VERSION } from './types.ts';
 
-const KNOWN_ORDER = ['id', 'name', 'appearance', 'sharedColors', 'equipment', 'state', 'composition'] as const;
+const KNOWN_ORDER = ['id', 'name', 'canvas', 'appearance', 'sharedColors', 'equipment', 'state', 'composition'] as const;
 
 /**
  * 保存 JSON を作る。`requirements` は必ず現在の内容から作り直す。

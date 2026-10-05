@@ -4,12 +4,19 @@
   "title": "InvestiMaker Character v1",
   "description": "InvestiMaker_Character_Schema_v1.md の構造部分。instanceId の重複と appearance.body の参照先は Schema では表せないため、実装の検証器（src/core/character/validate.ts）が確かめる。未知のフィールドは許可する（読み込んだ実装はそのまま保持する）。",
   "type": "object",
-  "required": ["format", "formatVersion", "id", "name", "appearance", "sharedColors", "equipment", "state"],
+  "required": ["format", "formatVersion", "id", "name", "canvas", "appearance", "sharedColors", "equipment", "state"],
   "properties": {
     "format": { "const": "INVESTIMAKER_CHARACTER" },
     "formatVersion": { "const": 1 },
     "id": { "$ref": "#/$defs/uuid" },
     "name": { "type": "string", "maxLength": 200 },
+    "canvas": {
+      "description": "座標系の基準になるキャンバスサイズ。v1 は 1600×2400 だけ",
+      "type": "array",
+      "prefixItems": [{ "const": 1600 }, { "const": 2400 }],
+      "items": false,
+      "minItems": 2
+    },
     "appearance": {
       "type": "object",
       "required": ["body"],

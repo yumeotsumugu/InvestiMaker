@@ -25,5 +25,9 @@
       "eyebrows": "neutral",
       "mouth": "closed"
     }
-  }
+  },
+  "canvas": [
+    1600,
+    2400
+  ]
 }

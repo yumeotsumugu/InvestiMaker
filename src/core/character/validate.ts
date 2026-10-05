@@ -1,7 +1,7 @@
 // Character JSON の構造の検証。JSON だけで判定できることだけを扱う。
 // Part の有無など環境に依存する判定は evaluate.ts が行い、ここでは決して INVALID にしない。
 
-import { isValidId, isValidPartId } from '../ids.ts';
+import { MASTER_CANVAS, isValidId, isValidPartId } from '../ids.ts';
 import type { Issue } from '../validate.ts';
 import { CHARACTER_FORMAT, EXPRESSION_KEYS, POSE_REGIONS, SUPPORTED_CHARACTER_FORMAT_VERSION } from './types.ts';
 
@@ -51,6 +51,14 @@ export function validateCharacterJson(input: unknown): CharacterValidation {
 
   if (!isUuid(c.id)) error('id', 'id', 'id は UUID（小文字）');
   if (typeof c.name !== 'string' || c.name.length > MAX_NAME_LENGTH) error('name', 'name', `name は ${MAX_NAME_LENGTH} 文字以内の文字列`);
+
+  // transform の値は画素なので、座標系を Character 単体で確定させる。v1 はマスターキャンバスだけを認める。
+  const canvas = c.canvas;
+  if (!Array.isArray(canvas) || canvas.length !== 2 || !canvas.every((v) => Number.isInteger(v) && v > 0)) {
+    error('canvas', 'canvas', 'canvas は [幅, 高さ]（正の整数）で必須');
+  } else if (canvas[0] !== MASTER_CANVAS[0] || canvas[1] !== MASTER_CANVAS[1]) {
+    error('canvas-mismatch', 'canvas', `canvas は [${MASTER_CANVAS[0]}, ${MASTER_CANVAS[1]}] でなければならない: [${canvas[0]}, ${canvas[1]}]`);
+  }
 
   // --- sharedColors
   if (!isObject(c.sharedColors)) error('shared-colors', 'sharedColors', 'sharedColors は必須');

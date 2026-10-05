@@ -1,6 +1,7 @@
 // Character を編集する純粋な関数。元のオブジェクトは変更せず、新しい Character を返す。
 // 既存のオブジェクトを展開して作り直すので、未知のフィールドは保たれる。
 
+import { MASTER_CANVAS } from '../ids.ts';
 import type { ColorSlot } from '../manifest.ts';
 import { resolveSlotColor } from '../color.ts';
 import type { Character, EquipmentInstance } from './types.ts';
@@ -23,6 +24,7 @@ export function createCharacter(init: NewCharacter): Character {
   return {
     id: init.id,
     name: init.name,
+    canvas: [MASTER_CANVAS[0], MASTER_CANVAS[1]],
     appearance: { body: init.bodyInstanceId, fit: {} },
     sharedColors: {},
     equipment: [{ instanceId: init.bodyInstanceId, partId: init.bodyPartId, equipped: true, colors: {} }],
@@ -41,8 +43,8 @@ export function addInstance(character: Character, partId: string, instanceId: st
 }
 
 /**
- * Part を装備する。外してある同じ Part の Instance があればそれを付け直し（色などの設定と並び順が戻る）、
- * なければ `newInstanceId` で新しく追加する。
+ * Part を装備する。外してある同じ Part の Instance があればそれを付け直し、なければ `newInstanceId` で新しく追加する。
+ * 付け直した Instance は色などの設定を保ち、equipment の中の位置も変わらない（Character Schema §5.1）。
  */
 export function equipPart(character: Character, partId: string, newInstanceId: string): Character {
   const kept = character.equipment.findLast((i) => i.partId === partId && !i.equipped);
