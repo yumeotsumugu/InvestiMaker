@@ -1,0 +1,178 @@
+{
+  "browser": "Chrome/154.0.8037.93",
+  "headless": true,
+  "viewport": [
+    1280,
+    800
+  ],
+  "steps": [
+    {
+      "step": "CREATE（開いた直後）",
+      "result": {
+        "step": "create",
+        "chip": null,
+        "message": null,
+        "notices": [],
+        "title": null,
+        "equipped": 0,
+        "drawn": 0
+      }
+    },
+    {
+      "step": "CUSTOMIZE（始めた直後）",
+      "result": {
+        "step": "customize",
+        "chip": null,
+        "message": null,
+        "notices": [],
+        "title": null,
+        "equipped": 13,
+        "drawn": 19
+      }
+    },
+    {
+      "step": "髪と服を選ぶ",
+      "result": {
+        "step": "customize",
+        "chip": null,
+        "message": null,
+        "notices": [],
+        "title": "仮・Tシャツ",
+        "equipped": 13,
+        "drawn": 19
+      }
+    },
+    {
+      "step": "色変更",
+      "result": {
+        "step": "customize",
+        "chip": null,
+        "message": null,
+        "notices": [],
+        "title": "仮素体（成人・標準）",
+        "equipped": 13,
+        "drawn": 19
+      }
+    },
+    {
+      "step": "表情",
+      "result": {
+        "step": "customize",
+        "chip": null,
+        "message": null,
+        "notices": [],
+        "title": "表情：カスタム",
+        "equipped": 13,
+        "drawn": 19
+      }
+    },
+    {
+      "step": "ポーズ（右腕ポケット）",
+      "result": {
+        "step": "customize",
+        "chip": "注意 1 件",
+        "message": null,
+        "notices": [
+          "仮・コート：いまの向き・ポーズでは表示できません。"
+        ],
+        "title": "ポーズ・向き",
+        "equipped": 14,
+        "drawn": 18
+      }
+    },
+    {
+      "step": "詳細設定",
+      "result": {
+        "step": "customize",
+        "chip": null,
+        "message": null,
+        "notices": [],
+        "title": "仮・メガネ",
+        "equipped": 14,
+        "drawn": 20
+      }
+    },
+    {
+      "step": "保存 → 新規作成 → 読込",
+      "result": {
+        "step": "customize",
+        "chip": null,
+        "message": "「夢生ツムグ」を読み込みました。",
+        "notices": [],
+        "title": null,
+        "equipped": 14,
+        "drawn": 20
+      }
+    },
+    {
+      "step": "見つからない素材",
+      "result": {
+        "step": "customize",
+        "chip": "注意 1 件",
+        "message": "「夢生ツムグ」を読み込みました。",
+        "notices": [
+          "見つからない素材があります：author.special_coat"
+        ],
+        "title": null,
+        "equipped": 15,
+        "drawn": 20
+      }
+    },
+    {
+      "step": "知らないポーズ",
+      "result": {
+        "step": "customize",
+        "chip": "注意 1 件",
+        "message": "「夢生ツムグ」を読み込みました。",
+        "notices": [
+          "このキャラクターは、この版の InvestiMaker が知らないポーズを使っています。"
+        ],
+        "title": null,
+        "equipped": 14,
+        "drawn": 0
+      }
+    },
+    {
+      "step": "読み込めないファイル",
+      "result": {
+        "step": "export",
+        "chip": "注意 1 件",
+        "message": "このファイルは、新しい版の InvestiMaker で作られています。この版では読み込めません。",
+        "notices": [
+          "このキャラクターは、この版の InvestiMaker が知らないポーズを使っています。"
+        ],
+        "title": null,
+        "equipped": 14,
+        "drawn": 0
+      }
+    },
+    {
+      "step": "素材のない向き",
+      "result": {
+        "step": "customize",
+        "chip": "注意 1 件",
+        "message": "「夢生ツムグ」を読み込みました。",
+        "notices": [
+          "表示できる素材がありません。"
+        ],
+        "title": null,
+        "equipped": 14,
+        "drawn": 0
+      }
+    },
+    {
+      "step": "分類の重複",
+      "result": {
+        "step": "customize",
+        "chip": "注意 1 件",
+        "message": "「夢生ツムグ」を読み込みました。",
+        "notices": [
+          "「トップス」に複数のパーツが付いています。"
+        ],
+        "title": null,
+        "equipped": 15,
+        "drawn": 23
+      }
+    }
+  ]
+}
