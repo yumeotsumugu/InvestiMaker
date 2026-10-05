@@ -1,0 +1,35 @@
+{
+  "id": "T10",
+  "spec": "§6.6",
+  "description": "次元数が等しく、chest=large・waist=wide で両方一致",
+  "compatibleBody": [
+    "dev.body_a",
+    "dev.body_b"
+  ],
+  "layer": {
+    "id": "target",
+    "slot": "arm.right.sleeve.top",
+    "assets": [
+      {
+        "when": {
+          "view": "front",
+          "fit": {
+            "chest": "large"
+          }
+        },
+        "file": "assets/front/x.png"
+      },
+      {
+        "when": {
+          "view": "front",
+          "fit": {
+            "waist": "wide"
+          }
+        },
+        "file": "assets/front/y.png"
+      }
+    ]
+  },
+  "context": null,
+  "expect": "invalid"
+}

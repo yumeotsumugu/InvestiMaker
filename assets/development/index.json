@@ -1,0 +1,96 @@
+{
+  "canvas": [1600, 2400],
+  "body": "dev.body_adult_standard",
+  "parts": [
+    {
+      "id": "dev.body_adult_standard",
+      "files": 14,
+      "pixels": 3117712
+    },
+    {
+      "id": "dev.face_head_01",
+      "files": 2,
+      "pixels": 230400
+    },
+    {
+      "id": "dev.face_ears_01",
+      "files": 2,
+      "pixels": 57792
+    },
+    {
+      "id": "dev.face_nose_01",
+      "files": 1,
+      "pixels": 920
+    },
+    {
+      "id": "dev.eyes_01",
+      "files": 10,
+      "pixels": 81992
+    },
+    {
+      "id": "dev.eyebrows_01",
+      "files": 10,
+      "pixels": 56496
+    },
+    {
+      "id": "dev.mouth_01",
+      "files": 6,
+      "pixels": 8892
+    },
+    {
+      "id": "dev.hair_back_01",
+      "files": 2,
+      "pixels": 487648
+    },
+    {
+      "id": "dev.hair_front_01",
+      "files": 2,
+      "pixels": 151632
+    },
+    {
+      "id": "dev.hair_extra_01",
+      "files": 2,
+      "pixels": 16800
+    },
+    {
+      "id": "dev.socks_01",
+      "files": 2,
+      "pixels": 149000
+    },
+    {
+      "id": "dev.shoes_01",
+      "files": 2,
+      "pixels": 113560
+    },
+    {
+      "id": "dev.pants_01",
+      "files": 2,
+      "pixels": 732240
+    },
+    {
+      "id": "dev.shirt_01",
+      "files": 10,
+      "pixels": 1552960
+    },
+    {
+      "id": "dev.coat_01",
+      "files": 8,
+      "pixels": 2250224
+    },
+    {
+      "id": "dev.glasses_01",
+      "files": 2,
+      "pixels": 42624
+    },
+    {
+      "id": "dev.hat_01",
+      "files": 4,
+      "pixels": 282000
+    },
+    {
+      "id": "dev.blush_01",
+      "files": 2,
+      "pixels": 25344
+    }
+  ]
+}

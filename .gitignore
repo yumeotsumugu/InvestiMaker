@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+Thumbs.db
+
+# キャンバスサイズ比較用の生成物（npm run gen:assets:sizes で再生成）
+assets/bench/

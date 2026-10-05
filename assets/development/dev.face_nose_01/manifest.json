@@ -1,0 +1,48 @@
+{
+  "format": "INVESTIMAKER_PART",
+  "formatVersion": 1,
+  "id": "dev.face_nose_01",
+  "version": "0.1.0",
+  "name": "仮・鼻",
+  "author": "InvestiMaker (dev)",
+  "category": "face.nose",
+  "canvas": [1600, 2400],
+  "tags": [
+    "仮素材"
+  ],
+  "license": {
+    "name": "InvestiMaker 開発用仮素材（リポジトリ内のスクリプトで生成）",
+    "url": "",
+    "commercial": false,
+    "modify": true,
+    "redistributable": false,
+    "creditRequired": false,
+    "creditText": ""
+  },
+  "kind": "part",
+  "compatible": {
+    "body": [
+      "dev.body_adult_standard"
+    ]
+  },
+  "requires": [],
+  "conflicts": [],
+  "hides": [],
+  "mirrorable": false,
+  "colorSlots": [],
+  "layers": [
+    {
+      "id": "nose",
+      "slot": "face.nose",
+      "assets": [
+        {
+          "when": {
+            "view": "front"
+          },
+          "file": "assets/front/nose.png",
+          "offset": [789, 427]
+        }
+      ]
+    }
+  ]
+}

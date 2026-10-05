@@ -1,0 +1,89 @@
+{
+  "format": "INVESTIMAKER_PART",
+  "formatVersion": 1,
+  "id": "dev.mouth_01",
+  "version": "0.1.0",
+  "name": "仮・口",
+  "author": "InvestiMaker (dev)",
+  "category": "face.mouth",
+  "canvas": [1600, 2400],
+  "tags": [
+    "仮素材"
+  ],
+  "license": {
+    "name": "InvestiMaker 開発用仮素材（リポジトリ内のスクリプトで生成）",
+    "url": "",
+    "commercial": false,
+    "modify": true,
+    "redistributable": false,
+    "creditRequired": false,
+    "creditText": ""
+  },
+  "kind": "part",
+  "compatible": {
+    "body": [
+      "dev.body_adult_standard"
+    ]
+  },
+  "requires": [],
+  "conflicts": [],
+  "hides": [],
+  "mirrorable": false,
+  "colorSlots": [],
+  "layers": [
+    {
+      "id": "mouth",
+      "slot": "face.mouth",
+      "assets": [
+        {
+          "when": {
+            "view": "front",
+            "state": "closed"
+          },
+          "file": "assets/front/mouth_closed.png",
+          "offset": [779, 502]
+        },
+        {
+          "when": {
+            "view": "front",
+            "state": "smile"
+          },
+          "file": "assets/front/mouth_smile.png",
+          "offset": [773, 497]
+        },
+        {
+          "when": {
+            "view": "front",
+            "state": "smile_open"
+          },
+          "file": "assets/front/mouth_smile_open.png",
+          "offset": [770, 498]
+        },
+        {
+          "when": {
+            "view": "front",
+            "state": "open"
+          },
+          "file": "assets/front/mouth_open.png",
+          "offset": [784, 490]
+        },
+        {
+          "when": {
+            "view": "front",
+            "state": "frown"
+          },
+          "file": "assets/front/mouth_frown.png",
+          "offset": [773, 499]
+        },
+        {
+          "when": {
+            "view": "front",
+            "state": "shout"
+          },
+          "file": "assets/front/mouth_shout.png",
+          "offset": [770, 478]
+        }
+      ]
+    }
+  ]
+}

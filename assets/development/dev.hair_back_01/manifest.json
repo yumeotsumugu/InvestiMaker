@@ -1,0 +1,62 @@
+{
+  "format": "INVESTIMAKER_PART",
+  "formatVersion": 1,
+  "id": "dev.hair_back_01",
+  "version": "0.1.0",
+  "name": "仮・後髪",
+  "author": "InvestiMaker (dev)",
+  "category": "hair.back",
+  "canvas": [1600, 2400],
+  "tags": [
+    "仮素材"
+  ],
+  "license": {
+    "name": "InvestiMaker 開発用仮素材（リポジトリ内のスクリプトで生成）",
+    "url": "",
+    "commercial": false,
+    "modify": true,
+    "redistributable": false,
+    "creditRequired": false,
+    "creditText": ""
+  },
+  "kind": "part",
+  "compatible": {
+    "body": [
+      "dev.body_adult_standard"
+    ]
+  },
+  "requires": [],
+  "conflicts": [],
+  "hides": [],
+  "mirrorable": false,
+  "colorSlots": [
+    {
+      "id": "base",
+      "name": "髪",
+      "mode": "tint",
+      "default": "#5A3E2B",
+      "link": "hair.base"
+    }
+  ],
+  "layers": [
+    {
+      "id": "back",
+      "slot": "hair.back",
+      "assets": [
+        {
+          "when": {
+            "view": "front"
+          },
+          "file": "assets/front/back.png",
+          "offset": [604, 158],
+          "mask": {
+            "file": "assets/front/back.mask.png",
+            "channels": {
+              "r": "base"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
