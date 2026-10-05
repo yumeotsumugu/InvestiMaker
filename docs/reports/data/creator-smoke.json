@@ -107,7 +107,7 @@
     {
       "step": "見つからない素材",
       "result": {
-        "step": "customize",
+        "step": "export",
         "chip": "注意 1 件",
         "message": "「夢生ツムグ」を読み込みました。",
         "notices": [
@@ -121,7 +121,7 @@
     {
       "step": "知らないポーズ",
       "result": {
-        "step": "customize",
+        "step": "export",
         "chip": "注意 1 件",
         "message": "「夢生ツムグ」を読み込みました。",
         "notices": [
@@ -149,7 +149,7 @@
     {
       "step": "素材のない向き",
       "result": {
-        "step": "customize",
+        "step": "export",
         "chip": "注意 1 件",
         "message": "「夢生ツムグ」を読み込みました。",
         "notices": [
@@ -163,7 +163,7 @@
     {
       "step": "分類の重複",
       "result": {
-        "step": "customize",
+        "step": "export",
         "chip": "注意 1 件",
         "message": "「夢生ツムグ」を読み込みました。",
         "notices": [
@@ -179,7 +179,7 @@
       "result": {
         "step": "customize",
         "chip": null,
-        "message": "「夢生ツムグ」を読み込みました。",
+        "message": null,
         "notices": [],
         "title": "仮・Tシャツ",
         "equipped": 14,

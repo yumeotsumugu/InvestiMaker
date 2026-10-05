@@ -3,6 +3,10 @@
 // 正本は Character 1 個。画面は Character と、下の `ui`（保存しない表示上の状態）から描く。
 // DOM event → Character の操作（core/operations、app/session）→ 評価 → 描画計画 → 描画 の一方向で動かす。
 // 入力中の部品（色の選択など）を壊さないよう、領域ごとに描き直す。
+//
+// ページは 3 つに分かれている：index.html（CREATE）→ customize.html（CUSTOMIZE）→ export.html（EXPORT）。
+// どのページもこのファイルを読み、<body data-page="…"> で自分の段を知る。
+// 編集中の Character は、ページを移るときにセッションストレージで運ぶ（store.ts）。
 
 import './style.css';
 import type { Character, EquipmentInstance, PartManifest, Transform } from '../core/index.ts';
@@ -24,6 +28,7 @@ import {
   setPose,
   setSharedColor,
   setView,
+  serializeCharacter,
   stringifyCharacter,
   unlinkColor,
 } from '../core/index.ts';
@@ -34,6 +39,7 @@ import { loadSet } from '../web/loader.ts';
 import type { MajorView } from './catalog.ts';
 import { REQUIRED_CATEGORIES, visibleMajors } from './catalog.ts';
 import { label } from './labels.ts';
+import { readStore, writeStore } from './store.ts';
 import type { Notice } from './messages.ts';
 import { buildNotices, cardProblemText, exportBlockText, loadErrorText, multiHint } from './messages.ts';
 import type { Inspection, Point, Scope } from './session.ts';
@@ -84,6 +90,8 @@ function download(blob: Blob, name: string) {
 const newId = () => crypto.randomUUID();
 
 type Step = 'create' | 'customize' | 'export';
+/** 段ごとのページ。相対パスなので、ファイルを直接開いても、Web に置いても同じように移れる。 */
+const PAGES: Record<Step, string> = { create: 'index.html', customize: 'customize.html', export: 'export.html' };
 type Target = { kind: 'instance'; instanceId: string } | { kind: 'expression' } | { kind: 'pose' } | null;
 
 /** 保存しない表示上の状態（設計書 §14）。Character に入るものはここに置かない。 */
@@ -123,27 +131,69 @@ async function main() {
   // 【Phase 1-C-3 の検証用】通知の置き場所を URL で切り替える。置き場所が決まったら、採用した案だけを残して消す。
   //   ?notices=under（現状：プレビューの下）／ side（右ペインの上）／ overlay（プレビューに重ねる）／ chip（「注意 n 件」から開く）
   type NoticeMode = 'under' | 'side' | 'overlay' | 'chip';
-  const requested = new URLSearchParams(location.search).get('notices');
+  // 指定はページを移っても引き継ぐ（?notices=under で現状に戻す）。
+  const stored = readStore();
+  const requested = new URLSearchParams(location.search).get('notices') ?? stored.ui.notices ?? 'under';
   const noticeMode: NoticeMode = requested === 'side' || requested === 'overlay' || requested === 'chip' ? requested : 'under';
+  const dataPage = document.body.dataset.page;
+  const pageStep: Step = dataPage === 'customize' || dataPage === 'export' ? dataPage : 'create';
 
   /** 編集中のキャラクター。CREATE で始めるまでは null。 */
   let character: Character | null = null;
   let view: Inspection | null = null;
   let notices: Notice[] = [];
   const ui: UiState = {
-    step: 'create',
-    major: majors.some((m) => m.major.id === 'hair') ? 'hair' : majors[0]!.major.id,
-    sub: {},
-    target: null,
-    advancedOpen: false,
+    step: pageStep,
+    major: stored.ui.major && majors.some((m) => m.major.id === stored.ui.major) ? stored.ui.major : majors.some((m) => m.major.id === 'hair') ? 'hair' : majors[0]!.major.id,
+    sub: stored.ui.sub ?? {},
+    target: stored.ui.target === 'expression' ? { kind: 'expression' } : stored.ui.target === 'pose' ? { kind: 'pose' } : stored.ui.target ? { kind: 'instance', instanceId: stored.ui.target } : null,
+    advancedOpen: stored.ui.advancedOpen ?? false,
     scope: 'always',
-    savedSnapshot: null,
-    recentColors: [],
-    message: null,
+    savedSnapshot: stored.savedSnapshot,
+    recentColors: stored.ui.recentColors ?? [],
+    message: stored.flash ? { kind: 'info', text: stored.flash } : null,
     draft: { name: '', bodyId: firstBody, withStarter: true },
-    alwaysAdvanced: false,
+    alwaysAdvanced: stored.ui.alwaysAdvanced ?? false,
     noticesOpen: false,
   };
+
+  // 前のページから運ばれてきたキャラクターを読む。保存 JSON と同じ検証を通す。
+  if (stored.character) {
+    const carried = loadCharacterText(stored.character);
+    if (carried.loaded) character = carried.character;
+  }
+  // キャラクターがまだないのに作成画面・書き出し画面を開いた場合は、最初のページへ戻る。
+  if (!character && pageStep !== 'create') {
+    location.replace(PAGES.create);
+    return;
+  }
+
+  /** 編集中の内容をセッションストレージへ書く（ページを移っても続きから編集できるようにする）。 */
+  let flash: string | null = null;
+  function persist() {
+    writeStore({
+      character: character ? JSON.stringify(serializeCharacter(character)) : null,
+      savedSnapshot: ui.savedSnapshot,
+      flash,
+      ui: {
+        major: ui.major,
+        sub: ui.sub,
+        target: ui.target === null ? null : ui.target.kind === 'instance' ? ui.target.instanceId : ui.target.kind,
+        advancedOpen: ui.advancedOpen,
+        alwaysAdvanced: ui.alwaysAdvanced,
+        recentColors: ui.recentColors,
+        notices: noticeMode,
+      },
+    });
+  }
+
+  /** 別の段（ページ）へ移る。 */
+  function go(step: Step, message: string | null = null) {
+    if (step === pageStep) return;
+    flash = message;
+    persist();
+    location.href = PAGES[step];
+  }
   const hooks = { lastSaved: null as string | null, lastPng: null as string | null };
 
   const canvas = mark(h('canvas', { className: 'canvas' }), { role: 'preview' });
@@ -163,6 +213,7 @@ async function main() {
   const previewEl = h('div', { className: 'pane preview' }, h('div', { className: 'canvas-wrap' }, canvas, emptyEl, overlayEl), underEl);
   const popoverEl = mark(h('div', { className: 'notice-popover' }), { role: 'notice-popover' });
   root.dataset.notices = noticeMode;
+  root.dataset.page = pageStep;
   const editEl = h('div', { className: 'pane edit' });
   const sideEl = h('div', { className: 'pane side' });
 
@@ -214,12 +265,6 @@ async function main() {
     }
   }
 
-  function go(step: Step) {
-    ui.step = step;
-    ui.message = null;
-    render('all');
-  }
-
   function render(region: Region) {
     renderHeader();
     renderSteps();
@@ -229,6 +274,7 @@ async function main() {
       if (region === 'edit' || region === 'picker') renderEdit();
     } else if (ui.step === 'export') renderExportSide();
     renderUnder();
+    persist();
   }
 
   // ---------------------------------------------------------------- 部品
@@ -323,8 +369,14 @@ async function main() {
     ui.savedSnapshot = snapshotOf(outcome.character);
     ui.target = null;
     ui.scope = 'always';
-    ui.step = 'customize';
-    ui.message = { kind: 'info', text: `「${outcome.character.name || '名前のないキャラクター'}」を読み込みました。` };
+    const loaded = `「${outcome.character.name || '名前のないキャラクター'}」を読み込みました。`;
+    if (pageStep === 'create') {
+      // 最初のページで読み込んだら、作成画面へ移る。
+      character = outcome.character;
+      go('customize', loaded);
+      return;
+    }
+    ui.message = { kind: 'info', text: loaded };
     commit(outcome.character);
   });
 
@@ -369,6 +421,7 @@ async function main() {
     if (!character) return;
     character = rename(character, nameEl.value);
     view = inspect(character, set);
+    persist();
   });
 
   function noticeChip(count: number) {
@@ -473,14 +526,11 @@ async function main() {
 
     const start = () =>
       confirmDiscard(() => {
-        const created = startCharacter(set, newId, { name: ui.draft.name.trim(), bodyId: ui.draft.bodyId, withStarter: ui.draft.withStarter });
+        // 新しいキャラクターを作り、作成画面（別のページ）へ移る。
+        character = startCharacter(set, newId, { name: ui.draft.name.trim(), bodyId: ui.draft.bodyId, withStarter: ui.draft.withStarter });
         ui.savedSnapshot = null;
         ui.target = null;
-        ui.scope = 'always';
-        ui.step = 'customize';
-        ui.message = null;
-        ui.draft.name = '';
-        commit(created);
+        go('customize');
       });
 
     return h('div', { className: 'pane create' },
@@ -495,7 +545,9 @@ async function main() {
       h('div', { className: 'row actions' },
         button('この内容で始める', start, { action: 'start' }, { primary: true }),
         button('保存したキャラクターを読み込む', () => confirmDiscard(() => fileInput.click()), { action: 'create-load' })),
-      character && h('p', { className: 'muted small' }, '編集中のキャラクターがあります。新しく始めると、保存していない変更は失われます。'),
+      character && mark(h('div', { className: 'box' },
+        h('p', {}, `編集中のキャラクターがあります：${character.name || '（名前なし）'}`),
+        button('続きから編集する', () => go('customize'), { action: 'resume' })), { role: 'resume' }),
     );
   }
 
@@ -817,7 +869,9 @@ async function main() {
     );
   }
 
-  render('all');
+  // 一度出した知らせは、次のページへ持ち越さない。
+  if (character) commit(character);
+  else render('all');
   await paint();
 
   // 自動操作（tools/creator-smoke.ts）用の入口。画面の操作を置き換えるものではなく、結果の確認に使う。

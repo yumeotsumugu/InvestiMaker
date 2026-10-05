@@ -289,3 +289,19 @@ Character に入れるべき例
 ### 20.4 Phase 1-C-1 の完了
 
 §17 の完了条件 7 項目はすべて満たした。次は Phase 1-C-2（Creator UI の実装）である。
+
+### 20.5 ページの構成と配り方（Phase 1-C-3 の準備中に追加）
+
+利用者への配り方の要件：**ZIP をダウンロードして解凍し、`index.html` を開くだけ。** インストールは不要で、GitHub Pages に置いても動く。
+
+これに合わせて、§2 の段（CREATE / CUSTOMIZE / EXPORT）を、それぞれ別のページにする。下の段の帯は、ページの移動になる。
+
+| 段 | ページ |
+| --- | --- |
+| CREATE | `index.html`（最初のページ） |
+| CUSTOMIZE | `customize.html` |
+| EXPORT | `export.html` |
+
+- 編集中の Character は、ページを移るときにブラウザのセッションストレージで運ぶ。§14 の原則（Character が唯一の正本）は変えない。
+- 最初のページに戻ったとき、編集中のキャラクターがあれば「続きから編集する」を出す。
+- VARIANT と PORTRAIT を実装するときも、同じ形でページを足す。

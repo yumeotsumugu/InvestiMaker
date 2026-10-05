@@ -34,11 +34,23 @@ TRPG 用の 2D キャラクター立ち絵・差分・アイコンを、既製�
 
 ### 使う（インストール不要）
 
-**`index.html` を開くだけです。** ダブルクリックで、Chrome か Edge で開いてください。インストールも、コマンドの実行も要りません。
+1. ZIP をダウンロードして、解凍する。
+2. **`index.html` を開く。**
 
-`index.html` は、アプリと素材をすべて 1 つにまとめたファイルです。ほかのファイルを必要としないので、**`index.html` だけを人に渡しても、そのまま使えます。** 通信もしません。
+これだけです。インストールも、コマンドの実行も要りません（Chrome か Edge で開いてください）。通信もしません。
 
-（開発する人へ：`index.html` は生成物です。`src/app/` や素材を変えたら、`npm run build:standalone` で作り直します。）
+`index.html` が最初のページです。名前を入れて「この内容で始める」を押すと、作成画面（`customize.html`）へ移り、そこから画像の書き出し（`export.html`）へ進みます。
+
+同じファイルを GitHub Pages などにそのまま置いても動きます。
+
+| ファイル | 役割 |
+| --- | --- |
+| `index.html` | 最初のページ（新しいキャラクターを作る、保存したキャラクターを読み込む） |
+| `customize.html` | 作成画面（パーツ・色・表情・ポーズ） |
+| `export.html` | 画像の書き出し |
+| `app/` | 上の 3 ページが使うプログラムと素材 |
+
+（開発する人へ：この 3 ページと `app/` は生成物です。`src/app/` や素材を変えたら、`npm run build:site` で作り直してコミットします。）
 
 ### 開発する
 
@@ -46,7 +58,7 @@ Node.js 24 以降が必要です（`tools/` の TypeScript を Node の型除去
 
 ```sh
 npm install
-npm run dev        # http://127.0.0.1:5173/dev.html が開発中の Creator UI。/minimal.html は Phase 1-B の最小 UI、/lab.html は検証ページ
+npm run dev        # http://127.0.0.1:5173/dev/ が開発中の Creator UI。/dev/minimal.html は Phase 1-B の最小 UI、/dev/lab.html は検証ページ
 npm test           # 単体テストと規格適合性テスト（§6.6 の T1〜T12、§5.3 の色計算の参照ベクタを含む）
 npm run typecheck  # 型検査
 ```
@@ -82,6 +94,8 @@ docs/design/          基本設計書 v0.1（背景理解用）、Phase 1-C の 
 docs/instructions/    Phase 0 の作業指示書
 docs/reports/         検証レポートと比較画像
 src/core/             manifest 型・検証・Asset 解決・描画順・色合成・互換性（DOM 非依存。製品版に持ち越す）
+index.html ほか       配布用のページ（生成物）。customize.html・export.html・app/ と合わせて、開くだけで使える
+dev/                  開発用のページ（npm run dev で開く）
 src/app/              InvestiMaker の Creator UI（Character が唯一の正本）
 src/minimal/          Phase 1-B の最小 UI（Character 操作のリファレンスとして残してある）
 src/web/              素材の読み込みと Canvas 合成（本体と検証ページの共用）

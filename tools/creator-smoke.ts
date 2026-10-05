@@ -1,4 +1,4 @@
-// Creator UI（開発用の入口 dev.html）を、ヘッドレスの Chrome / Edge で実際に操作して確かめる。
+// Creator UI（開発用のページ dev/index.html → dev/customize.html → dev/export.html）を、ヘッドレスの Chrome / Edge で実際に操作して確かめる。
 //
 //   node tools/creator-smoke.ts [--write]
 //
@@ -38,8 +38,32 @@ const temp = mkdtempSync(join(tmpdir(), 'investimaker-creator-'));
 
 try {
   console.log(`${browser.product}（ヘッドレス） / ${base}`);
-  const page = await Page.open(browser.cdp, `${base}dev.html`, [1280, 800]);
-  await page.waitFor('__creator');
+  const page = await Page.open(browser.cdp, `${base}dev/index.html`, [1280, 800]);
+
+  // ---- ページの移動
+  /** 指定のページが開き、Creator UI が使えるようになるまで待つ（移動中は評価が中断されるので、待ち直す）。 */
+  const waitPage = async (target: Page, file: string) => {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        await target.evaluate('new Promise((r) => setTimeout(r, 100))');
+        const at = await target.evaluate<string>(`window.__creator ? location.pathname.split('/').pop() : ''`);
+        if (at === file) {
+          await target.evaluate<void>('window.__creator.idle()');
+          return;
+        }
+      } catch {
+        // 移動中
+      }
+      if (attempt >= 80) throw new Error(`${file} が開かない`);
+    }
+  };
+  await waitPage(page, 'index.html');
+  const pageName = () => page.evaluate<string>(`location.pathname.split('/').pop()`);
+  /** 押すと別のページへ移る操作。 */
+  const nav = async (selector: string, file: string) => {
+    await page.evaluate(`(() => { const el = document.querySelector(${JSON.stringify(selector)}); if (!el) throw new Error('要素がない: ' + ${JSON.stringify(selector)}); if (el.disabled) throw new Error('押せない: ' + ${JSON.stringify(selector)}); el.click(); })()`);
+    await waitPage(page, file);
+  };
 
   // ---- 画面の操作
   const settle = async () => {
@@ -61,10 +85,12 @@ try {
     })()`);
     await settle();
   };
-  const loadFile = async (name: string, text: string) => {
+  /** ファイルを選んで読み込む。`movesTo` は、読み込むと別のページへ移る場合の行き先。 */
+  const loadFile = async (name: string, text: string, movesTo?: string) => {
     const path = join(temp, name);
     writeFileSync(path, text);
     await page.setFiles('[data-role="load-file"]', [path]);
+    if (movesTo) return waitPage(page, movesTo);
     await page.evaluate('new Promise((r) => setTimeout(r, 150))');
     await settle();
   };
@@ -130,9 +156,11 @@ try {
   let s = await record('CREATE（開いた直後）');
   check(s.step === 'create' && s.character === null, '最初は CREATE で、キャラクターはまだない');
   await shot('1_create');
+  check((await pageName()) === 'index.html', '最初のページは index.html');
   await input('[data-create="name"]', '夢生ツムグ');
-  await click('[data-action="start"]');
+  await nav('[data-action="start"]', 'customize.html');
   s = await record('CUSTOMIZE（始めた直後）');
+  check((await pageName()) === 'customize.html', '「この内容で始める」で、作成画面のページ（customize.html）へ移る');
   check(s.step === 'customize' && s.equipped.length === 13 && s.drawn > 0, '基本のパーツを付けて始まる');
   check(s.notices.length === 0 && s.chip === null, '問題がなければ、状態は何も出さない');
   const started = JSON.parse(s.character!) as { name: string; sharedColors: Record<string, string> };
@@ -245,32 +273,40 @@ try {
   await click('[data-action="advanced"]');
 
   // 7) 保存 → 新規作成（確認が出る）→ 読込 → EXPORT で同じ画像
-  await click('[data-step="export"]');
+  const beforeMove = (await snapshot()).character;
+  await nav('[data-step="export"]', 'export.html');
+  check((await snapshot()).character === beforeMove, 'ページを移っても、編集中のキャラクターはそのまま');
   await click('[data-action="export"]');
   const pngBefore = await page.evaluate<string>('window.__creator.hooks.lastPng');
   await shot('9_export');
-  await click('[data-step="create"]');
+  await nav('[data-step="create"]', 'index.html');
+  check((await snapshot()).text.includes('編集中のキャラクターがあります'), '最初のページに戻ると、編集中のキャラクターがあることが分かる');
   await input('[data-create="name"]', '別のキャラクター');
   await click('[data-action="start"]');
   check((await snapshot()).modal, '保存していない変更があると、確認が出る');
   await shot('10_confirm');
   await click('[data-action="confirm-cancel"]');
-  check((await snapshot()).step === 'create' && JSON.parse((await snapshot()).character!).name === '夢生ツムグ', 'やめると、いまのキャラクターはそのまま');
-  await click('[data-step="customize"]');
+  check((await pageName()) === 'index.html' && JSON.parse((await snapshot()).character!).name === '夢生ツムグ', 'やめると、いまのキャラクターはそのまま');
+  await nav('[data-action="resume"]', 'customize.html');
+  check((await snapshot()).character === beforeMove, '「続きから編集する」で、同じ内容の作成画面に戻る');
   await click('[data-action="save"]');
   const saved = await page.evaluate<string>('window.__creator.hooks.lastSaved');
   const characterBefore = (await snapshot()).character;
   if (WRITE) writeFileSync(`${OUT_DATA}/creator-smoke-character.json`, saved);
   if (WRITE) writeFileSync(`${OUT_IMAGES}/creator_export.png`, Buffer.from(pngBefore.replace(/^data:image\/png;base64,/, ''), 'base64'));
-  await click('[data-step="create"]');
-  await click('[data-action="start"]');
+  await nav('[data-step="create"]', 'index.html');
+  await input('[data-create="name"]', '別のキャラクター');
+  await nav('[data-action="start"]', 'customize.html');
   s = await snapshot();
-  check(!s.modal && s.step === 'customize' && JSON.parse(s.character!).name === '別のキャラクター', '保存した後は、確認なしで新しく始められる');
+  check(s.step === 'customize' && JSON.parse(s.character!).name === '別のキャラクター', '保存した後は、確認なしで新しく始められる');
   await click('[data-action="save"]');
-  await loadFile('saved.json', saved);
+  // 最初のページから読み込むと、作成画面へ移る
+  await nav('[data-step="create"]', 'index.html');
+  await loadFile('saved.json', saved, 'customize.html');
   s = await record('保存 → 新規作成 → 読込');
   check(s.character === characterBefore, '読み込んだキャラクターが、保存前と同じ');
-  await click('[data-step="export"]');
+  check(s.message !== null && s.message.includes('読み込みました'), '読み込んだことを、移った先のページで知らせる');
+  await nav('[data-step="export"]', 'export.html');
   await click('[data-action="export"]');
   check((await page.evaluate<string>('window.__creator.hooks.lastPng')) === pngBefore, '読み込み後の PNG が、保存前と同じ');
 
@@ -282,8 +318,7 @@ try {
   s = await record('見つからない素材');
   check(s.notices.some((n) => n.includes('見つからない素材') && n.includes('author.special_coat')), '見つからない素材を知らせる（この場面でだけ素材の ID を出す）');
   await shot('11_missing');
-  await click('[data-step="export"]');
-  check((await snapshot()).exportDisabled === false, '見つからない素材があっても、書き出せる');
+  check((await pageName()) === 'export.html' && (await snapshot()).exportDisabled === false, '見つからない素材があっても、書き出せる');
   await click('[data-action="export"]');
   await click('[data-action="save"]');
   const resaved = JSON.parse(await page.evaluate<string>('window.__creator.hooks.lastSaved'));
@@ -295,7 +330,6 @@ try {
   await loadFile('unknown-pose.json', JSON.stringify(unknownPose));
   s = await record('知らないポーズ');
   check(s.notices.some((n) => n.includes('知らないポーズ')) && s.drawn === 0, '知らないポーズを知らせ、何も表示しない');
-  await click('[data-step="export"]');
   s = await snapshot();
   check(s.exportDisabled === true && s.text.includes('画像を書き出せません'), '書き出せない理由が出る');
   check(JSON.parse(s.character!).state.pose['arm.right'] === 'crossed', '知らないポーズの値は保持する');
@@ -319,7 +353,6 @@ try {
   await loadFile('side.json', JSON.stringify(sideView));
   s = await record('素材のない向き');
   check(s.drawn === 0 && s.notices.some((n) => n.includes('表示できる素材がありません')), '表示できる素材がないことを知らせる');
-  await click('[data-step="export"]');
   check((await snapshot()).exportDisabled === true, '書き出せない');
   await shot('13_no_layer');
   await click('[data-notice-action="reset-view"]');
@@ -333,6 +366,7 @@ try {
   s = await record('分類の重複');
   check(s.notices.some((n) => n.includes('トップス') && n.includes('複数')), '重複を知らせる');
   check(s.equipped.includes('dev.shirt_01') && s.equipped.includes('dev.shirt_02'), '両方とも装備したまま');
+  await nav('[data-step="customize"]', 'customize.html');
   await click('[data-major="outfit"]');
   await click('[data-sub="outfit.top"]');
   await click('[data-card="dev.shirt_02"]');
@@ -358,8 +392,8 @@ try {
 
   // 15) 【検証用】通知の置き場所の 4 方式。現状以外は、通知が出ても消えてもプレビューの大きさが変わらない
   for (const mode of ['under', 'side', 'overlay', 'chip'] as const) {
-    const p = await Page.open(browser.cdp, `${base}dev.html?notices=${mode}`, [1280, 800]);
-    await p.waitFor('__creator');
+    const p = await Page.open(browser.cdp, `${base}dev/index.html?notices=${mode}`, [1280, 800]);
+    await waitPage(p, 'index.html');
     const wait = async () => {
       await p.evaluate<void>('window.__creator.idle()');
       await p.evaluate('new Promise((r) => setTimeout(r, 30))');
@@ -371,7 +405,9 @@ try {
     const rect = () => p.evaluate<string>(`(() => { const r = document.querySelector('.canvas-wrap').getBoundingClientRect(); return [r.x, r.y, r.width, r.height].map((v) => Math.round(v)).join(','); })()`);
     const where = () => p.evaluate<string[]>(`[...document.querySelectorAll('[data-notice]')].filter((el) => el.offsetParent !== null).map((el) => el.closest('.under') ? 'under' : el.closest('.edit') ? 'side' : el.closest('[data-role="notice-overlay"]') ? 'overlay' : el.closest('[data-role="notice-popover"]') ? 'chip' : 'other')`);
 
-    await press('[data-action="start"]');
+    await p.evaluate(`document.querySelector('[data-action="start"]').click()`);
+    await waitPage(p, 'customize.html');
+    check((await p.evaluate<string>(`document.querySelector('#app').dataset.notices`)) === mode, `通知の置き場所の指定は、ページを移っても引き継がれる（${mode}）`);
     await press('[data-major="outfit"]');
     await press('[data-sub="outfit.outer"]');
     await press('[data-card="dev.coat_01"]');

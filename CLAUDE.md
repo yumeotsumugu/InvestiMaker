@@ -19,7 +19,7 @@ TRPG 用 2D キャラクター立ち絵を既製パーツの組み合わせで�
 
 - `src/core/` — DOM に依存しない純粋な関数（manifest 型・検証・Asset 解決・描画順・色合成・互換性）。製品版に持ち越す。
 - `src/core/character/` — キャラクターの保存形式（型・検証・保存と読込・評価・編集）。読み込みは Part の manifest を参照しない。
-- `src/app/` — InvestiMaker の Creator UI。Character が唯一の正本で、UI 用の第二の正本を持たない。編集は core の operations、評価は evaluate、描画計画は plan を使う。表示名は `labels.ts`、利用者向けの文は `messages.ts` に置き、内部の語（UNRESOLVED、Part ID など）を通常の画面に出さない。
+- `src/app/` — InvestiMaker の Creator UI。3 つのページ（CREATE / CUSTOMIZE / EXPORT）に分かれ、どのページも `main.ts` を読む。編集中の Character はセッションストレージでページ間を運ぶ（`store.ts`）。Character が唯一の正本で、UI 用の第二の正本を持たない。編集は core の operations、評価は evaluate、描画計画は plan を使う。表示名は `labels.ts`、利用者向けの文は `messages.ts` に置き、内部の語（UNRESOLVED、Part ID など）を通常の画面に出さない。
 - `src/minimal/` — Phase 1-B の最小 UI。Character 操作のリファレンスとして残してある。
 - `src/web/` — 素材の読み込みと Canvas 合成（本体と検証ページの共用）。
 - `src/lab/` — 検証ページ（使い捨て。素の DOM）。
@@ -30,7 +30,7 @@ TRPG 用 2D キャラクター立ち絵を既製パーツの組み合わせで�
 ## コマンド
 
 - `npm run dev` 検証ページ / `npm test` テスト / `npm run typecheck` 型検査
-- `npm run build:standalone` 配布用の `index.html` を作り直す。`index.html` は生成物で、アプリと素材を 1 ファイルにまとめたもの（開くだけで使える。手で編集しない）。開発用の入口は `dev.html`。**`src/app/`・`src/web/`・`src/core/`・素材を変えたら、コミットの前に作り直す。**
+- `npm run build:site` 配布用のページ（リポジトリ直下の `index.html`・`customize.html`・`export.html` と `app/`）を作り直す。これらは生成物で、手で編集しない。「ZIP を解凍して `index.html` を開くだけ」で動くこと、GitHub Pages にそのまま置けることが要件。開発用のページは `dev/`。**`src/app/`・`src/web/`・`src/core/`・素材を変えたら、コミットの前に作り直す。**
 - `npm run gen:assets` 仮素材の再生成（`-- --width 1200 --height 1800 --out <dir>` でサイズ変更）
 
 ## コードの約束

@@ -1,4 +1,4 @@
-// Phase 1-B の最小 UI（minimal.html）を、ヘッドレスの Chrome / Edge で実際に操作して確かめる。
+// Phase 1-B の最小 UI（dev/minimal.html）を、ヘッドレスの Chrome / Edge で実際に操作して確かめる。
 //
 //   node tools/browser-smoke.ts [--write]
 //
@@ -34,7 +34,7 @@ const temp = mkdtempSync(join(tmpdir(), 'investimaker-smoke-'));
 
 try {
   console.log(`${browser.product}（ヘッドレス） / ${base}`);
-  const page = await Page.open(browser.cdp, `${base}minimal.html`, [1500, 1300]);
+  const page = await Page.open(browser.cdp, `${base}dev/minimal.html`, [1500, 1300]);
   await page.waitFor('__app');
 
   // ---- 画面の操作
