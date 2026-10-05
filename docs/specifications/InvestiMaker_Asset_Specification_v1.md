@@ -19,7 +19,7 @@
 ## 1. 用語と関係
 
 | 用語 | 定義 |
-|---|---|
+| --- | --- |
 | **Part** | ユーザーが選ぶ単位（「ロングコート」「前髪03」）。1つの `category` に属する。 |
 | **Layer** | Part を構成する描画単位。1つの **Layer Slot** に置かれる。1 Part は 1 個以上の Layer を持つ。 |
 | **Asset** | Layer の実画像。向き・ポーズ等の条件（`when`）ごとに複数持てる。 |
@@ -42,7 +42,7 @@ Package (.impart)
 キャラクターの状態は 7 軸で表す。Part の `category` は必ずいずれかの軸に属する（MUST）。
 
 | 軸 | 選択方式 | category（v1） |
-|---|---|---|
+| --- | --- | --- |
 | APPEARANCE | 固定（OUTFIT から上書き可） | `body` / `face.head` / `face.ears` / `face.eyes` / `face.eyebrows` / `face.nose` / `face.mouth` / `hair.front` / `hair.side` / `hair.back` / `hair.extra`* / `detail`* |
 | OUTFIT | スロット式 | `outfit.inner` / `outfit.top` / `outfit.vest` / `outfit.outer` / `outfit.bottom` / `outfit.socks` / `outfit.shoes` / `outfit.glove` / `outfit.neck` / `outfit.eyewear` / `outfit.head` / `outfit.ear`* / `outfit.accessory`* |
 | EXPRESSION | 単一選択 | Part を持たない（§6.3） |
@@ -116,7 +116,7 @@ Package (.impart)
 ```
 
 | フィールド | 必須 | 内容 |
-|---|---|---|
+| --- | --- | --- |
 | `id` | MUST | Part 内で一意 |
 | `name` | SHOULD | UI 表示名 |
 | `mode` | MUST | `tint` / `multiply` / `fixed` |
@@ -163,7 +163,7 @@ Package (.impart)
 ColorSlot は `link` でキャラクター側の共有色を参照できる。
 
 | キー | 用途 |
-|---|---|
+| --- | --- |
 | `skin.base` | 肌 |
 | `hair.base` / `hair.sub` | 髪のベース / 毛先・インナー等 |
 | `eyes.left` / `eyes.right` | 瞳 |
@@ -179,7 +179,7 @@ ColorSlot は `link` でキャラクター側の共有色を参照できる。
 Layer は必ず下表の Layer Slot のいずれかに属する（MUST）。番号ではなく Slot 名で指定し、描画順は本表が決める。奥から手前の順。
 
 | グループ | Layer Slot（奥 → 手前） |
-|---|---|
+| --- | --- |
 | G0 背景 | `background` → `effect.back` |
 | G1 後方 | `outfit.head.back` → `hair.back` → `item.back` → `outfit.outer.back` |
 | G2 腕（背面） | Pose Definition が `placement: "back"` と定めた腕の腕グループ |
@@ -205,7 +205,7 @@ Layer は必ず下表の Layer Slot のいずれかに属する（MUST）。番�
 POSE は 3 つの**領域**の状態の組である。名前付きポーズ（腕組み等）はこの組のプリセット。
 
 | 領域 | Context キー |
-|---|---|
+| --- | --- |
 | 胴体・脚 | `pose.torso` |
 | 左腕 | `pose.arm.left` |
 | 右腕 | `pose.arm.right` |
@@ -219,7 +219,7 @@ Asset の `when.pose` は、**その Layer の Slot が属する領域**の状�
 ```
 
 | フィールド | 内容 |
-|---|---|
+| --- | --- |
 | `id` | 状態名。`when.pose` と Context が使う値 |
 | `region` | `torso` / `arm.left` / `arm.right`。`(region, id)` の組で一意 |
 | `placement` | 腕の領域のみ。腕グループの置き場所。`back`＝胴体の後ろ（G2）、`front`＝胴体の前（G6） |
@@ -228,7 +228,7 @@ Asset の `when.pose` は、**その Layer の Slot が属する領域**の状�
 **v1 の Pose Definition**：
 
 | region | id | placement | order | 備考 |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `torso` | `stand` | — | — | |
 | `arm.left` | `down` | `back` | 10 | |
 | `arm.right` | `down` | `back` | 20 | |
@@ -251,7 +251,7 @@ EXPRESSION は Part を持たず、顔 Part の**状態**（`state`）の組と�
 - v1 の標準表情【画風決定後に再検証】：
 
 | id | eyes | eyebrows | mouth |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `normal` | `open` | `neutral` | `closed` |
 | `smile` | `smile` | `relaxed` | `smile_open` |
 | `angry` | `glare` | `angry` | `frown` |
@@ -269,7 +269,7 @@ EXPRESSION は Part を持たず、顔 Part の**状態**（`state`）の組と�
 ```
 
 | キー | 型 | 省略時 |
-|---|---|---|
+| --- | --- | --- |
 | `view` | 文字列または配列 | **省略不可（MUST）** |
 | `body` | 文字列または配列 | Part の `compatible.body` すべて |
 | `pose` | 文字列または配列 | すべてのポーズで有効 |
@@ -291,7 +291,7 @@ Layer ごとに次の順で Asset を決める（MUST）。実装はこの手順
 **各キーが照合する値**：
 
 | `when` のキー | 照合する値 |
-|---|---|
+| --- | --- |
 | `view` | Context の VIEW |
 | `body` | 素体の Part ID。省略時は、素体が Part の `compatible.body` に含まれるときに一致 |
 | `pose` | その Layer の Slot が属する領域の状態（§6.2） |
@@ -327,7 +327,7 @@ Layer ごとに次の順で Asset を決める（MUST）。実装はこの手順
 実装はすべてのケースで下表と同じ結果を返すこと（MUST）。`view` はすべて `front` とし、表では省略する。Context は、その Layer を解決するときに `when` の各キーが照合する値である。
 
 | # | Asset X の `when` | Asset Y の `when` | Context | 結果 |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | T1 | （なし） | `pose: down` | pose=down | **Y**（pose 指定が勝つ） |
 | T2 | （なし） | `pose: down` | pose=pocket | **X**（Y は不一致、X はポーズ非依存） |
 | T3 | `pose: down` | `fit: {chest: large}` | pose=down, chest=large | **X**（pose は fit より上位） |
@@ -390,7 +390,7 @@ T12 は具体度の順序を確かめるための抽象的なケースである�
 ```
 
 | フィールド | 内容 |
-|---|---|
+| --- | --- |
 | `compatible.body` | 対応する Body ID の配列（MUST、Body 自身を除く） |
 | `requires` / `conflicts` | 条件の配列。`type` は `part`（`id`）/ `category`（`category`）/ `state`（`path` + `value`） |
 | `hides` | 装備中に非表示にする Layer Slot の配列（MAY）。帽子が `hair.extra` を隠す等 |
@@ -558,7 +558,7 @@ long_coat.impart            ← ZIP
 画像の復号と描画を含まない、純粋な計算の適合性。**結果は参照結果と完全に一致しなければならない**（MUST）。
 
 | 対象 | 入力 | 出力 | 参照 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | manifest 検証 | manifest | 受理 / 拒否 | §12 |
 | Asset 解決 | Layer と Context | 選ばれる Asset / 未解決 / manifest 不正 | §6.6、`tests/conformance/fixtures/resolve/` |
 | 描画計画 | 装備中の Part と Context | 描画順、不足・非対応・競合、`hides` | §6.1、§6.2、§8 |
@@ -586,7 +586,7 @@ PNG を自前で復号して非プリマルチプライのまま処理する Ren
 ### 14.1 確定事項
 
 | 項目 | 決定 | 該当節 |
-|---|---|---|
+| --- | --- | --- |
 | マスターキャンバス | 1600 × 2400 px。Part は `canvas` で宣言する | §4.1 |
 | トリミング | 公式素材は MUST、ユーザー素材は SHOULD | §4.2 |
 | Mask のチャンネル | RGB の 3 スロット。A は使用しない。4 スロット以上は `masks` | §4.3、§5.2 |
@@ -599,7 +599,7 @@ PNG を自前で復号して非プリマルチプライのまま処理する Ren
 ### 14.2 v1 で保留する事項
 
 | 項目 | v1 での扱い | 再開の条件 |
-|---|---|---|
+| --- | --- | --- |
 | 帽子と髪の干渉 | `hides`（Slot 単位の非表示）のみ。髪を帽子の形で切り抜く仕組みは持たない | 実際の画風で、帽子から髪がはみ出す問題が顕在化したら v1.x で検討 |
 | ITEM の装着仕様 | `when.attach`、`item.*` の Slot、手の anchors を予約するだけ | v1.x で詳細化 |
 | `mirrorable` による反転 | 規定（§6.5 手順 3）はあるが、公式実装は未対応でよい | 正面以外の VIEW を実装するとき |
@@ -611,7 +611,7 @@ PNG を自前で復号して非プリマルチプライのまま処理する Ren
 ### 14.3 正式素材制作時に再検証する事項
 
 | 項目 | 現在の値 | 確かめること |
-|---|---|---|
+| --- | --- | --- |
 | 出力画質 | 1600 × 2400 | 実際の画風で描いた素材を、セッションツール上で確認する |
 | スマホでの性能 | PC で初回合成 120 ms、色変更 22〜36 ms、メモリ見積もり 55 MB（仮素材 27 Layer） | Phase 1 の性能試験として実機で計測し、最適化の要否を判断する |
 | `tint` の下地の描き方 | 規格は 50% グレー基準のみを定める | 暗色で線画が塗りに埋もれる、黒でハイライトが強すぎる、白でハイライトが消える。下地の推奨レンジ（影とハイライトの深さ）と線画色の方針を **Authoring Guide** で定める |
@@ -626,7 +626,7 @@ PNG を自前で復号して非プリマルチプライのまま処理する Ren
 検証レポートの変更提案 P1〜P16 を反映した。P6・P7、P13、P16 は提案から内容を変えている。
 
 | 提案 | 反映先 | 内容 |
-|---|---|---|
+| --- | --- | --- |
 | P1 | §5.3 | `tint` の境界を 0.5 から `p = 128/255` に変更 |
 | P2 | §5.3 | 8bit への丸めを四捨五入（0.5 は切り上げ）と規定 |
 | P3 | §4.3、§5.3 | `Σw > 1` は比例配分で 1 に収める |

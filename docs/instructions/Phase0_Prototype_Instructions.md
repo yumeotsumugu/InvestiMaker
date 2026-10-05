@@ -76,7 +76,7 @@ InvestiMaker/
 ### ステップ 2：core の実装
 
 | モジュール | 内容 | 仕様書 |
-|---|---|---|
+| --- | --- | --- |
 | manifest 型 | Part / Layer / Asset / Mask / ColorSlot / Body の TypeScript 型 | §1, §5, §7, §8, §11 |
 | manifest 検証 | 必須フィールド、ID 書式、slot と category の存在、channels の参照先、`when` の重複検出 | §3, §11.1, §12 |
 | Asset 解決 | Context から Layer ごとの Asset を決める。未解決と Part 非対応の判定を含む | §6.4, §6.5 |
@@ -107,7 +107,7 @@ ZIP の読み込み、SVG、`mirrorable` による反転、Transform は今回�
 必要な Part：
 
 | Part | 検証したいこと |
-|---|---|
+| --- | --- |
 | 素体 `dev.body_adult_standard` | `body.base`、左右の腕と手、anchors、`skin.base` へのリンク、`fitDimensions.chest`、右腕のポーズ `down` と `pocket` |
 | 顔：輪郭・耳・鼻 | 頭部グループの重なり |
 | 目・眉・口 | §6.3 の標準状態をすべて持つ。`state` による解決 |
@@ -144,7 +144,7 @@ ZIP の読み込み、SVG、`mirrorable` による反転、Transform は今回�
 特に確認してほしいこと：
 
 | §13 | 確認内容 |
-|---|---|
+| --- | --- |
 | 1 キャンバス | 1200×1800 / 1600×2400 / 2000×3000 で仮素材を生成し、合成時間とメモリ見積もりを比較。 |
 | 2 `tint` 基準 | 明色・暗色・高彩度色・肌色を指定したときの書き出し画像を並べる。50% グレー基準で暗色が潰れないか、明色が白飛びしないか。 |
 | 3 Mask の A | A チャンネルに値を入れた Mask を Canvas 経由で読み、RGB の値が保持されるか実測。 |
