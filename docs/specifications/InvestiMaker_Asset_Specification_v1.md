@@ -236,8 +236,8 @@ Asset の `when.pose` は、**その Layer の Slot が属する領域**の状�
 | `arm.right` | `pocket` | `front` | 20 | 公式素材は v1 では未提供 |
 
 - Context のポーズは、必ず Pose Definition にある状態でなければならない（MUST）。
-- `when.pose` に、その Layer の領域の Pose Definition にない状態を書いた Asset は、どの Context にも一致しない。検証時に警告する（SHOULD NOT）。
-- 状態の追加は本書の改訂で行う。
+- **`when.pose` に、その Layer の領域の Pose Definition にない状態を書いてはならない**（MUST NOT）。そのような manifest は不正とする。定義のないポーズは置き場所も順序も決まらず、描画の意味が定まらないためである。領域ごとに照合するので、胴体の Layer に `down` を書くのも不正である。
+- 状態の追加は本書の改訂で行う。追加された状態を使う素材は、その状態を知らない古い実装では不正として拒否される。
 
 ### 6.3 表情
 
@@ -300,7 +300,11 @@ Layer ごとに次の順で Asset を決める（MUST）。実装はこの手順
 | `fit` | 素体の fit の各次元の値 |
 
 - **`when` が指定したキーに対して Context 側に値がない場合、その Asset は一致しない**（MUST）。状態を持たない Part での `state`、素体が宣言していない fit の次元、装着位置を持たないインスタンスでの `attach` がこれに当たる。
-- Part の `when.fit` が、素体の `fitDimensions` にない次元や値を使っている場合は、検証時に警告する（SHOULD NOT）。
+- **`when.fit` の次元と値は、対応する素体の `fitDimensions` と照合する。**
+  - `compatible.body` に列挙した**どの素体にも存在しない**次元・値を使った manifest は不正とする（MUST NOT）。その Asset はどの Context にも一致しないためである。
+  - 一部の素体にだけ存在する次元・値は有効である。その Asset は、その素体との組み合わせでだけ解決の対象になる。
+  - Body 自身の `when.fit` は、自分の `fitDimensions` と照合する。
+  - この検証には素体の manifest が要る。`compatible.body` に読み込まれていない素体があって判定できないときは、拒否せず警告にとどめる。
 
 **具体度**は次の 5 要素の組で、左から順に比較する（MUST）。
 
@@ -540,7 +544,10 @@ long_coat.impart            ← ZIP
 6. SVG のサニタイズ（§4.4）。
 7. 同じ ID の Part が既にある場合は `version` を比較し、上書き前にユーザーへ確認する。
 
-警告（SHOULD 違反）：ColorSlot の `name` がない、腕領域の Layer が `pose` を省略している、`when.pose` が Pose Definition にない、`when.body` が `compatible.body` にない、`when.fit` が素体の `fitDimensions` にない、参照されないファイルがある。
+8. `when.pose` が、その Layer の領域の Pose Definition にある（§6.2）。
+9. `when.fit` の次元と値が、対応する素体のいずれかの `fitDimensions` にある（§6.5）。素体が読み込まれてから検証する。
+
+警告（SHOULD 違反）：ColorSlot の `name` がない、腕領域の Layer が `pose` を省略している、`when.body` が `compatible.body` にない、未読み込みの素体があって `when.fit` を判定できない、参照されないファイルがある。
 
 ## 13. 適合性
 
@@ -586,7 +593,7 @@ PNG を自前で復号して非プリマルチプライのまま処理する Ren
 | `tint` の基準下地 | 50% グレー（#808080）、境界 `p = 128/255`。丸めと `Σw > 1` の扱いを規定 | §5.3 |
 | 標準描画順 | §6.1 の表。眉は前髪の後ろが標準で、前に出す素材は `face.eyebrows.over`。靴は `outfit.shoes` と `outfit.shoes.over` の 2 Slot | §6.1 |
 | Pose Definition | 腕グループの置き場所と順序を共通定義として持つ | §6.2 |
-| 曖昧な記述の扱い | 解釈で補わず拒否する（`mask` と `masks` の併記、`channels` の未知のキー） | §0、§5.2 |
+| 曖昧な記述の扱い | 解釈で補わず拒否する（`mask` と `masks` の併記、`channels` の未知のキー、Pose Definition にないポーズ、どの素体にもない fit） | §0、§5.2、§6.2、§6.5 |
 | 適合性 | Core は厳密一致、Renderer は許容差つき | §13 |
 
 ### 14.2 v1 で保留する事項
@@ -622,8 +629,8 @@ PNG を自前で復号して非プリマルチプライのまま処理する Ren
 | P2 | §5.3 | 8bit への丸めを四捨五入（0.5 は切り上げ）と規定 |
 | P3 | §4.3、§5.3 | `Σw > 1` は比例配分で 1 に収める |
 | P4 | §6.5、§6.6 | `when.state` の照合先を category で規定。T12 に注記 |
-| P5 | §6.5、§12 | Context に値がないキーは一致しない。素体にない fit は警告 |
-| P6・P7 | §1、§6.1、§6.2 | **Pose Definition を正式に追加**（提案は「定義の置き場所を決める」まで）。`placement` と `order` を持つ共通定義で、素材は定義しない |
+| P5 | §6.5、§12 | Context に値がないキーは一致しない。**対応するどの素体にもない fit の次元・値は不正として拒否**（提案は警告） |
+| P6・P7 | §1、§6.1、§6.2、§12 | **Pose Definition を正式に追加**（提案は「定義の置き場所を決める」まで）。`placement` と `order` を持つ共通定義で、素材は定義しない。**Pose Definition にないポーズを `when.pose` に書いた manifest は不正として拒否** |
 | P8 | §6.3 | 標準表情 6 種の状態の組を表にした |
 | P9 | §6.5、§8 | 素体が `compatible.body` にない Part は非対応 |
 | P10 | §8 | 条件の判定対象、競合になる側、競合の Part の描画を規定 |

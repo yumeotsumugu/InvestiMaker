@@ -1,7 +1,7 @@
 // 仮素材の読み込み。すべて同一オリジンの静的ファイルで、外部通信はしない。
 
-import type { PartManifest, ValidationResult } from '../core/index.ts';
-import { validateManifest } from '../core/index.ts';
+import type { Body, PartManifest, ValidationResult } from '../core/index.ts';
+import { validateFitAgainstBodies, validateManifest } from '../core/index.ts';
 
 export interface SetIndex {
   canvas: [number, number];
@@ -45,6 +45,19 @@ export async function loadSet(name: string): Promise<AssetSet> {
       if (result.ok) library.set(id, manifest as PartManifest);
     }),
   );
+  // 素体が揃ってから、when.fit を素体の fitDimensions と照合する（§6.5）。
+  const bodies = new Map([...library].flatMap(([id, p]) => (p.kind === 'body' ? [[id, p as Body] as const] : [])));
+  for (const [id, part] of [...library]) {
+    const issues = validateFitAgainstBodies(part, bodies);
+    const result = validation.get(id)!;
+    result.errors.push(...issues.filter((i) => i.level === 'error'));
+    result.warnings.push(...issues.filter((i) => i.level === 'warning'));
+    if (result.errors.length > 0) {
+      result.ok = false;
+      library.delete(id);
+    }
+  }
+
   return {
     name,
     baseUrl,

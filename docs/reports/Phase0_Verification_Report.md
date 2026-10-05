@@ -28,7 +28,7 @@
 - 実装：`src/core/`（DOM 非依存）と検証ページ `src/lab/`（Canvas 2D）。
 - 計測：`npm run bench:browser`。ヘッドレスの Chrome 154（Windows 11 のデスクトップ PC）で検証ページを開き、各サイズ 3 回の中央値を取った。生データは [data/browser-bench.json](data/browser-bench.json)。**スマホ実機では測っていない。**
 - 比較画像：`npm run report:images`。ブラウザを使わない合成（`tools/render.ts`、core の同じ関数を使用）で [images/](images/) に生成。
-- テスト：`npm test`（検証時 117 件、RC1 反映後 127 件）。§6.6 の T1〜T12 を含む。
+- テスト：`npm test`（検証時 117 件、RC1 反映後 131 件）。§6.6 の T1〜T12 を含む。
 
 ## 2. 完了条件の確認
 
@@ -255,7 +255,7 @@ CPU を 4 倍低速にするエミュレーション（実機の代わりには�
 
 ```sh
 npm install
-npm test                  # 127 件
+npm test                  # 131 件
 npm run gen:assets        # assets/development/ を再生成（差分が出ないこと）
 npm run report:images     # docs/reports/images/ の比較画像
 npm run bench:browser     # docs/reports/data/browser-bench.json と画面のスクリーンショット
@@ -282,11 +282,12 @@ npm run dev               # 検証ページ
 
 ### 7.2 変更提案の採否
 
-P1〜P16 をすべて採用。次の 3 件は提案から内容を変えた。
+P1〜P16 をすべて採用。次の 4 件は提案から内容を変えた。
 
 | 提案 | 本書の提案 | 決定 |
 |---|---|---|
-| P6・P7 | ポーズ定義の置き場所を決める | **Pose Definition を規格に正式追加。** InvestiMaker 側の共通定義で、素材は定義しない。`{ id, region, placement, order }` |
+| P5 | 素体にない fit の次元・値は警告 | **対応するどの素体にもない次元・値は manifest 不正として拒否。** 一部の素体にだけある値は有効。未読み込みの素体があって判定できないときだけ警告 |
+| P6・P7 | ポーズ定義の置き場所を決める | **Pose Definition を規格に正式追加。** InvestiMaker 側の共通定義で、素材は定義しない。`{ id, region, placement, order }`。**定義にないポーズを `when.pose` に書いた manifest は不正として拒否** |
 | P13 | 許容差で適合性を定義する | **Core 適合（色計算などは厳密一致）と Renderer 適合（Canvas 経由は許容差つき）を分離** |
 | P16 | `mask` と `masks` の併記は合算、`channels.a` は無視して警告 | **どちらも manifest 不正として拒否。** 曖昧なものを実装側が解釈しない |
 
@@ -294,7 +295,7 @@ P1〜P16 をすべて採用。次の 3 件は提案から内容を変えた。
 
 - `src/core/context.ts`：Pose Definition の表と、そこから腕グループの置き場所・順序を引く処理。
 - `src/core/drawOrder.ts`：眉を前髪の後ろへ移し、`face.eyebrows.over` を追加。
-- `src/core/validate.ts`：`canvas` の必須化と照合、`mask` と `masks` の併記の拒否、`channels` の未知のキーの拒否、Pose Definition にないポーズの警告、素体にない fit の警告。
+- `src/core/validate.ts`：`canvas` の必須化と照合、`mask` と `masks` の併記の拒否、`channels` の未知のキーの拒否、Pose Definition にないポーズの拒否、どの素体にもない fit の拒否。
 - `tests/conformance/fixtures/color/vectors.json`：色計算の参照ベクタ 609 件（Core 適合の確認用）。
 - 検証ページの比較切り替えは「眉を前髪の前に置く（`face.eyebrows.over`）」に変更。
 - 仮素材は `canvas` を宣言するようになった。眉の Slot は `face.eyebrows` のままなので、既定の見た目は「眉が前髪の後ろ」に変わった。

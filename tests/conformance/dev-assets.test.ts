@@ -2,12 +2,13 @@
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
-import type { Bitmap, PartManifest } from '../../src/core/index.ts';
+import type { Bitmap, Body, PartManifest } from '../../src/core/index.ts';
 import {
   STANDARD_EXPRESSIONS,
   STANDARD_STATES,
   masksOf,
   recolor,
+  validateFitAgainstBodies,
   validateImageGeometry,
   validateManifest,
 } from '../../src/core/index.ts';
@@ -66,6 +67,13 @@ describe('規格への適合', () => {
   it('すべての manifest が検証を通り、警告もない', () => {
     for (const { manifest } of set.parts) {
       expect(validateManifest(manifest), manifest.id).toEqual({ ok: true, errors: [], warnings: [] });
+    }
+  });
+
+  it('when.fit は素体の fitDimensions にある次元と値だけを使う', () => {
+    const bodies = new Map(set.parts.flatMap((p) => (p.manifest.kind === 'body' ? [[p.manifest.id, p.manifest as Body] as const] : [])));
+    for (const { manifest } of set.parts) {
+      expect(validateFitAgainstBodies(manifest, bodies), manifest.id).toEqual([]);
     }
   });
 

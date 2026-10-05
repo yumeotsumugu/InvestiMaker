@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Body, Part } from '../../src/core/index.ts';
-import { validateFitAgainstBody, validateImageGeometry, validateManifest } from '../../src/core/index.ts';
+import { validateFitAgainstBodies, validateImageGeometry, validateManifest } from '../../src/core/index.ts';
 import { layer, minimalPart } from '../helpers.ts';
 
 const codes = (input: unknown, options = {}) => validateManifest(input, options).errors.map((e) => e.code);
@@ -72,13 +72,41 @@ describe('キャンバス（§4.1）', () => {
 });
 
 describe('素体の fit との照合（§6.5）', () => {
-  it('素体にない fit 次元・値を使っていたら警告', () => {
-    const body = minimalBody({ fitDimensions: { chest: ['small', 'medium', 'large'] } });
+  const bodyA = minimalBody({ id: 'dev.body_a', fitDimensions: { chest: ['small', 'medium', 'large'] } });
+  const bodyB = minimalBody({ id: 'dev.body_b', fitDimensions: { chest: ['medium', 'large', 'extra_large'] } });
+  const partWith = (fit: Record<string, string | string[]>, bodies = ['dev.body_a', 'dev.body_b']) => {
     const l = layer('a', 'outfit.top');
-    l.assets[0]!.when = { view: 'front', fit: { chest: ['large', 'huge'], waist: 'wide' } };
-    expect(validateFitAgainstBody(minimalPart({ layers: [l] }), body).map((i) => i.code)).toEqual(['fit-value-unknown', 'fit-dimension-unknown']);
-    l.assets[0]!.when = { view: 'front', fit: { chest: 'large' } };
-    expect(validateFitAgainstBody(minimalPart({ layers: [l] }), body)).toEqual([]);
+    l.assets[0]!.when = { view: 'front', fit };
+    return minimalPart({ compatible: { body: bodies }, layers: [l] });
+  };
+  const check = (part: Part, ...bodies: Body[]) =>
+    validateFitAgainstBodies(part, new Map(bodies.map((b) => [b.id, b]))).map((i) => `${i.level}:${i.code}`);
+
+  it('対応するどの素体にもない fit 次元・値は拒否', () => {
+    expect(check(partWith({ chest: 'huge' }), bodyA, bodyB)).toEqual(['error:fit-value-unknown']);
+    expect(check(partWith({ waist: 'wide' }), bodyA, bodyB)).toEqual(['error:fit-dimension-unknown']);
+    expect(check(partWith({ chest: ['large', 'huge'] }), bodyA, bodyB)).toEqual(['error:fit-value-unknown']);
+  });
+
+  it('一部の素体にだけある値は有効', () => {
+    expect(check(partWith({ chest: 'extra_large' }), bodyA, bodyB)).toEqual([]);
+    expect(check(partWith({ chest: ['small', 'extra_large'] }), bodyA, bodyB)).toEqual([]);
+    // 素体 A だけに対応する Part では、A にない値は拒否
+    expect(check(partWith({ chest: 'extra_large' }, ['dev.body_a']), bodyA, bodyB)).toEqual(['error:fit-value-unknown']);
+  });
+
+  it('読み込まれていない素体があるときは判定できないので警告にとどめる', () => {
+    expect(check(partWith({ chest: 'extra_large' }), bodyA)).toEqual(['warning:fit-value-unknown']);
+    expect(check(partWith({ chest: 'large' }), bodyA)).toEqual([]);
+    expect(check(partWith({ chest: 'large' }))).toEqual(['warning:fit-dimension-unknown']);
+  });
+
+  it('Body 自身の when.fit は、manifest の検証で自分の fitDimensions と照合する', () => {
+    const base = layer('base', 'body.base');
+    base.assets.push({ when: { view: 'front', fit: { chest: 'huge' } }, file: 'assets/front/base_huge.png' });
+    expect(codes(minimalBody({ fitDimensions: { chest: ['small', 'large'] }, layers: [base] }))).toEqual(['fit-value-unknown']);
+    base.assets[1]!.when = { view: 'front', fit: { chest: 'large' } };
+    expect(codes(minimalBody({ fitDimensions: { chest: ['small', 'large'] }, layers: [base] }))).toEqual([]);
   });
 });
 
@@ -136,16 +164,18 @@ describe('Layer と Asset（§12 の 3〜5）', () => {
     expect(codes(minimalPart({ layers: [l], colorSlots: slots }))).toEqual(['mask-both']);
   });
 
-  it('Pose Definition にないポーズを書いたら警告', () => {
+  it('Pose Definition にないポーズを書いたら拒否', () => {
     const sleeve = layer('a', 'arm.left.sleeve.top');
-    sleeve.assets[0]!.when = { view: 'front', pose: ['down', 'wave'] };
-    expect(warnings(minimalPart({ layers: [sleeve] }))).toEqual(['when-pose-unknown']);
+    sleeve.assets[0]!.when = { view: 'front', pose: ['down', 'crossed'] };
+    expect(codes(minimalPart({ layers: [sleeve] }))).toEqual(['when-pose-unknown']);
+    sleeve.assets[0]!.when = { view: 'front', pose: ['down', 'pocket'] };
+    expect(codes(minimalPart({ layers: [sleeve] }))).toEqual([]);
     // down は腕の状態で、胴体の状態ではない
     const body = layer('b', 'outfit.top');
     body.assets[0]!.when = { view: 'front', pose: 'down' };
-    expect(warnings(minimalPart({ layers: [body] }))).toEqual(['when-pose-unknown']);
+    expect(codes(minimalPart({ layers: [body] }))).toEqual(['when-pose-unknown']);
     body.assets[0]!.when = { view: 'front', pose: 'stand' };
-    expect(warnings(minimalPart({ layers: [body] }))).toEqual([]);
+    expect(codes(minimalPart({ layers: [body] }))).toEqual([]);
   });
 
   it('ColorSlot の mode と default を検査する', () => {

@@ -243,10 +243,10 @@ export function validateManifest(input: unknown, options: ValidateOptions = {}):
           if (region !== 'torso' && when.pose === undefined) {
             warn('when-pose-missing', `${apath}.when`, '腕領域の Layer は pose を明示することを推奨');
           }
-          // Pose Definition にないポーズは、どの Context にも一致しない（§6.2 SHOULD）。
+          // Pose Definition にないポーズは、置き場所も順序も決まらない。意味が定義されていないので拒否する（§6.2）。
           const unknown = (when.pose === undefined ? [] : toArray(when.pose)).filter((id) => !findPose(region, id));
           if (unknown.length > 0) {
-            warn('when-pose-unknown', `${apath}.when.pose`, `Pose Definition にないポーズ（${region}）: ${unknown.join(', ')}`);
+            error('when-pose-unknown', `${apath}.when.pose`, `Pose Definition にないポーズ（${region}）: ${unknown.join(', ')}`);
           }
         }
       }
@@ -300,6 +300,12 @@ export function validateManifest(input: unknown, options: ValidateOptions = {}):
       }
     }
   });
+
+  // Body 自身の when.fit は、自分の fitDimensions と照合できる（§6.5）。
+  if (isBody && issues.every((i) => i.level !== 'error')) {
+    const body = m as unknown as Body;
+    issues.push(...validateFitAgainstBodies(body, new Map([[body.id, body]])));
+  }
 
   return done();
 }
@@ -378,24 +384,38 @@ export function validateImageGeometry(
 }
 
 /**
- * Part の `when.fit` が、素体の `fitDimensions` にない次元・値を使っていないか（§6.5 SHOULD）。
- * 素体が分かってから（読み込み後・装備時）に呼ぶ。
+ * Part の `when.fit` を、対応する素体の `fitDimensions` と照合する（§6.5）。
+ * manifest 単体では判定できないので、素体が読み込まれてから呼ぶ。
+ *
+ * - `compatible.body` の**どの素体にもない** fit の次元・値 → error（その Asset は永遠に一致しない）
+ * - 一部の素体にだけある → 問題なし（その素体との組み合わせでだけ解決対象になる）
+ * - `compatible.body` に読み込まれていない素体があり、読み込み済みの素体にはない → warning（判定できない）
+ *
+ * @param bodies 読み込み済みの素体（ID → manifest）
  */
-export function validateFitAgainstBody(part: PartManifest, body: Body): Issue[] {
+export function validateFitAgainstBodies(part: PartManifest, bodies: ReadonlyMap<string, Body>): Issue[] {
+  const ids = part.kind === 'body' ? [part.id] : part.compatible.body;
+  const known = ids.flatMap((id) => bodies.get(id) ?? []);
+  const allKnown = known.length === ids.length;
   const issues: Issue[] = [];
+  const report = (code: string, path: string, what: string) =>
+    issues.push(
+      allKnown
+        ? { level: 'error', code, path, message: `対応するどの素体にもない${what}` }
+        : { level: 'warning', code, path, message: `読み込み済みの素体にない${what}（未読み込みの素体があるため判定できない）` },
+    );
+
   part.layers.forEach((layer, li) => {
     layer.assets.forEach((asset, ai) => {
       for (const [dim, cond] of Object.entries(asset.when.fit ?? {})) {
         const path = `layers[${li}].assets[${ai}].when.fit.${dim}`;
-        const values = body.fitDimensions?.[dim];
-        if (!values) {
-          issues.push({ level: 'warning', code: 'fit-dimension-unknown', path, message: `素体 ${body.id} にない fit 次元: ${dim}` });
+        const withDim = known.filter((b) => b.fitDimensions?.[dim]);
+        if (withDim.length === 0) {
+          report('fit-dimension-unknown', path, ` fit 次元: ${dim}`);
           continue;
         }
-        const unknown = toArray(cond).filter((v) => !values.includes(v));
-        if (unknown.length > 0) {
-          issues.push({ level: 'warning', code: 'fit-value-unknown', path, message: `素体 ${body.id} の ${dim} にない値: ${unknown.join(', ')}` });
-        }
+        const unknown = toArray(cond).filter((v) => !withDim.some((b) => b.fitDimensions![dim]!.includes(v)));
+        if (unknown.length > 0) report('fit-value-unknown', path, ` ${dim} の値: ${unknown.join(', ')}`);
       }
     });
   });
