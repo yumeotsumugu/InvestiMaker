@@ -5,10 +5,10 @@ import type { Body, LayerStatus, PartStatus } from '../core/index.ts';
 import { STANDARD_EXPRESSIONS, STANDARD_STATES, resolveSlotColor } from '../core/index.ts';
 import type { BenchResult } from './bench.ts';
 import { runBench } from './bench.ts';
-import type { RenderStats } from './composer.ts';
-import { Composer } from './composer.ts';
-import type { AssetSet } from './loader.ts';
-import { loadSet } from './loader.ts';
+import type { RenderStats } from '../web/composer.ts';
+import { Composer } from '../web/composer.ts';
+import type { AssetSet } from '../web/loader.ts';
+import { loadSet } from '../web/loader.ts';
 import type { LabState, Planned } from './state.ts';
 import { DEFAULT_SHARED, initialState, planOf } from './state.ts';
 

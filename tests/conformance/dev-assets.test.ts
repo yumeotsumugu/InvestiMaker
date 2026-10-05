@@ -290,6 +290,6 @@ describe('Asset 解決の確認', () => {
     const linked = (key: string) =>
       set.parts.filter((p) => p.manifest.colorSlots?.some((s) => s.link === key)).map((p: { manifest: PartManifest }) => p.manifest.id);
     expect(linked('skin.base')).toEqual(['dev.body_adult_standard', 'dev.face_head_01', 'dev.face_ears_01']);
-    expect(linked('hair.base')).toEqual(['dev.eyebrows_01', 'dev.hair_back_01', 'dev.hair_front_01', 'dev.hair_extra_01']);
+    expect(linked('hair.base')).toEqual(['dev.eyebrows_01', 'dev.hair_back_01', 'dev.hair_front_01', 'dev.hair_front_02', 'dev.hair_extra_01']);
   });
 });

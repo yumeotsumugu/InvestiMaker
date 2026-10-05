@@ -31,10 +31,29 @@ export interface EquipmentInstance {
   equipped: boolean;
   /** スロット ID → 色の指定。Part が宣言していないスロット ID も捨てずに持つ。 */
   colors: Record<string, SlotColorOverride>;
-  /** Part 既定の配置補正に対する差分（Asset Specification §9）。v1 は保存するだけで、適用は未実装。 */
+  /** Part 既定の配置補正に対する差分（Asset Specification §9）。条件によらない基本の値。 */
   transform?: Transform;
-  /** 予約。v1 は中身を解釈せず、そのまま保持する。 */
-  overrides?: Record<string, unknown>;
+  /** 状態ごとの上書き。知らないキーは解釈せず、そのまま保持する。 */
+  overrides?: InstanceOverrides;
+}
+
+/** 補正を適用する条件。書いたキーだけを照合する。少なくとも 1 つのキーを書く。 */
+export interface TransformCondition {
+  view?: string;
+  /** 領域 → 状態。Pose Definition の (region, id) に対応する。 */
+  pose?: Record<string, string>;
+}
+
+export interface TransformOverride {
+  when: TransformCondition;
+  /** この条件のとき、基本の `transform` を置き換える値。 */
+  transform: Transform;
+}
+
+export interface InstanceOverrides {
+  /** 条件ごとの配置補正。 */
+  transform?: TransformOverride[];
+  [key: string]: unknown;
 }
 
 export interface CharacterState {

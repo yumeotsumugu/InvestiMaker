@@ -2,108 +2,277 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://investimaker.invalid/schemas/character.schema.json",
   "title": "InvestiMaker Character v1",
-  "description": "InvestiMaker_Character_Schema_v1.md の構造部分。instanceId の重複と appearance.body の参照先は Schema では表せないため、実装の検証器（src/core/character/validate.ts）が確かめる。未知のフィールドは許可する（読み込んだ実装はそのまま保持する）。",
+  "description": "InvestiMaker_Character_Schema_v1.md の構造部分。instanceId の重複、appearance.body の参照先、条件別の配置補正の重複は Schema では表せないため、実装の検証器（src/core/character/validate.ts）が確かめる。未知のフィールドは許可する（読み込んだ実装はそのまま保持する）。",
   "type": "object",
-  "required": ["format", "formatVersion", "id", "name", "canvas", "appearance", "sharedColors", "equipment", "state"],
+  "required": [
+    "format",
+    "formatVersion",
+    "id",
+    "name",
+    "canvas",
+    "appearance",
+    "sharedColors",
+    "equipment",
+    "state"
+  ],
   "properties": {
-    "format": { "const": "INVESTIMAKER_CHARACTER" },
-    "formatVersion": { "const": 1 },
-    "id": { "$ref": "#/$defs/uuid" },
-    "name": { "type": "string", "maxLength": 200 },
+    "format": {
+      "const": "INVESTIMAKER_CHARACTER"
+    },
+    "formatVersion": {
+      "const": 1
+    },
+    "id": {
+      "$ref": "#/$defs/uuid"
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 200
+    },
     "canvas": {
       "description": "座標系の基準になるキャンバスサイズ。v1 は 1600×2400 だけ",
       "type": "array",
-      "prefixItems": [{ "const": 1600 }, { "const": 2400 }],
+      "prefixItems": [
+        {
+          "const": 1600
+        },
+        {
+          "const": 2400
+        }
+      ],
       "items": false,
       "minItems": 2
     },
     "appearance": {
       "type": "object",
-      "required": ["body"],
+      "required": [
+        "body"
+      ],
       "properties": {
-        "body": { "$ref": "#/$defs/uuid", "description": "素体の Equipment Instance の instanceId" },
-        "fit": { "$ref": "#/$defs/idMap" }
+        "body": {
+          "$ref": "#/$defs/uuid",
+          "description": "素体の Equipment Instance の instanceId"
+        },
+        "fit": {
+          "$ref": "#/$defs/idMap"
+        }
       }
     },
     "sharedColors": {
       "type": "object",
-      "propertyNames": { "$ref": "#/$defs/id" },
-      "additionalProperties": { "$ref": "#/$defs/color" }
+      "propertyNames": {
+        "$ref": "#/$defs/id"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/color"
+      }
     },
     "equipment": {
       "type": "array",
-      "items": { "$ref": "#/$defs/equipmentInstance" }
+      "items": {
+        "$ref": "#/$defs/equipmentInstance"
+      }
     },
     "state": {
       "type": "object",
-      "required": ["view", "pose", "expression"],
+      "required": [
+        "view",
+        "pose",
+        "expression"
+      ],
       "properties": {
-        "view": { "$ref": "#/$defs/id" },
+        "view": {
+          "$ref": "#/$defs/id"
+        },
         "pose": {
           "type": "object",
-          "propertyNames": { "$ref": "#/$defs/id" },
-          "properties": {
-            "torso": { "$ref": "#/$defs/id" },
-            "arm.left": { "$ref": "#/$defs/id" },
-            "arm.right": { "$ref": "#/$defs/id" }
+          "propertyNames": {
+            "$ref": "#/$defs/id"
           },
-          "additionalProperties": { "$ref": "#/$defs/id" },
-          "required": ["torso", "arm.left", "arm.right"]
+          "properties": {
+            "torso": {
+              "$ref": "#/$defs/id"
+            },
+            "arm.left": {
+              "$ref": "#/$defs/id"
+            },
+            "arm.right": {
+              "$ref": "#/$defs/id"
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/id"
+          },
+          "required": [
+            "torso",
+            "arm.left",
+            "arm.right"
+          ]
         },
         "expression": {
           "type": "object",
-          "required": ["eyes", "eyebrows", "mouth"],
+          "required": [
+            "eyes",
+            "eyebrows",
+            "mouth"
+          ],
           "properties": {
-            "eyes": { "$ref": "#/$defs/id" },
-            "eyebrows": { "$ref": "#/$defs/id" },
-            "mouth": { "$ref": "#/$defs/id" }
+            "eyes": {
+              "$ref": "#/$defs/id"
+            },
+            "eyebrows": {
+              "$ref": "#/$defs/id"
+            },
+            "mouth": {
+              "$ref": "#/$defs/id"
+            }
           }
         }
       }
     },
-    "composition": { "type": "object", "description": "予約。v1 は中身を解釈せず保持する" },
-    "requirements": { "description": "State と Equipment から導出するキャッシュ。形が崩れていても Character は不正にならない" }
+    "composition": {
+      "type": "object",
+      "description": "予約。v1 は中身を解釈せず保持する"
+    },
+    "requirements": {
+      "description": "State と Equipment から導出するキャッシュ。形が崩れていても Character は不正にならない"
+    }
   },
   "$defs": {
-    "uuid": { "type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" },
-    "id": { "type": "string", "maxLength": 96, "pattern": "^[a-z0-9_]+(\\.[a-z0-9_]+)*$" },
-    "partId": { "type": "string", "maxLength": 96, "pattern": "^[a-z0-9_]+\\.[a-z0-9_]+$" },
-    "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "id": {
+      "type": "string",
+      "maxLength": 96,
+      "pattern": "^[a-z0-9_]+(\\.[a-z0-9_]+)*$"
+    },
+    "partId": {
+      "type": "string",
+      "maxLength": 96,
+      "pattern": "^[a-z0-9_]+\\.[a-z0-9_]+$"
+    },
+    "color": {
+      "type": "string",
+      "pattern": "^#[0-9a-fA-F]{6}$"
+    },
     "idMap": {
       "type": "object",
-      "propertyNames": { "$ref": "#/$defs/id" },
-      "additionalProperties": { "$ref": "#/$defs/id" }
+      "propertyNames": {
+        "$ref": "#/$defs/id"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/id"
+      }
     },
     "equipmentInstance": {
       "type": "object",
-      "required": ["instanceId", "partId", "equipped"],
+      "required": [
+        "instanceId",
+        "partId",
+        "equipped"
+      ],
       "properties": {
-        "instanceId": { "$ref": "#/$defs/uuid" },
-        "partId": { "$ref": "#/$defs/partId" },
-        "equipped": { "type": "boolean" },
+        "instanceId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "partId": {
+          "$ref": "#/$defs/partId"
+        },
+        "equipped": {
+          "type": "boolean"
+        },
         "colors": {
           "type": "object",
-          "propertyNames": { "$ref": "#/$defs/id" },
+          "propertyNames": {
+            "$ref": "#/$defs/id"
+          },
           "additionalProperties": {
             "type": "object",
             "properties": {
-              "linked": { "type": "boolean" },
-              "color": { "$ref": "#/$defs/color" }
+              "linked": {
+                "type": "boolean"
+              },
+              "color": {
+                "$ref": "#/$defs/color"
+              }
             }
           }
         },
         "transform": {
-          "type": "object",
-          "properties": {
-            "x": { "type": "number" },
-            "y": { "type": "number" },
-            "scaleX": { "type": "number" },
-            "scaleY": { "type": "number" },
-            "rotation": { "type": "number" },
-            "pivot": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 }
-          }
+          "$ref": "#/$defs/transform"
         },
-        "overrides": { "type": "object", "description": "予約。v1 は中身を解釈せず保持する" }
+        "overrides": {
+          "type": "object",
+          "description": "状態ごとの上書き。transform 以外のキーは予約で、中身を解釈せず保持する",
+          "properties": {
+            "transform": {
+              "description": "条件ごとの配置補正。当てはまる補正のうち条件のキーが最も多いものが、基本の transform を置き換える。キーの数が同じで同時に当てはまりうる補正の組は不正（Schema では表せないので検証器が確かめる）",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "when",
+                  "transform"
+                ],
+                "properties": {
+                  "when": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": false,
+                    "properties": {
+                      "view": {
+                        "$ref": "#/$defs/id"
+                      },
+                      "pose": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "propertyNames": {
+                          "$ref": "#/$defs/id"
+                        },
+                        "additionalProperties": {
+                          "$ref": "#/$defs/id"
+                        }
+                      }
+                    }
+                  },
+                  "transform": {
+                    "$ref": "#/$defs/transform"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "transform": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "scaleX": {
+          "type": "number"
+        },
+        "scaleY": {
+          "type": "number"
+        },
+        "rotation": {
+          "type": "number"
+        },
+        "pivot": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
       }
     }
   }

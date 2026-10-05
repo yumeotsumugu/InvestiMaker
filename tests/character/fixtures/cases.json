@@ -2,7 +2,8 @@
   "valid": [
     "valid/minimal.json",
     "valid/missing-part.json",
-    "valid/full.json"
+    "valid/full.json",
+    "valid/transform-overrides.json"
   ],
   "invalid": [
     {
@@ -133,6 +134,36 @@
     {
       "file": "invalid/canvas-not-array.json",
       "code": "canvas",
+      "schema": true
+    },
+    {
+      "file": "invalid/override-overlap.json",
+      "code": "override-overlap",
+      "schema": false
+    },
+    {
+      "file": "invalid/override-same-condition.json",
+      "code": "override-overlap",
+      "schema": false
+    },
+    {
+      "file": "invalid/override-when-empty.json",
+      "code": "override-when-empty",
+      "schema": true
+    },
+    {
+      "file": "invalid/override-when-unknown-key.json",
+      "code": "override-when-key",
+      "schema": true
+    },
+    {
+      "file": "invalid/override-when-missing.json",
+      "code": "override-when",
+      "schema": true
+    },
+    {
+      "file": "invalid/override-transform-bad.json",
+      "code": "transform",
       "schema": true
     }
   ]

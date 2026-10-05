@@ -3,6 +3,8 @@
 
 import { MASTER_CANVAS, isValidId, isValidPartId } from '../ids.ts';
 import type { Issue } from '../validate.ts';
+import { conditionSize, conditionsOverlap } from './transform.ts';
+import type { TransformCondition } from './types.ts';
 import { CHARACTER_FORMAT, EXPRESSION_KEYS, POSE_REGIONS, SUPPORTED_CHARACTER_FORMAT_VERSION } from './types.ts';
 
 export interface CharacterValidation {
@@ -33,6 +35,46 @@ export function validateCharacterJson(input: unknown): CharacterValidation {
   const warnings: Issue[] = [];
   const error = (code: string, path: string, message: string) => errors.push({ level: 'error', code, path, message });
   const done = (): CharacterValidation => ({ ok: errors.length === 0, errors, warnings });
+
+  const checkTransform = (t: unknown, path: string) => {
+    if (!isObject(t)) return error('transform', path, 'transform はオブジェクト');
+    for (const key of ['x', 'y', 'scaleX', 'scaleY', 'rotation'] as const) {
+      if (t[key] !== undefined && !isFiniteNumber(t[key])) error('transform', `${path}.${key}`, `${key} は数値`);
+    }
+    if (t.pivot !== undefined && !(Array.isArray(t.pivot) && t.pivot.length === 2 && t.pivot.every(isFiniteNumber))) {
+      error('transform', `${path}.pivot`, 'pivot は [x, y]');
+    }
+  };
+
+  /** 条件ごとの配置補正。どの状態でも、適用される補正が 1 つに決まることを確かめる。 */
+  const checkTransformOverrides = (list: unknown, path: string) => {
+    if (!Array.isArray(list)) return error('override', path, 'overrides.transform は配列');
+    const conditions: { index: number; when: TransformCondition }[] = [];
+    list.forEach((entry: unknown, i) => {
+      const epath = `${path}[${i}]`;
+      if (!isObject(entry)) return error('override', epath, '補正がオブジェクトではない');
+      checkTransform(entry.transform, `${epath}.transform`);
+      const when = entry.when;
+      if (!isObject(when)) return error('override-when', `${epath}.when`, 'when は必須');
+      // 知らないキーを無視すると条件の意味が変わるので、解釈せず拒否する。
+      const unknown = Object.keys(when).filter((k) => k !== 'view' && k !== 'pose');
+      if (unknown.length > 0) return error('override-when-key', `${epath}.when`, `when に書けるのは view と pose だけ: ${unknown.join(', ')}`);
+      if (when.view !== undefined && !isValidId(when.view)) return error('override-when', `${epath}.when.view`, 'view が ID 書式に合わない');
+      if (when.pose !== undefined && !isIdMap(when.pose)) return error('override-when', `${epath}.when.pose`, 'pose は {領域: 状態}');
+      const condition = when as TransformCondition;
+      if (conditionSize(condition) === 0) return error('override-when-empty', `${epath}.when`, '条件を 1 つ以上書く（条件なしの補正は transform に書く）');
+      conditions.push({ index: i, when: condition });
+    });
+    for (let i = 0; i < conditions.length; i++) {
+      for (let j = i + 1; j < conditions.length; j++) {
+        const a = conditions[i]!;
+        const b = conditions[j]!;
+        if (conditionSize(a.when) === conditionSize(b.when) && conditionsOverlap(a.when, b.when)) {
+          error('override-overlap', `${path}[${b.index}].when`, `[${a.index}] と条件のキーの数が等しく、同じ状態に同時に当てはまりうる`);
+        }
+      }
+    }
+  };
 
   if (!isObject(input)) {
     error('not-object', '', 'Character がオブジェクトではない');
@@ -98,19 +140,11 @@ export function validateCharacterJson(input: unknown): CharacterValidation {
         }
       }
 
-      if (inst.transform !== undefined) {
-        const t = inst.transform;
-        if (!isObject(t)) error('transform', `${path}.transform`, 'transform はオブジェクト');
-        else {
-          for (const key of ['x', 'y', 'scaleX', 'scaleY', 'rotation'] as const) {
-            if (t[key] !== undefined && !isFiniteNumber(t[key])) error('transform', `${path}.transform.${key}`, `${key} は数値`);
-          }
-          if (t.pivot !== undefined && !(Array.isArray(t.pivot) && t.pivot.length === 2 && t.pivot.every(isFiniteNumber))) {
-            error('transform', `${path}.transform.pivot`, 'pivot は [x, y]');
-          }
-        }
+      if (inst.transform !== undefined) checkTransform(inst.transform, `${path}.transform`);
+      if (inst.overrides !== undefined) {
+        if (!isObject(inst.overrides)) error('overrides', `${path}.overrides`, 'overrides はオブジェクト');
+        else if (inst.overrides.transform !== undefined) checkTransformOverrides(inst.overrides.transform, `${path}.overrides.transform`);
       }
-      if (inst.overrides !== undefined && !isObject(inst.overrides)) error('overrides', `${path}.overrides`, 'overrides はオブジェクト');
     });
   }
 

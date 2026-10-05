@@ -1,8 +1,8 @@
 // 描画計画をブラウザなしで画像にする（プレビュー生成・テスト・レポート用画像で共用）。
 // 検証ページの Canvas 2D 合成と同じ手順を、core のソフトウェア合成で行う。
 
-import type { Bitmap, ColorMode, PartManifest, RenderPlan } from '../src/core/index.ts';
-import { compositeOver, createBitmap, maskChannelColors, masksOf, recolor } from '../src/core/index.ts';
+import type { Bitmap, ColorMode, Matrix, PartManifest, RenderPlan } from '../src/core/index.ts';
+import { compositeOver, compositeTransformed, createBitmap, maskChannelColors, masksOf, recolor } from '../src/core/index.ts';
 
 export interface RenderInput {
   plan: RenderPlan;
@@ -16,6 +16,8 @@ export interface RenderInput {
   /** Asset の offset を差し替える（プレビューのように別の座標系へ描くとき）。 */
   offsetOf?(partId: string, file: string): readonly [number, number];
   modeOverride?: ColorMode;
+  /** 装備の識別子 → 配置補正の行列。ないものは補正なし。 */
+  matrices?: Readonly<Record<string, Matrix>>;
 }
 
 export function renderPlan(input: RenderInput): Bitmap {
@@ -38,7 +40,9 @@ export function renderPlan(input: RenderInput): Bitmap {
       bitmap = { width: bitmap.width, height: bitmap.height, data: colored };
     }
     const [ox, oy] = input.offsetOf?.(part.id, asset.file) ?? asset.offset ?? [0, 0];
-    compositeOver(canvas, bitmap, ox, oy);
+    const matrix = input.matrices?.[entry.instanceId];
+    if (matrix) compositeTransformed(canvas, bitmap, ox, oy, matrix);
+    else compositeOver(canvas, bitmap, ox, oy);
   }
   return canvas;
 }

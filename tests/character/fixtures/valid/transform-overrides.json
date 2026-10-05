@@ -1,0 +1,88 @@
+{
+  "format": "INVESTIMAKER_CHARACTER",
+  "formatVersion": 1,
+  "id": "00000000-0000-4000-8000-000000000001",
+  "name": "条件別の配置補正",
+  "canvas": [
+    1600,
+    2400
+  ],
+  "appearance": {
+    "body": "00000000-0000-4000-8000-000000000010"
+  },
+  "sharedColors": {},
+  "equipment": [
+    {
+      "instanceId": "00000000-0000-4000-8000-000000000010",
+      "partId": "im.body_01",
+      "equipped": true
+    },
+    {
+      "instanceId": "00000000-0000-4000-8000-000000000011",
+      "partId": "im.hat_01",
+      "equipped": true,
+      "transform": {
+        "x": 10,
+        "y": -20
+      },
+      "overrides": {
+        "transform": [
+          {
+            "when": {
+              "pose": {
+                "arm.right": "pocket"
+              }
+            },
+            "transform": {
+              "x": 30
+            }
+          },
+          {
+            "when": {
+              "view": "front",
+              "pose": {
+                "arm.right": "pocket",
+                "arm.left": "down"
+              }
+            },
+            "transform": {
+              "x": 50,
+              "rotation": 5
+            }
+          },
+          {
+            "when": {
+              "view": "side_left",
+              "pose": {
+                "arm.right": "down"
+              }
+            },
+            "transform": {
+              "scaleX": 0.9,
+              "pivot": [
+                800,
+                300
+              ]
+            }
+          }
+        ],
+        "futureOverride": {
+          "kept": true
+        }
+      }
+    }
+  ],
+  "state": {
+    "view": "front",
+    "pose": {
+      "torso": "stand",
+      "arm.left": "down",
+      "arm.right": "down"
+    },
+    "expression": {
+      "eyes": "open",
+      "eyebrows": "neutral",
+      "mouth": "closed"
+    }
+  }
+}
