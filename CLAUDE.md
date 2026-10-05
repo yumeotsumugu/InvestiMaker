@@ -4,7 +4,7 @@ TRPG 用 2D キャラクター立ち絵を既製パーツの組み合わせで�
 
 ## 唯一の正
 
-素材規格は `docs/specifications/InvestiMaker_Asset_Specification_v1.md`（仕様書）が**唯一の正**。`docs/design/` の基本設計書は背景理解用で、食い違う箇所は仕様書が優先する。
+素材規格は `docs/specifications/InvestiMaker_Asset_Specification_v1.md`（仕様書）が**唯一の正**。キャラクターの保存形式は同じフォルダの `InvestiMaker_Character_Schema_v1.md`（草案）が定める。`docs/design/` の基本設計書は背景理解用で、食い違う箇所は仕様書が優先する。
 
 ## 守ること
 
@@ -18,6 +18,7 @@ TRPG 用 2D キャラクター立ち絵を既製パーツの組み合わせで�
 ## 構成
 
 - `src/core/` — DOM に依存しない純粋な関数（manifest 型・検証・Asset 解決・描画順・色合成・互換性）。製品版に持ち越す。
+- `src/core/character/` — キャラクターの保存形式（型・検証・保存と読込・評価・編集）。読み込みは Part の manifest を参照しない。
 - `src/lab/` — 検証ページ（使い捨て。素の DOM）。
 - `tools/` — 仮素材の生成・レポート用画像の生成・ブラウザ計測。Node の型除去で `.ts` を直接実行する。
 - `tests/core/` 単体テスト、`tests/conformance/` 規格適合性テスト（§6.6 の T1〜T12 ほか）。

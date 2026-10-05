@@ -1,0 +1,30 @@
+{
+  "format": "INVESTIMAKER_CHARACTER",
+  "formatVersion": 1,
+  "id": "00000000-0000-4000-8000-000000000001",
+  "name": "",
+  "canvas": [
+    1600,
+    2400
+  ],
+  "appearance": {
+    "body": "00000000-0000-4000-8000-000000000010"
+  },
+  "sharedColors": {},
+  "equipment": [
+    {
+      "instanceId": "00000000-0000-4000-8000-000000000010",
+      "partId": "im.body_01",
+      "equipped": true
+    }
+  ],
+  "state": {
+    "view": "front",
+    "pose": {
+      "torso": "stand",
+      "arm.left": "down",
+      "arm.right": "down"
+    },
+    "expression": "smile"
+  }
+}

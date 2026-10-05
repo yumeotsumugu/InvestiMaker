@@ -8,3 +8,4 @@ export * from './plan.ts';
 export * from './raster.ts';
 export * from './resolve.ts';
 export * from './validate.ts';
+export * from './character/index.ts';

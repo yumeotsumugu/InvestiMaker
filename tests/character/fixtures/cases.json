@@ -1,0 +1,139 @@
+{
+  "valid": [
+    "valid/minimal.json",
+    "valid/missing-part.json",
+    "valid/full.json"
+  ],
+  "invalid": [
+    {
+      "file": "invalid/format-wrong.json",
+      "code": "format",
+      "schema": true
+    },
+    {
+      "file": "invalid/format-version-zero.json",
+      "code": "format-version",
+      "schema": true
+    },
+    {
+      "file": "invalid/format-version-future.json",
+      "code": "format-version-unsupported",
+      "schema": true
+    },
+    {
+      "file": "invalid/id-not-uuid.json",
+      "code": "id",
+      "schema": true
+    },
+    {
+      "file": "invalid/name-missing.json",
+      "code": "name",
+      "schema": true
+    },
+    {
+      "file": "invalid/appearance-missing.json",
+      "code": "appearance",
+      "schema": true
+    },
+    {
+      "file": "invalid/body-ref-unknown.json",
+      "code": "appearance-body-ref",
+      "schema": false
+    },
+    {
+      "file": "invalid/body-unequipped.json",
+      "code": "appearance-body-ref",
+      "schema": false
+    },
+    {
+      "file": "invalid/fit-not-id.json",
+      "code": "fit",
+      "schema": true
+    },
+    {
+      "file": "invalid/shared-color-bad.json",
+      "code": "color-value",
+      "schema": true
+    },
+    {
+      "file": "invalid/equipment-missing.json",
+      "code": "equipment",
+      "schema": true
+    },
+    {
+      "file": "invalid/instance-id-duplicate.json",
+      "code": "instance-id-duplicate",
+      "schema": false
+    },
+    {
+      "file": "invalid/part-id-bad.json",
+      "code": "part-id",
+      "schema": true
+    },
+    {
+      "file": "invalid/equipped-missing.json",
+      "code": "equipped",
+      "schema": true
+    },
+    {
+      "file": "invalid/instance-color-bad.json",
+      "code": "color-value",
+      "schema": true
+    },
+    {
+      "file": "invalid/linked-not-boolean.json",
+      "code": "linked",
+      "schema": true
+    },
+    {
+      "file": "invalid/transform-not-number.json",
+      "code": "transform",
+      "schema": true
+    },
+    {
+      "file": "invalid/overrides-not-object.json",
+      "code": "overrides",
+      "schema": true
+    },
+    {
+      "file": "invalid/view-missing.json",
+      "code": "view",
+      "schema": true
+    },
+    {
+      "file": "invalid/pose-region-missing.json",
+      "code": "pose",
+      "schema": true
+    },
+    {
+      "file": "invalid/expression-only-name.json",
+      "code": "expression",
+      "schema": true
+    },
+    {
+      "file": "invalid/expression-part-missing.json",
+      "code": "expression",
+      "schema": true
+    },
+    {
+      "file": "invalid/composition-not-object.json",
+      "code": "composition",
+      "schema": true
+    },
+    {
+      "file": "invalid/canvas-missing.json",
+      "code": "canvas",
+      "schema": true
+    },
+    {
+      "file": "invalid/canvas-other-size.json",
+      "code": "canvas-mismatch",
+      "schema": true
+    },
+    {
+      "file": "invalid/canvas-not-array.json",
+      "code": "canvas",
+      "schema": true
+    }
+  ]
+}

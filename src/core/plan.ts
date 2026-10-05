@@ -11,7 +11,15 @@ import { resolvePart } from './resolve.ts';
 /** §8 の 3 分類と、問題なしの `ok`。 */
 export type PartStatus = 'ok' | 'missing' | 'unsupported' | 'conflict';
 
+/** 装備の 1 件。同じ Part を複数装備できるよう、Part ID とは別に識別子を持つ。 */
+export interface EquippedRef {
+  instanceId: string;
+  partId: string;
+}
+
 export interface PartReport {
+  /** 装備の識別子。Part ID だけで装備を渡した場合は Part ID と同じ。 */
+  instanceId: string;
   partId: string;
   status: PartStatus;
   reasons: string[];
@@ -29,6 +37,7 @@ export interface PartReport {
 export type LayerStatus = 'draw' | 'omitted' | 'unresolved' | 'hidden' | 'skipped';
 
 export interface PlanEntry {
+  instanceId: string;
   partId: string;
   layer: Layer;
   slot: string;
@@ -62,26 +71,27 @@ export function defaultSlotOrder(ctx: Context): string[] {
 
 /**
  * @param library 読み込み済みの Part（ID → manifest）
- * @param equipped 装備中の Part ID（素体を含む）。並びが装備順になる
+ * @param equipped 装備（素体を含む）。並びが装備順になる。Part ID だけを渡すと、それを識別子としても使う
  */
 export function planRender(
   library: ReadonlyMap<string, PartManifest>,
-  equipped: readonly string[],
+  equipped: readonly (string | EquippedRef)[],
   ctx: Context,
   options: PlanOptions = {},
 ): RenderPlan {
+  const refs = equipped.map((e): EquippedRef => (typeof e === 'string' ? { instanceId: e, partId: e } : e));
   const slotOrder = options.slotOrder ?? defaultSlotOrder(ctx);
   const slotIndex = new Map(slotOrder.map((slot, i) => [slot, i]));
   const drawConflicted = options.drawConflicted ?? true;
 
-  const found = equipped.flatMap((id) => library.get(id) ?? []);
+  const found = refs.flatMap((ref) => library.get(ref.partId) ?? []);
   const parts: PartReport[] = [];
   const entries: (PlanEntry & { equipIndex: number; layerIndex: number })[] = [];
 
-  equipped.forEach((partId, equipIndex) => {
+  refs.forEach(({ instanceId, partId }, equipIndex) => {
     const part = library.get(partId);
     if (!part) {
-      parts.push({ partId, status: 'missing', reasons: ['Part が見つからない'], drawn: false });
+      parts.push({ instanceId, partId, status: 'missing', reasons: ['Part が見つからない'], drawn: false });
       return;
     }
 
@@ -102,19 +112,18 @@ export function planRender(
     if (status === 'ok' && conflicts.length > 0) status = 'conflict';
 
     const drawn = status === 'ok' || (status === 'conflict' && drawConflicted);
-    parts.push({ partId, status, reasons, drawn });
+    parts.push({ instanceId, partId, status, reasons, drawn });
 
     resolution.layers.forEach(({ layer, slot, asset }, layerIndex) => {
       let layerStatus: LayerStatus;
       if (!asset) layerStatus = layer.optional ? 'omitted' : 'unresolved';
       else layerStatus = drawn ? 'draw' : 'skipped';
-      entries.push({ partId, layer, slot, asset, status: layerStatus, equipIndex, layerIndex });
+      entries.push({ instanceId, partId, layer, slot, asset, status: layerStatus, equipIndex, layerIndex });
     });
   });
 
   // hides は、実際に描画される Part のものだけを適用する。
-  const drawnIds = new Set(parts.filter((p) => p.drawn).map((p) => p.partId));
-  const hidden = new Set(found.filter((p) => drawnIds.has(p.id)).flatMap((p) => p.hides ?? []));
+  const hidden = new Set(parts.filter((p) => p.drawn).flatMap((p) => library.get(p.partId)?.hides ?? []));
   for (const e of entries) {
     if (e.status === 'draw' && hidden.has(e.slot)) e.status = 'hidden';
   }
@@ -135,6 +144,6 @@ export function planRender(
 
   return {
     parts,
-    entries: entries.map(({ partId, layer, slot, asset, status }) => ({ partId, layer, slot, asset, status })),
+    entries: entries.map(({ instanceId, partId, layer, slot, asset, status }) => ({ instanceId, partId, layer, slot, asset, status })),
   };
 }

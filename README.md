@@ -4,7 +4,7 @@
 
 TRPG 用の 2D キャラクター立ち絵・差分・アイコンを、既製パーツの組み合わせで作るブラウザツールです。サーバーを持たない完全クライアントサイドのアプリで、第三者が自作パーツ（`.impart`）を追加できる公開規格を持つ予定です。
 
-## 現在の段階：Phase 0 検証プロトタイプ
+## 現在の段階
 
 このリポジトリは製品ではなく、素材規格（[仕様書](docs/specifications/InvestiMaker_Asset_Specification_v1.md)）の未確定事項を確定するための検証用実装です。**Phase 0 は完了し、仕様書は検証結果を反映した RC1 になっています。**
 
@@ -12,6 +12,12 @@ TRPG 用の 2D キャラクター立ち絵・差分・アイコンを、既製�
 - 仕様書どおりの Asset 解決・描画順・色合成・検証（`src/core/`）
 - それを操作して確かめる検証ページ（`src/lab/`）
 - 結果をまとめた[検証レポート](docs/reports/Phase0_Verification_Report.md)
+
+**Phase 1-A（完了）** では、キャラクターの保存形式を設計しました。まだキャラクタークリエイターの UI はありません。
+
+- [Character Schema v1 草案](docs/specifications/InvestiMaker_Character_Schema_v1.md) と `schemas/character.schema.json`
+- 保存・読込・検証・編集の実装（`src/core/character/`）
+- [Phase 1-A 検証レポート](docs/reports/Phase1A_Verification_Report.md)
 
 ## 起動方法
 
@@ -48,7 +54,7 @@ npm run bench:browser   # ヘッドレスの Chrome / Edge で検証ページを
 ## 構成
 
 ```text
-docs/specifications/  仕様書（唯一の正）
+docs/specifications/  仕様書（唯一の正）。素材規格と、キャラクターの保存形式
 docs/design/          基本設計書 v0.1（背景理解用）
 docs/instructions/    Phase 0 の作業指示書
 docs/reports/         検証レポートと比較画像
@@ -56,10 +62,11 @@ src/core/             manifest 型・検証・Asset 解決・描画順・色合�
 src/lab/              検証ページ（使い捨て）
 assets/development/   生成した仮素材（.impart を展開した形）
 assets/official/      （今回は空）
-schemas/              （今回は空）
+schemas/              JSON Schema（キャラクターの保存形式）
 tools/                仮素材の生成、レポート用画像の生成、ブラウザ計測
 tests/core/           単体テスト
 tests/conformance/    規格適合性テスト
+tests/character/      キャラクターの保存形式のテスト（round-trip、不足 Part、3 状態）
 ```
 
 ## 方針

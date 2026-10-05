@@ -9,7 +9,7 @@ export interface RenderInput {
   library: ReadonlyMap<string, PartManifest>;
   /** Part ID とファイルパスから画像を得る。 */
   image(partId: string, file: string): Bitmap;
-  /** Part ID → スロット ID → `#RRGGBB`。 */
+  /** 装備の識別子（`PlanEntry.instanceId`）→ スロット ID → `#RRGGBB`。 */
   colors: Readonly<Record<string, Readonly<Record<string, string>>>>;
   width: number;
   height: number;
@@ -31,7 +31,7 @@ export function renderPlan(input: RenderInput): Bitmap {
         bitmap.data,
         masks.map((mask) => ({
           data: input.image(part.id, mask.file).data,
-          channels: maskChannelColors(part, mask, input.colors[part.id] ?? {}, input.modeOverride),
+          channels: maskChannelColors(part, mask, input.colors[entry.instanceId] ?? {}, input.modeOverride),
         })),
         new Uint8ClampedArray(bitmap.data.length),
       );
