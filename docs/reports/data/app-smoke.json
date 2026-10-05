@@ -1,0 +1,293 @@
+{
+  "browser": "Chrome/154.0.8037.93",
+  "headless": true,
+  "steps": [
+    {
+      "step": "新規作成",
+      "result": {
+        "validity": "VALID",
+        "notice": "新しいキャラクターを作った",
+        "exportDisabled": false,
+        "blocked": null,
+        "issues": [],
+        "equipped": [
+          "dev.body_adult_standard",
+          "dev.face_head_01",
+          "dev.face_ears_01",
+          "dev.face_nose_01",
+          "dev.eyes_01",
+          "dev.eyebrows_01",
+          "dev.mouth_01",
+          "dev.hair_back_01",
+          "dev.hair_front_01",
+          "dev.socks_01",
+          "dev.shoes_01",
+          "dev.pants_01",
+          "dev.shirt_01"
+        ],
+        "missingListed": [],
+        "duplicates": [],
+        "drawn": 19,
+        "opaque": 798370
+      }
+    },
+    {
+      "step": "Part 選択",
+      "result": {
+        "validity": "VALID",
+        "notice": "新しいキャラクターを作った",
+        "exportDisabled": false,
+        "blocked": null,
+        "issues": [],
+        "equipped": [
+          "dev.body_adult_standard",
+          "dev.face_head_01",
+          "dev.face_ears_01",
+          "dev.face_nose_01",
+          "dev.eyes_01",
+          "dev.eyebrows_01",
+          "dev.mouth_01",
+          "dev.hair_back_01",
+          "dev.socks_01",
+          "dev.shoes_01",
+          "dev.pants_01",
+          "dev.shirt_02",
+          "dev.hair_front_02",
+          "dev.glasses_01"
+        ],
+        "missingListed": [],
+        "duplicates": [],
+        "drawn": 20,
+        "opaque": 791408
+      }
+    },
+    {
+      "step": "色変更",
+      "result": {
+        "validity": "VALID",
+        "notice": "新しいキャラクターを作った",
+        "exportDisabled": false,
+        "blocked": null,
+        "issues": [],
+        "equipped": [
+          "dev.body_adult_standard",
+          "dev.face_head_01",
+          "dev.face_ears_01",
+          "dev.face_nose_01",
+          "dev.eyes_01",
+          "dev.eyebrows_01",
+          "dev.mouth_01",
+          "dev.hair_back_01",
+          "dev.socks_01",
+          "dev.shoes_01",
+          "dev.pants_01",
+          "dev.shirt_02",
+          "dev.hair_front_02",
+          "dev.glasses_01"
+        ],
+        "missingListed": [],
+        "duplicates": [],
+        "drawn": 20,
+        "opaque": 791408
+      }
+    },
+    {
+      "step": "Transform",
+      "result": {
+        "validity": "VALID",
+        "notice": "新しいキャラクターを作った",
+        "exportDisabled": false,
+        "blocked": null,
+        "issues": [],
+        "equipped": [
+          "dev.body_adult_standard",
+          "dev.face_head_01",
+          "dev.face_ears_01",
+          "dev.face_nose_01",
+          "dev.eyes_01",
+          "dev.eyebrows_01",
+          "dev.mouth_01",
+          "dev.hair_back_01",
+          "dev.socks_01",
+          "dev.shoes_01",
+          "dev.pants_01",
+          "dev.shirt_02",
+          "dev.hair_front_02",
+          "dev.glasses_01"
+        ],
+        "missingListed": [],
+        "duplicates": [],
+        "drawn": 19,
+        "opaque": 785680
+      }
+    },
+    {
+      "step": "保存 → 読込",
+      "result": {
+        "validity": "VALID",
+        "notice": "PNG を出力した",
+        "exportDisabled": false,
+        "blocked": null,
+        "issues": [],
+        "equipped": [
+          "dev.body_adult_standard",
+          "dev.face_head_01",
+          "dev.face_ears_01",
+          "dev.face_nose_01",
+          "dev.eyes_01",
+          "dev.eyebrows_01",
+          "dev.mouth_01",
+          "dev.hair_back_01",
+          "dev.socks_01",
+          "dev.shoes_01",
+          "dev.pants_01",
+          "dev.shirt_02",
+          "dev.hair_front_02",
+          "dev.glasses_01"
+        ],
+        "missingListed": [],
+        "duplicates": [],
+        "drawn": 20,
+        "opaque": 793607
+      }
+    },
+    {
+      "step": "不足 Part",
+      "result": {
+        "validity": "UNRESOLVED",
+        "notice": "missing.json を読み込んだ（requirements が現在の内容と一致しない（保存時に作り直す））",
+        "exportDisabled": false,
+        "blocked": null,
+        "issues": [
+          "未解決: Part が読み込まれていない: author.special_coat",
+          "author.special_coat: Part が見つからない（描画されない）"
+        ],
+        "equipped": [
+          "dev.body_adult_standard",
+          "dev.face_head_01",
+          "author.special_coat",
+          "dev.face_ears_01",
+          "dev.face_nose_01",
+          "dev.eyes_01",
+          "dev.eyebrows_01",
+          "dev.mouth_01",
+          "dev.hair_back_01",
+          "dev.socks_01",
+          "dev.shoes_01",
+          "dev.pants_01",
+          "dev.shirt_02",
+          "dev.hair_front_02",
+          "dev.glasses_01"
+        ],
+        "missingListed": [
+          "author.special_coat",
+          null,
+          null,
+          null
+        ],
+        "duplicates": [],
+        "drawn": 20,
+        "opaque": 793607
+      }
+    },
+    {
+      "step": "未知のポーズ",
+      "result": {
+        "validity": "UNRESOLVED",
+        "notice": "unknown-pose.json を読み込んだ（requirements が現在の内容と一致しない（保存時に作り直す））",
+        "exportDisabled": true,
+        "blocked": "描画と PNG 出力ができない: この実装の Pose Definition にないポーズ: arm.right = crossed",
+        "issues": [
+          "未解決: この実装の Pose Definition にないポーズ: arm.right = crossed"
+        ],
+        "equipped": [
+          "dev.body_adult_standard",
+          "dev.face_head_01",
+          "dev.face_ears_01",
+          "dev.face_nose_01",
+          "dev.eyes_01",
+          "dev.eyebrows_01",
+          "dev.mouth_01",
+          "dev.hair_back_01",
+          "dev.socks_01",
+          "dev.shoes_01",
+          "dev.pants_01",
+          "dev.shirt_02",
+          "dev.hair_front_02",
+          "dev.glasses_01"
+        ],
+        "missingListed": [],
+        "duplicates": [],
+        "drawn": 0,
+        "opaque": 0
+      }
+    },
+    {
+      "step": "INVALID の読込",
+      "result": {
+        "validity": "UNRESOLVED",
+        "notice": "invalid.json は読み込めない（現在のキャラクターはそのまま）: canvas: canvas は [1600, 2400] でなければならない: [2000, 3000]",
+        "exportDisabled": true,
+        "blocked": "描画と PNG 出力ができない: この実装の Pose Definition にないポーズ: arm.right = crossed",
+        "issues": [
+          "未解決: この実装の Pose Definition にないポーズ: arm.right = crossed"
+        ],
+        "equipped": [
+          "dev.body_adult_standard",
+          "dev.face_head_01",
+          "dev.face_ears_01",
+          "dev.face_nose_01",
+          "dev.eyes_01",
+          "dev.eyebrows_01",
+          "dev.mouth_01",
+          "dev.hair_back_01",
+          "dev.socks_01",
+          "dev.shoes_01",
+          "dev.pants_01",
+          "dev.shirt_02",
+          "dev.hair_front_02",
+          "dev.glasses_01"
+        ],
+        "missingListed": [],
+        "duplicates": [],
+        "drawn": 0,
+        "opaque": 0
+      }
+    },
+    {
+      "step": "category の重複",
+      "result": {
+        "validity": "VALID",
+        "notice": "duplicate.json を読み込んだ（requirements が現在の内容と一致しない（保存時に作り直す））",
+        "exportDisabled": false,
+        "blocked": null,
+        "issues": [
+          "注意: 1 Part だけ装備できる category に複数装備している: outfit.top（dev.shirt_01, dev.shirt_02）"
+        ],
+        "equipped": [
+          "dev.body_adult_standard",
+          "dev.face_head_01",
+          "dev.face_ears_01",
+          "dev.face_nose_01",
+          "dev.eyes_01",
+          "dev.eyebrows_01",
+          "dev.mouth_01",
+          "dev.hair_back_01",
+          "dev.socks_01",
+          "dev.shoes_01",
+          "dev.pants_01",
+          "dev.shirt_01",
+          "dev.shirt_02",
+          "dev.hair_front_02",
+          "dev.glasses_01"
+        ],
+        "missingListed": [],
+        "duplicates": [
+          "outfit.top"
+        ],
+        "drawn": 23,
+        "opaque": 802375
+      }
+    }
+  ]
+}

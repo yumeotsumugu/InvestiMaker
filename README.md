@@ -19,13 +19,18 @@ TRPG 用の 2D キャラクター立ち絵・差分・アイコンを、既製�
 - 保存・読込・検証・編集の実装（`src/core/character/`）
 - [Phase 1-A 検証レポート](docs/reports/Phase1A_Verification_Report.md)
 
+**Phase 1-B（検証済み・判定待ち）** では、Character を正本とする最小 UI を作りました。新規作成 → Part 選択 → 色変更 → Transform → JSON 保存 → JSON 読込 → PNG 出力 を一通り行えます。デザインや使い勝手は最小限です。
+
+- 本体の最小 UI（`src/app/`）
+- [Phase 1-B 検証レポート](docs/reports/Phase1B_Verification_Report.md)
+
 ## 起動方法
 
 Node.js 24 以降が必要です（`tools/` の TypeScript を Node の型除去で直接実行するため）。
 
 ```sh
 npm install
-npm run dev        # 検証ページ。表示された http://127.0.0.1:5173/ を開く
+npm run dev        # http://127.0.0.1:5173/ が本体の最小 UI、/lab.html が検証ページ
 npm test           # 単体テストと規格適合性テスト（§6.6 の T1〜T12、§5.3 の色計算の参照ベクタを含む）
 npm run typecheck  # 型検査
 ```
@@ -49,7 +54,9 @@ npm run report:images   # 発色・描画順の比較画像を docs/reports/imag
 npm run bench:browser   # ヘッドレスの Chrome / Edge で検証ページを開き、合成時間などを計測
 ```
 
-`bench:browser` はローカルにインストール済みの Chrome または Edge を使います（`BROWSER_PATH` で指定可）。通信先は自分の PC 内（127.0.0.1）だけです。
+`npm run smoke:app` は、本体の最小 UI をヘッドレスのブラウザで実際に操作して確かめます。
+
+`bench:browser` と `smoke:app` はローカルにインストール済みの Chrome または Edge を使います（`BROWSER_PATH` で指定可）。通信先は自分の PC 内（127.0.0.1）だけです。
 
 ## 構成
 
@@ -59,14 +66,17 @@ docs/design/          基本設計書 v0.1（背景理解用）
 docs/instructions/    Phase 0 の作業指示書
 docs/reports/         検証レポートと比較画像
 src/core/             manifest 型・検証・Asset 解決・描画順・色合成・互換性（DOM 非依存。製品版に持ち越す）
-src/lab/              検証ページ（使い捨て）
+src/app/              InvestiMaker 本体の最小 UI（Character が唯一の正本）
+src/web/              素材の読み込みと Canvas 合成（本体と検証ページの共用）
+src/lab/              検証ページ（規格・描画・性能の検証環境）
 assets/development/   生成した仮素材（.impart を展開した形）
 assets/official/      （今回は空）
 schemas/              JSON Schema（キャラクターの保存形式）
 tools/                仮素材の生成、レポート用画像の生成、ブラウザ計測
 tests/core/           単体テスト
 tests/conformance/    規格適合性テスト
-tests/character/      キャラクターの保存形式のテスト（round-trip、不足 Part、3 状態）
+tests/character/      キャラクターの保存形式のテスト（round-trip、不足 Part、3 状態、配置補正）
+tests/app/            本体 UI の操作のテスト（DOM なし）
 ```
 
 ## 方針

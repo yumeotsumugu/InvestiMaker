@@ -19,6 +19,8 @@ TRPG 用 2D キャラクター立ち絵を既製パーツの組み合わせで�
 
 - `src/core/` — DOM に依存しない純粋な関数（manifest 型・検証・Asset 解決・描画順・色合成・互換性）。製品版に持ち越す。
 - `src/core/character/` — キャラクターの保存形式（型・検証・保存と読込・評価・編集）。読み込みは Part の manifest を参照しない。
+- `src/app/` — InvestiMaker 本体の最小 UI。Character が唯一の正本で、UI 用の第二の正本を持たない。編集は core の operations、評価は evaluate、描画計画は plan を使う。
+- `src/web/` — 素材の読み込みと Canvas 合成（本体と検証ページの共用）。
 - `src/lab/` — 検証ページ（使い捨て。素の DOM）。
 - `tools/` — 仮素材の生成・レポート用画像の生成・ブラウザ計測。Node の型除去で `.ts` を直接実行する。
 - `tests/core/` 単体テスト、`tests/conformance/` 規格適合性テスト（§6.6 の T1〜T12 ほか）。
