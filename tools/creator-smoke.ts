@@ -160,7 +160,7 @@ try {
   await input('[data-create="name"]', '夢生ツムグ');
   await nav('[data-action="start"]', 'customize.html');
   s = await record('CUSTOMIZE（始めた直後）');
-  check((await pageName()) === 'customize.html', '「この内容で始める」で、作成画面のページ（customize.html）へ移る');
+  check((await pageName()) === 'customize.html', '「作成を開始」で、作成画面のページ（customize.html）へ移る');
   check(s.step === 'customize' && s.equipped.length === 13 && s.drawn > 0, '基本のパーツを付けて始まる');
   check(s.notices.length === 0 && s.chip === null, '問題がなければ、状態は何も出さない');
   const started = JSON.parse(s.character!) as { name: string; sharedColors: Record<string, string> };

@@ -4,7 +4,7 @@
 // DOM event → Character の操作（core/operations、app/session）→ 評価 → 描画計画 → 描画 の一方向で動かす。
 // 入力中の部品（色の選択など）を壊さないよう、領域ごとに描き直す。
 //
-// ページは 3 つに分かれている：index.html（CREATE）→ customize.html（CUSTOMIZE）→ export.html（EXPORT）。
+// ページは 3 つに分かれている：index.html（スタート画面。CREATE の段を兼ねる）→ customize.html（CUSTOMIZE）→ export.html（EXPORT）。
 // どのページもこのファイルを読み、<body data-page="…"> で自分の段を知る。
 // 編集中の Character は、ページを移るときにセッションストレージで運ぶ（store.ts）。
 
@@ -42,7 +42,7 @@ import { label } from './labels.ts';
 import { readStore, writeStore } from './store.ts';
 import type { Notice } from './messages.ts';
 import { buildNotices, cardProblemText, exportBlockText, loadErrorText, multiHint } from './messages.ts';
-import type { Inspection, Point, Scope } from './session.ts';
+import type { Inspection, Point, Preset, Scope } from './session.ts';
 import {
   applyExpressionPreset,
   bodies,
@@ -61,6 +61,7 @@ import {
   setPivot,
   sharedColorRows,
   snapshotOf,
+  presets,
   startCharacter,
   storedTransform,
   viewChoices,
@@ -107,8 +108,8 @@ interface UiState {
   savedSnapshot: string | null;
   recentColors: string[];
   message: { kind: 'info' | 'error'; text: string; detail?: string } | null;
-  /** CREATE の入力中の値。 */
-  draft: { name: string; bodyId: string; withStarter: boolean };
+  /** スタート画面で入力中の値。`preset` は、はじめのセットの ID。 */
+  draft: { name: string; preset: string };
   /** 「設定」で選ぶ：詳細設定を常に開く。 */
   alwaysAdvanced: boolean;
   /** 【検証用】「注意 n 件」から開く方式で、一覧を開いているか。 */
@@ -125,7 +126,7 @@ async function main() {
     return;
   }
   const majors: MajorView[] = visibleMajors(set.library);
-  const firstBody = bodies(set)[0]?.id ?? set.body;
+  const presetList = presets(set);
   const thumbUrl = (partId: string) => assetUrl(`${set.baseUrl}${partId}/preview.png`);
 
   // 【Phase 1-C-3 の検証用】通知の置き場所を URL で切り替える。置き場所が決まったら、採用した案だけを残して消す。
@@ -152,7 +153,7 @@ async function main() {
     savedSnapshot: stored.savedSnapshot,
     recentColors: stored.ui.recentColors ?? [],
     message: stored.flash ? { kind: 'info', text: stored.flash } : null,
-    draft: { name: '', bodyId: firstBody, withStarter: true },
+    draft: { name: '', preset: presetList[0]?.id ?? '' },
     alwaysAdvanced: stored.ui.alwaysAdvanced ?? false,
     noticesOpen: false,
   };
@@ -482,14 +483,14 @@ async function main() {
   /** プレビューの上の「何もない」表示と、下の通知・知らせること。 */
   function renderUnder() {
     emptyEl.hidden = !!view && view.drawn > 0;
-    emptyEl.textContent = character ? '表示できる素材がありません' : 'ここにキャラクターが表示されます';
+    emptyEl.textContent = '表示できる素材がありません';
     // 通知は CUSTOMIZE の段で出す（EXPORT の段は、右側に常に並べる）。
     const shown = ui.step === 'customize' ? notices : [];
     if (shown.length === 0) ui.noticesOpen = false;
     fill(underEl,
       // 1 行分の高さを常に確保する（「保存しました」などが出ても、プレビューの大きさが変わらないようにする）。
       h('div', { className: 'message-line' },
-        ui.message && mark(h('p', { className: `message ${ui.message.kind}` }, ui.message.text, ui.message.detail && ui.advancedOpen && h('span', { className: 'detail' }, ui.message.detail)), { role: 'message' })),
+        ui.step !== 'create' && ui.message && mark(h('p', { className: `message ${ui.message.kind}` }, ui.message.text, ui.message.detail && ui.advancedOpen && h('span', { className: 'detail' }, ui.message.detail)), { role: 'message' })),
       ...(noticeMode === 'under' ? shown.map((n) => noticeBox(n)) : []),
     );
     fill(overlayEl, ...(noticeMode === 'overlay' ? shown.map((n) => noticeBox(n)) : []));
@@ -518,36 +519,72 @@ async function main() {
 
   // ---------------------------------------------------------------- CREATE
 
+  /** 選んでいる「はじめのセット」から、これから作るキャラクターを組み立てる。 */
+  function draftCharacter(): Character | null {
+    const preset = presetList.find((p) => p.id === ui.draft.preset);
+    return preset ? startCharacter(set, newId, { name: ui.draft.name.trim(), bodyId: preset.bodyId, withStarter: preset.withStarter }) : null;
+  }
+
+  /** スタート画面のプレビュー：選んでいるセットで始めたときの見た目を出す（編集中のキャラクターは変えない）。 */
+  function showDraft() {
+    const draft = draftCharacter();
+    view = draft ? inspect(draft, set) : null;
+    renderUnder();
+    void paint();
+  }
+
   function renderCreate() {
-    const nameInput = mark(h('input', { type: 'text', className: 'field wide', maxLength: 200, value: ui.draft.name, placeholder: 'キャラクターの名前' }), { create: 'name' });
+    const nameInput = mark(h('input', { type: 'text', className: 'field wide', maxLength: 200, value: ui.draft.name, placeholder: 'あとから変えられます' }), { create: 'name' });
     nameInput.addEventListener('input', () => (ui.draft.name = nameInput.value));
-    const starter = mark(h('input', { type: 'checkbox', checked: ui.draft.withStarter }), { create: 'starter' });
-    starter.addEventListener('change', () => (ui.draft.withStarter = starter.checked));
 
     const start = () =>
       confirmDiscard(() => {
         // 新しいキャラクターを作り、作成画面（別のページ）へ移る。
-        character = startCharacter(set, newId, { name: ui.draft.name.trim(), bodyId: ui.draft.bodyId, withStarter: ui.draft.withStarter });
+        const created = draftCharacter();
+        if (!created) return;
+        character = created;
         ui.savedSnapshot = null;
         ui.target = null;
         go('customize');
       });
+    nameInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.isComposing) start();
+    });
 
-    return h('div', { className: 'pane create' },
-      h('h2', {}, '新しいキャラクターを作る'),
-      h('label', { className: 'row' }, h('span', { className: 'lbl' }, '名前'), nameInput),
-      h('h4', {}, '素体を選ぶ'),
-      h('div', { className: 'grid bodies' }, ...bodies(set).map((b) => card(b.name, thumbUrl(b.id), { on: b.id === ui.draft.bodyId, data: { createBody: b.id }, onPick: () => {
-        ui.draft.bodyId = b.id;
+    const manyBodies = bodies(set).length > 1;
+    const presetButton = (preset: Preset) => {
+      const title = preset.withStarter ? '基本のセット' : '素体だけ';
+      const note = preset.withStarter ? '顔・髪・服を付けた状態から始めます。' : '何も付けていない状態から始めます。';
+      const on = preset.id === ui.draft.preset;
+      const el = mark(h('button', { type: 'button', className: `preset${on ? ' on' : ''}` },
+        h('span', { className: 'preset-name' }, manyBodies ? `${set.library.get(preset.bodyId)?.name ?? ''} ／ ${title}` : title),
+        h('span', { className: 'muted small' }, note)), { preset: preset.id, selected: String(on) });
+      el.addEventListener('click', () => {
+        ui.draft.preset = preset.id;
         render('all');
-      } }))),
-      h('label', { className: 'row' }, starter, '基本のパーツ（顔・髪・服）を付けて始める'),
-      h('div', { className: 'row actions' },
-        button('この内容で始める', start, { action: 'start' }, { primary: true }),
-        button('保存したキャラクターを読み込む', () => confirmDiscard(() => fileInput.click()), { action: 'create-load' })),
-      character && mark(h('div', { className: 'box' },
-        h('p', {}, `編集中のキャラクターがあります：${character.name || '（名前なし）'}`),
-        button('続きから編集する', () => go('customize'), { action: 'resume' })), { role: 'resume' }),
+        showDraft();
+      });
+      return el;
+    };
+
+    return h('div', { className: 'pane start' },
+      h('div', { className: 'start-card' },
+        h('h1', { className: 'start-brand' }, 'InvestiMaker'),
+        h('p', { className: 'muted' }, 'パーツを組み合わせて、TRPG のキャラクターの立ち絵を作ります。'),
+        character && mark(h('div', { className: 'box resume' },
+          h('p', {}, `編集中のキャラクターがあります：${character.name || '（名前なし）'}`),
+          button('続きから編集する', () => go('customize'), { action: 'resume' })), { role: 'resume' }),
+        h('h2', {}, '新しいキャラクターを作る'),
+        h('label', { className: 'start-label' }, 'キャラクターの名前', nameInput),
+        h('div', { className: 'start-label' }, 'はじめのセット'),
+        h('div', { className: 'presets' }, ...presetList.map(presetButton)),
+        h('p', { className: 'muted small' }, 'どのセットで始めても、あとからすべて変えられます。'),
+        h('div', { className: 'start-actions' },
+          button('作成を開始', start, { action: 'start' }, { primary: true }),
+          button('保存データを読み込む', () => confirmDiscard(() => fileInput.click()), { action: 'create-load' })),
+        ui.message && mark(h('p', { className: `message ${ui.message.kind}` }, ui.message.text), { role: 'message' }),
+        h('p', { className: 'muted small start-foot' }, 'このブラウザの中だけで動きます。キャラクターや画像を外部へ送信しません。'),
+      ),
     );
   }
 
@@ -872,6 +909,7 @@ async function main() {
   // 一度出した知らせは、次のページへ持ち越さない。
   if (character) commit(character);
   else render('all');
+  if (pageStep === 'create') showDraft();
   await paint();
 
   // 自動操作（tools/creator-smoke.ts）用の入口。画面の操作を置き換えるものではなく、結果の確認に使う。

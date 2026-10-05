@@ -24,6 +24,7 @@ import {
   setPivot,
   sharedColorRows,
   snapshotOf,
+  presets,
   startCharacter,
   storedTransform,
   viewChoices,
@@ -74,6 +75,24 @@ const same = (a: Bitmap, b: Bitmap) => Buffer.from(a.data).equals(Buffer.from(b.
 const card = (c: Character, category: string, partId: string) => cardStates(c, catalog, category).find((s) => s.partId === partId)!;
 /** 利用者向けの文に出てはいけない内部の語。 */
 const INTERNAL = /UNRESOLVED|INVALID|VALID|Instance|Layer|manifest|category|未解決|requires|conflicts/;
+
+describe('はじめのセット（スタート画面）', () => {
+  it('素体ごとに、基本のパーツを付けたものと、素体だけのものを選べる', () => {
+    expect(presets(catalog)).toEqual([
+      { id: `${BODY}:starter`, bodyId: BODY, withStarter: true },
+      { id: `${BODY}:bare`, bodyId: BODY, withStarter: false },
+    ]);
+    expect(presets({ ...catalog, starter: [] })).toEqual([{ id: `${BODY}:bare`, bodyId: BODY, withStarter: false }]);
+  });
+
+  it('選んだセットは Character に残らない（残るのは、装備されたパーツだけ）', () => {
+    for (const preset of presets(catalog)) {
+      const c = startCharacter(catalog, newId, { name: 'テスト', bodyId: preset.bodyId, withStarter: preset.withStarter });
+      expect(JSON.stringify(c)).not.toMatch(/preset|starter|bare/);
+      expect(equipped(c)).toEqual(preset.withStarter ? [BODY, ...STARTER_IDS.filter((id) => id !== BODY)] : [BODY]);
+    }
+  });
+});
 
 describe('分類と表示名', () => {
   it('分類の構成が、Asset 仕様の全 category を過不足なく含む', () => {

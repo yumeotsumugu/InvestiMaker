@@ -253,10 +253,6 @@ h4 {
   gap: 6px;
 }
 
-.grid.bodies {
-  grid-template-columns: repeat(auto-fill, minmax(120px, 160px));
-}
-
 .card {
   position: relative;
   display: flex;
@@ -530,9 +526,111 @@ h4 {
   font-family: ui-monospace, Consolas, monospace;
 }
 
-/* CREATE */
-.create {
-  max-width: 760px;
+/* スタート画面（index.html）。ヘッダーと下の段は出さない。 */
+#app[data-page='create'] .frame {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+#app[data-page='create'] .hd,
+#app[data-page='create'] .steps {
+  display: none;
+}
+
+.start {
+  display: flex;
+  justify-content: center;
+  padding: 32px 24px;
+}
+
+.start-card {
+  width: 100%;
+  max-width: 460px;
+  font-size: 14px;
+}
+
+.start-brand {
+  margin: 0;
+  font-size: 30px;
+  letter-spacing: 0.02em;
+}
+
+.start-card h2 {
+  margin: 26px 0 4px;
+}
+
+.start-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 14px;
+  font-weight: 600;
+}
+
+.start-label .field {
+  flex: none;
+  padding: 8px 10px;
+  font-weight: 400;
+}
+
+.presets {
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.preset {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.preset.on {
+  padding: 7px 10px;
+  border: 3px solid var(--accent);
+}
+
+.preset-name {
+  font-weight: 600;
+}
+
+.start-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.start-actions .btn {
+  padding: 9px 12px;
+}
+
+.start-actions .btn.primary {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.start-card .message {
+  margin-top: 10px;
+}
+
+.start-foot {
+  margin-top: 26px;
+}
+
+.box.resume {
+  margin-top: 18px;
+  border-color: var(--line);
+  background: var(--fill);
+}
+
+.box.resume p {
+  margin: 0 0 6px;
 }
 
 /* 確認と設定 */

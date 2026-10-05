@@ -89,6 +89,23 @@ export interface StartOptions {
   withStarter: boolean;
 }
 
+/**
+ * スタート画面で選ぶ「はじめのセット」。最初に装備するパーツの組であって、Character の属性ではない
+ * （選んだセットは保存されない。保存されるのは、その結果として装備されたパーツだけである）。
+ */
+export interface Preset extends Omit<StartOptions, 'name'> {
+  id: string;
+}
+
+/** 選べるセット：素体ごとに、基本のパーツを付けたものと、素体だけのもの。 */
+export function presets(catalog: Catalog): Preset[] {
+  const hasStarter = catalog.starter.some((id) => { const part = catalog.library.get(id); return part !== undefined && part.kind !== 'body'; });
+  return bodies(catalog).flatMap((body) => [
+    ...(hasStarter ? [{ id: `${body.id}:starter`, bodyId: body.id, withStarter: true }] : []),
+    { id: `${body.id}:bare`, bodyId: body.id, withStarter: false },
+  ]);
+}
+
 export function startCharacter(catalog: Catalog, newId: IdSource, options: StartOptions): Character {
   let character = createCharacter({ id: newId(), name: options.name, bodyPartId: options.bodyId, bodyInstanceId: newId() });
   if (options.withStarter) {

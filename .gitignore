@@ -6,3 +6,6 @@ Thumbs.db
 
 # キャンバスサイズ比較用の生成物（npm run gen:assets:sizes で再生成）
 assets/bench/
+
+# 配布用の ZIP（npm run smoke:dist で作り直す）
+release/

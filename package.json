@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "InvestiMaker Phase 0 検証プロトタイプ",
+  "description": "InvestiMaker — TRPG 向けキャラクタークリエイター",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
@@ -18,7 +18,8 @@
     "wireframes": "node tools/render-wireframes.ts",
     "smoke:minimal": "node tools/browser-smoke.ts",
     "smoke:creator": "node tools/creator-smoke.ts",
-    "build:site": "node tools/build-site.ts --check"
+    "build:site": "node tools/build-site.ts",
+    "smoke:dist": "node tools/dist-smoke.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",

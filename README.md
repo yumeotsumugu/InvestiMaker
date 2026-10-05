@@ -24,11 +24,13 @@ TRPG 用の 2D キャラクター立ち絵・差分・アイコンを、既製�
 - 本体の最小 UI（`src/app/`）
 - [Phase 1-B 検証レポート](docs/reports/Phase1B_Verification_Report.md)
 
-**Phase 1-C（進行中）** では、最小 UI を実際に使える Creator UI にします。1-C-1（設計）が完了し、1-C-2（実装）は検証済みで判断待ちです。次は 1-C-3（操作検証）です。
+**Phase 1-C（進行中）** では、最小 UI を実際に使える Creator UI にします。1-C-1（設計）と 1-C-2（実装）が完了し、1-C-D（配布の土台）は検証済みで判断待ちです。次は 1-C-3（操作検証）です。
 
+- [基本設計書 v1.0](docs/design/InvestiMaker_Basic_Design.md)（製品・配布・UX の方針）
 - [UI/UX 設計書](docs/design/InvestiMaker_Phase1C_UIUX_Design.md)
 - [ワイヤーフレームと操作判断](docs/design/Phase1C1_Wireframes.md)
 - Creator UI（`src/app/`）と [Phase 1-C-2 検証レポート](docs/reports/Phase1C2_Verification_Report.md)
+- 配布物と [Phase 1-C-D 検証レポート](docs/reports/Phase1CD_Verification_Report.md)
 
 ## 起動方法
 
@@ -37,20 +39,22 @@ TRPG 用の 2D キャラクター立ち絵・差分・アイコンを、既製�
 1. ZIP をダウンロードして、解凍する。
 2. **`index.html` を開く。**
 
-これだけです。インストールも、コマンドの実行も要りません（Chrome か Edge で開いてください）。通信もしません。
+これだけです。インストールも、コマンドの実行も要りません（Chrome か Edge で開いてください）。通信をしないので、インターネットにつながっていなくても使えます。
 
-`index.html` が最初のページです。名前を入れて「この内容で始める」を押すと、作成画面（`customize.html`）へ移り、そこから画像の書き出し（`export.html`）へ進みます。
+`index.html` がスタート画面です。キャラクターの名前と「はじめのセット」を選んで「作成を開始」を押すと、作成画面（`customize.html`）へ移り、そこから画像の書き出し（`export.html`）へ進みます。保存したキャラクターの続きを作るときは、スタート画面の「保存データを読み込む」を使います。
 
-同じファイルを GitHub Pages などにそのまま置いても動きます。
+同じファイルを GitHub Pages などにそのまま置いても動きます。Web 用とローカル用で、別のものは作りません。
 
 | ファイル | 役割 |
 | --- | --- |
-| `index.html` | 最初のページ（新しいキャラクターを作る、保存したキャラクターを読み込む） |
+| `index.html` | スタート画面（名前とはじめのセットを決めて作成を開始する、保存データを読み込む） |
 | `customize.html` | 作成画面（パーツ・色・表情・ポーズ） |
 | `export.html` | 画像の書き出し |
 | `app/` | 上の 3 ページが使うプログラムと素材 |
 
-（開発する人へ：この 3 ページと `app/` は生成物です。`src/app/` や素材を変えたら、`npm run build:site` で作り直してコミットします。）
+この 4 つが配布物のすべてです（開発用のページは含みません）。
+
+（開発する人へ：この 3 ページと `app/` は生成物です。`src/app/` や素材を変えたら、`npm run build:site` で作り直してコミットします。`npm run smoke:dist` は、配布物を ZIP（`release/InvestiMaker.zip`）にして別のフォルダへ解凍し、ファイルとして開いた場合と、Web サーバーに置いた場合の両方で、作成 → 保存 → 読込 → 書き出しが通ることと、結果が同じになることを確かめます。）
 
 ### 開発する
 
@@ -82,7 +86,7 @@ npm run report:images   # 発色・描画順の比較画像を docs/reports/imag
 npm run bench:browser   # ヘッドレスの Chrome / Edge で検証ページを開き、合成時間などを計測
 ```
 
-`npm run smoke:creator` は Creator UI を、`npm run smoke:minimal` は Phase 1-B の最小 UI を、ヘッドレスのブラウザで実際に操作して確かめます。
+`npm run smoke:dist` は配布物を、`npm run smoke:creator` は Creator UI を、`npm run smoke:minimal` は Phase 1-B の最小 UI を、ヘッドレスのブラウザで実際に操作して確かめます。
 
 `bench:browser` とスモークテストはローカルにインストール済みの Chrome または Edge を使います（`BROWSER_PATH` で指定可）。通信先は自分の PC 内（127.0.0.1）だけです。
 
@@ -90,7 +94,7 @@ npm run bench:browser   # ヘッドレスの Chrome / Edge で検証ページを
 
 ```text
 docs/specifications/  仕様書（唯一の正）。素材規格と、キャラクターの保存形式
-docs/design/          基本設計書 v0.1（背景理解用）、Phase 1-C の UI/UX 設計書とワイヤーフレーム
+docs/design/          基本設計書 v1.0（製品・配布・UX の方針）、Phase 1-C の UI/UX 設計書とワイヤーフレーム
 docs/instructions/    Phase 0 の作業指示書
 docs/reports/         検証レポートと比較画像
 src/core/             manifest 型・検証・Asset 解決・描画順・色合成・互換性（DOM 非依存。製品版に持ち越す）
