@@ -110,11 +110,16 @@ const body: PartDef = {
     {
       id: 'arm_l',
       slot: 'arm.left.skin',
-      assets: [{ name: 'arm_l_down', when: { pose: 'down' }, art: { regions: [paint(armDown, 0)] }, channels: { r: 'skin' } }],
+      assets: [
+        { name: 'arm_l_down', when: { pose: 'down' }, art: { regions: [paint(armDown, 0)] }, channels: { r: 'skin' } },
+        { name: 'arm_l_pocket', when: { pose: 'pocket' }, art: { regions: [paint(mirrorX(polyline(armPocketPts, 46)), 0)] }, channels: { r: 'skin' } },
+      ],
     },
     {
+      // 右手と同じく、ポケットの中の手は画像を持たない。
       id: 'hand_l',
       slot: 'arm.left.hand',
+      optional: true,
       assets: [{ name: 'hand_l_down', when: { pose: 'down' }, art: { regions: [paint(handDown, 0)] }, channels: { r: 'skin' } }],
     },
     {
@@ -373,7 +378,10 @@ const shirt: PartDef = {
     {
       id: 'sleeve_l',
       slot: 'arm.left.sleeve.top',
-      assets: [{ name: 'sleeve_l_down', when: { pose: 'down' }, art: { regions: [paint(shirtSleeve, 0)] }, channels: { r: 'main' } }],
+      assets: [
+        { name: 'sleeve_l_down', when: { pose: 'down' }, art: { regions: [paint(shirtSleeve, 0)] }, channels: { r: 'main' } },
+        { name: 'sleeve_l_pocket', when: { pose: 'pocket' }, art: { regions: [paint(mirrorX(polyline([[632, 700], [560, 990], [660, 1212]], 56)), 0)] }, channels: { r: 'main' } },
+      ],
     },
     {
       id: 'sleeve_r',
@@ -410,7 +418,10 @@ const shirt2: PartDef = {
     {
       id: 'sleeve_l',
       slot: 'arm.left.sleeve.top',
-      assets: [{ name: 'sleeve_l_down', when: { pose: 'down' }, art: { regions: [paint(shortSleeve, 0)] }, channels: { r: 'main' } }],
+      assets: [
+        { name: 'sleeve_l_down', when: { pose: 'down' }, art: { regions: [paint(shortSleeve, 0)] }, channels: { r: 'main' } },
+        { name: 'sleeve_l_pocket', when: { pose: 'pocket' }, art: { regions: [paint(mirrorX(capsule(632, 700, 598, 838, 58)), 0)] }, channels: { r: 'main' } },
+      ],
     },
     {
       id: 'sleeve_r',

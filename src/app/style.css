@@ -42,7 +42,7 @@ select {
 .frame {
   height: 100%;
   display: grid;
-  grid-template-rows: 48px minmax(0, 1fr) 44px;
+  grid-template-rows: 48px minmax(0, 1fr);
 }
 
 /* ヘッダー */
@@ -86,6 +86,14 @@ select {
   color: #fff;
 }
 
+/* 次に進むボタン（画像の書き出し）。 */
+.btn.accent {
+  padding: 6px 16px;
+  border-color: var(--accent);
+  background: var(--accent);
+  font-weight: 700;
+}
+
 .btn:disabled {
   border-color: var(--line);
   color: var(--line);
@@ -108,39 +116,6 @@ select {
   color: var(--bad);
 }
 
-/* 下の段 */
-.steps {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  background: #fff;
-  border-top: 1px solid var(--line);
-}
-
-.step {
-  border: 0;
-  border-right: 1px solid var(--soft);
-  background: #fff;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-}
-
-.step.on {
-  background: var(--ink);
-  color: #fff;
-  font-weight: 700;
-}
-
-.step:disabled {
-  color: var(--line);
-  cursor: default;
-}
-
-.step small {
-  margin-left: 6px;
-  font-size: 10px;
-  letter-spacing: 0;
-}
-
 /* 本体。列の幅は画面に合わせて伸び縮みする（決め打ちにしない）。 */
 .body {
   display: grid;
@@ -148,11 +123,26 @@ select {
 }
 
 .body.step-customize {
-  grid-template-columns: minmax(84px, 104px) minmax(240px, 316px) minmax(260px, 1fr) minmax(260px, 320px);
+  grid-template-columns: minmax(84px, 104px) clamp(220px, 24vw, 316px) minmax(260px, 1fr) clamp(240px, 24vw, 320px);
 }
 
+/* スタート画面：入力欄とプレビューを隣り合わせにして、画面の中央に置く。 */
 .body.step-create {
-  grid-template-columns: minmax(320px, 1fr) minmax(280px, 440px);
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  padding: 0 24px;
+  background: #fff;
+}
+
+.body.step-create .pane {
+  border-right: 0;
+}
+
+.body.step-create .preview {
+  flex: 0 1 400px;
+  padding: 32px 0;
+  background: #fff;
 }
 
 .body.step-export {
@@ -340,11 +330,21 @@ h4 {
   background: var(--fill);
 }
 
+/* プレビューの置き場所。中の枠は、ここに入る最大の大きさで、常に 2:3 の比を保つ（引き伸ばさない）。 */
+.stage {
+  flex: 1 1 0;
+  align-self: stretch;
+  min-height: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  container-type: size;
+}
+
 .canvas-wrap {
   position: relative;
-  flex: 1 1 auto;
-  min-height: 200px;
-  max-width: 100%;
+  flex: none;
+  width: min(100cqw, 100cqh * 2 / 3);
   aspect-ratio: 2 / 3;
   border: 1px solid var(--line);
   background: repeating-conic-gradient(#dfe3ea 0% 25%, #fff 0% 50%) 0 0 / 18px 18px;
@@ -498,6 +498,13 @@ h4 {
   background: #fafbfc;
 }
 
+.adv-toggle.sub {
+  display: block;
+  margin-top: 10px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
 .adv-toggle {
   padding: 0;
   border: 0;
@@ -531,15 +538,13 @@ h4 {
   grid-template-rows: minmax(0, 1fr);
 }
 
-#app[data-page='create'] .hd,
-#app[data-page='create'] .steps {
+#app[data-page='create'] .hd {
   display: none;
 }
 
 .start {
-  display: flex;
-  justify-content: center;
-  padding: 32px 24px;
+  flex: 0 1 460px;
+  padding: 32px 0;
 }
 
 .start-card {
