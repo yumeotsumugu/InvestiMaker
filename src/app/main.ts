@@ -1,71 +1,119 @@
-// InvestiMaker 本体の最小 UI（Phase 1-B）。素の DOM だけで書く。
+// InvestiMaker の Creator UI（Phase 1-C-2）。素の DOM だけで書く。
 //
-// DOM event → Character の操作（core/operations）→ 評価（core/evaluate）→ 描画計画（core/plan）→ 描画
-// の一方向で動かす。画面は Character から毎回作り直し、DOM 側に状態を持たない
-// （例外は「どの Instance を選択しているか」と「配置補正の適用範囲」という表示上の選択だけ）。
+// 正本は Character 1 個。画面は Character と、下の `ui`（保存しない表示上の状態）から描く。
+// DOM event → Character の操作（core/operations、app/session）→ 評価 → 描画計画 → 描画 の一方向で動かす。
+// 入力中の部品（色の選択など）を壊さないよう、領域ごとに描き直す。
+//
+// ページは 3 つに分かれている：index.html（スタート画面。CREATE の段を兼ねる）→ customize.html（CUSTOMIZE）→ export.html（EXPORT）。
+// どのページもこのファイルを読み、<body data-page="…"> で自分の段を知る。
+// 編集中の Character は、ページを移るときにセッションストレージで運ぶ（store.ts）。
 
 import './style.css';
-import type { Body, Character, EquipmentInstance, PartManifest, PartStatus, Transform, TransformCondition } from '../core/index.ts';
+import type { Character, EquipmentInstance, PartManifest, Transform } from '../core/index.ts';
 import {
   POSE_DEFINITIONS,
   STANDARD_EXPRESSIONS,
   STANDARD_STATES,
-  VIEWS,
   bodyInstance,
-  conditionMatches,
-  conditionSize,
   expressionPresetOf,
   isMultiCategory,
   relinkColor,
+  removeInstance,
   rename,
   resolveSlotColor,
-  sameCondition,
   setEquipped,
   setExpression,
   setFit,
   setInstanceColor,
   setPose,
   setSharedColor,
-  setTransform,
-  setTransformOverride,
   setView,
+  serializeCharacter,
   stringifyCharacter,
   unlinkColor,
 } from '../core/index.ts';
 import { Composer } from '../web/composer.ts';
+import { assetUrl } from '../web/embedded.ts';
 import type { AssetSet } from '../web/loader.ts';
 import { loadSet } from '../web/loader.ts';
-import type { Inspection, Session } from './session.ts';
-import { choosePart, deleteInstance, edit, inspect, loadCharacterText, newSession, unequip } from './session.ts';
+import type { MajorView } from './catalog.ts';
+import { REQUIRED_CATEGORIES, visibleMajors } from './catalog.ts';
+import { label } from './labels.ts';
+import { readStore, writeStore } from './store.ts';
+import type { Notice } from './messages.ts';
+import { buildNotices, cardProblemText, exportBlockText, loadErrorText, multiHint } from './messages.ts';
+import type { Inspection, Point, Preset, Scope } from './session.ts';
+import {
+  applyExpressionPreset,
+  bodies,
+  cardStates,
+  chooseCard,
+  chooseNone,
+  clearTransform,
+  editTransform,
+  inspect,
+  isDirty,
+  keptInstances,
+  loadCharacterText,
+  noneSelected,
+  partCenter,
+  pivotMode,
+  setPivot,
+  sharedColorRows,
+  snapshotOf,
+  presets,
+  startCharacter,
+  storedTransform,
+  viewChoices,
+} from './session.ts';
 
 type Child = Node | string | null | undefined | false;
 
-function h<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> = {}, ...children: Child[]): HTMLElementTagNameMap[K] {
-  const el = Object.assign(document.createElement(tag), props);
+function h<K extends keyof HTMLElementTagNameMap>(tagName: K, props: Partial<HTMLElementTagNameMap[K]> = {}, ...children: Child[]): HTMLElementTagNameMap[K] {
+  const el = Object.assign(document.createElement(tagName), props);
   el.append(...children.filter((c): c is Node | string => c !== null && c !== undefined && c !== false));
   return el;
 }
-
-/** 中身を入れ替える。偽の値は読み飛ばす。 */
 function fill(el: HTMLElement, ...children: Child[]) {
   el.replaceChildren(...children.filter((c): c is Node | string => c !== null && c !== undefined && c !== false));
 }
-
 /** 自動操作（スモークテスト）が要素を特定するための属性を付ける。 */
-function tag<T extends HTMLElement>(el: T, data: Record<string, string>): T {
-  Object.assign(el.dataset, data);
+function mark<T extends HTMLElement>(el: T, data: Record<string, string>): T {
+  // 名前に「.」や「-」を含むもの（pose-arm.right など）があるので、dataset ではなく属性として付ける。
+  for (const [key, value] of Object.entries(data)) el.setAttribute(`data-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`, value);
   return el;
 }
-
-const PART_STATUS: Record<PartStatus, string> = { ok: '対応', missing: '不足', unsupported: '非対応', conflict: '競合' };
-const SHARED_KEYS = ['skin.base', 'hair.base', 'hair.sub', 'eyes.left', 'eyes.right'];
-const REGION_LABEL: Record<string, string> = { torso: '胴体・脚', 'arm.left': '左腕', 'arm.right': '右腕' };
-const newId = () => crypto.randomUUID();
-
 function download(blob: Blob, name: string) {
   const a = h('a', { href: URL.createObjectURL(blob), download: name });
   a.click();
   URL.revokeObjectURL(a.href);
+}
+const newId = () => crypto.randomUUID();
+
+type Step = 'create' | 'customize' | 'export';
+/** 段ごとのページ。相対パスなので、ファイルを直接開いても、Web に置いても同じように移れる。 */
+const PAGES: Record<Step, string> = { create: 'index.html', customize: 'customize.html', export: 'export.html' };
+type Target = { kind: 'instance'; instanceId: string } | { kind: 'expression' } | { kind: 'pose' } | null;
+
+/** 保存しない表示上の状態（設計書 §14）。Character に入るものはここに置かない。 */
+interface UiState {
+  step: Step;
+  major: string;
+  /** 大分類ごとに、開いている小分類。 */
+  sub: Record<string, string>;
+  target: Target;
+  advancedOpen: boolean;
+  scope: Scope;
+  /** 最後に保存・読込した時点の Character（比較用）。null は一度も保存していない。 */
+  savedSnapshot: string | null;
+  recentColors: string[];
+  message: { kind: 'info' | 'error'; text: string; detail?: string } | null;
+  /** スタート画面で入力中の値。`preset` は、プリセットの ID。 */
+  draft: { name: string; preset: string };
+  /** 「設定」で選ぶ：詳細設定を常に開く。 */
+  alwaysAdvanced: boolean;
+  /** 【検証用】「注意 n 件」から開く方式で、一覧を開いているか。 */
+  noticesOpen: boolean;
 }
 
 async function main() {
@@ -74,30 +122,107 @@ async function main() {
   try {
     set = await loadSet('development');
   } catch (e) {
-    root.append(h('p', { className: 'error' }, `素材を読み込めない: ${String(e)}`));
+    root.append(h('p', { className: 'fatal' }, `素材を読み込めません: ${String(e)}`));
+    return;
+  }
+  const majors: MajorView[] = visibleMajors(set.library);
+  const presetList = presets(set);
+  const thumbUrl = (partId: string) => assetUrl(`${set.baseUrl}${partId}/preview.png`);
+
+  // 【Phase 1-C-3 の検証用】通知の置き場所を URL で切り替える。置き場所が決まったら、採用した案だけを残して消す。
+  //   ?notices=under（現状：プレビューの下）／ side（右ペインの上）／ overlay（プレビューに重ねる）／ chip（「注意 n 件」から開く）
+  type NoticeMode = 'under' | 'side' | 'overlay' | 'chip';
+  // 指定はページを移っても引き継ぐ（?notices=under で現状に戻す）。
+  const stored = readStore();
+  const requested = new URLSearchParams(location.search).get('notices') ?? stored.ui.notices ?? 'under';
+  const noticeMode: NoticeMode = requested === 'side' || requested === 'overlay' || requested === 'chip' ? requested : 'under';
+  const dataPage = document.body.dataset.page;
+  const pageStep: Step = dataPage === 'customize' || dataPage === 'export' ? dataPage : 'create';
+
+  /** 編集中のキャラクター。CREATE で始めるまでは null。 */
+  let character: Character | null = null;
+  let view: Inspection | null = null;
+  let notices: Notice[] = [];
+  const ui: UiState = {
+    step: pageStep,
+    major: stored.ui.major && majors.some((m) => m.major.id === stored.ui.major) ? stored.ui.major : majors.some((m) => m.major.id === 'hair') ? 'hair' : majors[0]!.major.id,
+    sub: stored.ui.sub ?? {},
+    target: stored.ui.target === 'expression' ? { kind: 'expression' } : stored.ui.target === 'pose' ? { kind: 'pose' } : stored.ui.target ? { kind: 'instance', instanceId: stored.ui.target } : null,
+    advancedOpen: stored.ui.advancedOpen ?? false,
+    scope: 'always',
+    savedSnapshot: stored.savedSnapshot,
+    recentColors: stored.ui.recentColors ?? [],
+    message: stored.flash ? { kind: 'info', text: stored.flash } : null,
+    draft: { name: '', preset: presetList[0]?.id ?? '' },
+    alwaysAdvanced: stored.ui.alwaysAdvanced ?? false,
+    noticesOpen: false,
+  };
+
+  // 前のページから運ばれてきたキャラクターを読む。保存 JSON と同じ検証を通す。
+  if (stored.character) {
+    const carried = loadCharacterText(stored.character);
+    if (carried.loaded) character = carried.character;
+  }
+  // キャラクターがまだないのに作成画面・書き出し画面を開いた場合は、最初のページへ戻る。
+  if (!character && pageStep !== 'create') {
+    location.replace(PAGES.create);
     return;
   }
 
-  let session: Session = newSession(set, newId);
-  let view: Inspection = inspect(session.character, set);
-  /** 配置補正をどの範囲に適用するか（表示上の選択）。 */
-  let scope: 'base' | 'arm.right' | 'full' = 'base';
-  let notice: { kind: 'info' | 'error'; text: string } | null = null;
+  /** 編集中の内容をセッションストレージへ書く（ページを移っても続きから編集できるようにする）。 */
+  let flash: string | null = null;
+  function persist() {
+    writeStore({
+      character: character ? JSON.stringify(serializeCharacter(character)) : null,
+      savedSnapshot: ui.savedSnapshot,
+      flash,
+      ui: {
+        major: ui.major,
+        sub: ui.sub,
+        target: ui.target === null ? null : ui.target.kind === 'instance' ? ui.target.instanceId : ui.target.kind,
+        advancedOpen: ui.advancedOpen,
+        alwaysAdvanced: ui.alwaysAdvanced,
+        recentColors: ui.recentColors,
+        notices: noticeMode,
+      },
+    });
+  }
 
-  const canvas = tag(h('canvas', { className: 'preview-canvas' }), { role: 'preview' });
-  const composer = new Composer(set, canvas);
-  const header = h('header');
-  const partsPanel = h('section', { className: 'panel parts' });
-  const statusPanel = h('div', { className: 'status' });
-  const sidePanel = h('section', { className: 'panel side' });
+  /** 別の段（ページ）へ移る。 */
+  function go(step: Step, message: string | null = null) {
+    if (step === pageStep) return;
+    flash = message;
+    persist();
+    location.href = PAGES[step];
+  }
   const hooks = { lastSaved: null as string | null, lastPng: null as string | null };
 
-  // ---------------------------------------------------------------- 更新と描画
+  const canvas = mark(h('canvas', { className: 'canvas' }), { role: 'preview' });
+  const composer = new Composer(set, canvas);
+  const header = h('header', { className: 'hd' });
+  const body = h('div', { className: 'body' });
+  const stepBar = h('nav', { className: 'steps' });
+  const modalHost = h('div');
+  root.append(h('div', { className: 'frame' }, header, body, stepBar), modalHost);
+
+  // 段ごとに並べ替える領域。中身は領域ごとに描き直す。
+  const railEl = h('div', { className: 'pane rail' });
+  const pickerEl = h('div', { className: 'pane picker' });
+  const emptyEl = mark(h('div', { className: 'canvas-empty' }), { role: 'empty' });
+  const underEl = h('div', { className: 'under' });
+  const overlayEl = mark(h('div', { className: 'notice-overlay' }), { role: 'notice-overlay' });
+  const previewEl = h('div', { className: 'pane preview' }, h('div', { className: 'canvas-wrap' }, canvas, emptyEl, overlayEl), underEl);
+  const popoverEl = mark(h('div', { className: 'notice-popover' }), { role: 'notice-popover' });
+  root.dataset.notices = noticeMode;
+  root.dataset.page = pageStep;
+  const editEl = h('div', { className: 'pane edit' });
+  const sideEl = h('div', { className: 'pane side' });
+
+  // ---------------------------------------------------------------- 描画（プレビュー）
 
   let running = false;
   let pending = false;
   let idle: Promise<void> = Promise.resolve();
-
   function paint(): Promise<void> {
     pending = true;
     if (!running) {
@@ -107,11 +232,9 @@ async function main() {
           pending = false;
           const current = view;
           try {
-            // 描画できないときは、何も描かれていないキャンバスにする。
-            await composer.render(current.plan ?? { parts: [], entries: [] }, current.colors, undefined, current.matrices);
+            await composer.render(current?.plan ?? { parts: [], entries: [] }, current?.colors ?? {}, undefined, current?.matrices ?? {});
           } catch (e) {
-            notice = { kind: 'error', text: `描画エラー: ${String(e)}` };
-            renderStatus();
+            ui.message = { kind: 'error', text: '表示中に問題が起きました。', detail: String(e) };
           }
         }
         running = false;
@@ -120,342 +243,686 @@ async function main() {
     return idle;
   }
 
-  /**
-   * Character を更新する。`rebuild: false` は、入力中の部品（カラーピッカーなど）を作り直さずに
-   * プレビューと状態表示だけを更新する。
-   */
-  function update(next: Session, options: { rebuild?: boolean } = {}) {
-    session = next;
-    view = inspect(session.character, set);
-    if (options.rebuild ?? true) renderAll();
-    else renderStatus();
+  // ---------------------------------------------------------------- 更新
+
+  /** 作り直す範囲。入力中の部品を壊さないよう、必要な範囲だけにする。 */
+  type Region = 'all' | 'picker' | 'edit' | 'status';
+
+  function commit(next: Character, redraw: Region = 'all') {
+    character = next;
+    view = inspect(next, set);
+    notices = buildNotices(next, set, view);
+    render(redraw);
     void paint();
   }
 
-  const apply = (operation: (c: Character) => Character, options?: { rebuild?: boolean }) => {
+  function apply(operation: (c: Character) => Character, redraw: Region = 'all') {
+    if (!character) return;
     try {
-      update(edit(session, operation), options);
+      commit(operation(character), redraw);
     } catch (e) {
-      notice = { kind: 'error', text: String(e instanceof Error ? e.message : e) };
-      renderAll();
+      ui.message = { kind: 'error', text: 'その操作はできません。', detail: String(e instanceof Error ? e.message : e) };
+      render('all');
     }
-  };
+  }
+
+  function render(region: Region) {
+    renderHeader();
+    renderSteps();
+    if (region === 'all') renderBody();
+    else if (ui.step === 'customize') {
+      if (region === 'picker') renderPicker();
+      if (region === 'edit' || region === 'picker') renderEdit();
+    } else if (ui.step === 'export') renderExportSide();
+    renderUnder();
+    persist();
+  }
 
   // ---------------------------------------------------------------- 部品
 
-  function button(label: string, onClick: () => void, data: Record<string, string> = {}, disabled = false) {
-    const el = tag(h('button', { type: 'button', disabled }, label), data);
+  function button(text: string, onClick: () => void, data: Record<string, string> = {}, options: { primary?: boolean; disabled?: boolean } = {}) {
+    const el = mark(h('button', { type: 'button', className: `btn${options.primary ? ' primary' : ''}`, disabled: options.disabled ?? false }, text), data);
     el.addEventListener('click', onClick);
     return el;
   }
 
-  function select(options: readonly (string | [value: string, label: string])[], value: string, onChange: (value: string) => void, data: Record<string, string> = {}) {
-    const pairs = options.map((o) => (typeof o === 'string' ? ([o, o] as const) : o));
-    // 現在の値が選択肢にない場合（実装が知らないポーズなど）も、そのまま表示して消さない。
-    const all = pairs.some(([v]) => v === value) ? pairs : [...pairs, [value, `${value}（未知）`] as const];
-    const el = tag(h('select', {}, ...all.map(([v, label]) => h('option', { value: v, selected: v === value }, label))), data);
-    el.addEventListener('change', () => onChange(el.value));
-    return el;
+  /** 名前のボタンの並び（1 つを選ぶ）。 */
+  function choices(options: readonly (readonly [value: string, text: string])[], value: string | null, onPick: (value: string) => void, dataKey: string) {
+    return h('div', { className: 'tabs' }, ...options.map(([v, text]) => {
+      const el = mark(h('button', { type: 'button', className: `tab${v === value ? ' on' : ''}` }, text), { [dataKey]: v, selected: String(v === value) });
+      el.addEventListener('click', () => onPick(v));
+      return el;
+    }));
   }
 
-  /** 色の入力。ドラッグ中は作り直さずに反映し、確定したときに画面を作り直す。 */
-  function colorInput(value: string, onColor: (color: string, done: boolean) => void, data: Record<string, string> = {}, disabled = false) {
-    const el = tag(h('input', { type: 'color', value: value.toLowerCase(), disabled }), data);
-    el.addEventListener('input', () => onColor(el.value, false));
-    el.addEventListener('change', () => onColor(el.value, true));
-    return el;
+  /** 色の入力。ドラッグ中は画面を作り直さずに反映し、確定したときに描き直す。 */
+  function colorField(value: string, onColor: (color: string, done: boolean) => void, data: Record<string, string>) {
+    const picker = mark(h('input', { type: 'color', value: value.toLowerCase(), className: 'swatch' }), data);
+    const text = h('input', { type: 'text', value: value.toUpperCase(), className: 'hex', maxLength: 7 });
+    picker.addEventListener('input', () => {
+      text.value = picker.value.toUpperCase();
+      onColor(picker.value, false);
+    });
+    picker.addEventListener('change', () => {
+      remember(picker.value);
+      onColor(picker.value, true);
+    });
+    text.addEventListener('change', () => {
+      if (!/^#[0-9a-fA-F]{6}$/.test(text.value)) {
+        text.value = picker.value.toUpperCase();
+        return;
+      }
+      remember(text.value);
+      onColor(text.value, true);
+    });
+    return h('span', { className: 'color-field' }, picker, text);
   }
 
-  const row = (label: string, ...children: Child[]) => h('label', { className: 'row' }, h('span', { className: 'label' }, label), ...children);
-  const group = (title: string, ...children: Child[]) => h('fieldset', {}, h('legend', {}, title), ...children);
+  /** 最近使った色。押すと、その欄の色として適用する（新しい色の管理は持たない。UI の一時的な記憶を使うだけ）。 */
+  function recentChips(current: string, onColor: (color: string, done: boolean) => void, slotKey: string) {
+    const others = ui.recentColors.filter((color) => color !== current.toUpperCase());
+    if (others.length === 0) return null;
+    return h('div', { className: 'row recent' }, h('span', { className: 'muted small' }, '最近使った色'), ...others.map((color) => {
+      const chip = mark(h('button', { type: 'button', className: 'recent-color', title: color }), { recent: color, recentFor: slotKey });
+      chip.style.background = color;
+      chip.addEventListener('click', () => {
+        remember(color);
+        onColor(color, true);
+      });
+      return chip;
+    }));
+  }
+  function remember(color: string) {
+    ui.recentColors = [color.toUpperCase(), ...ui.recentColors.filter((c) => c !== color.toUpperCase())].slice(0, 6);
+  }
 
-  // ---------------------------------------------------------------- Character
+  function modal(title: string, content: Child[], actions: HTMLButtonElement[]) {
+    fill(modalHost, mark(h('div', { className: 'modal-back' }, h('div', { className: 'modal' }, h('h3', {}, title), ...content, h('div', { className: 'modal-actions' }, ...actions))), { role: 'modal' }));
+  }
+  const closeModal = () => fill(modalHost);
+
+  /** 保存していない変更があれば確認してから続ける。 */
+  function confirmDiscard(then: () => void) {
+    if (!character || !isDirty(character, ui.savedSnapshot)) return then();
+    modal('保存していない変更があります', [h('p', {}, 'いまのキャラクターの変更は保存されていません。続けると失われます。')], [
+      button('やめる', closeModal, { action: 'confirm-cancel' }),
+      button('保存せずに続ける', () => {
+        closeModal();
+        then();
+      }, { action: 'confirm-discard' }, { primary: true }),
+    ]);
+  }
+
+  // ---------------------------------------------------------------- ヘッダーと段
+
+  const fileInput = mark(h('input', { type: 'file', accept: '.json,application/json', hidden: true }), { role: 'load-file' });
+  fileInput.addEventListener('change', async () => {
+    const chosen = fileInput.files?.[0];
+    fileInput.value = '';
+    if (!chosen) return;
+    const outcome = loadCharacterText(await chosen.text());
+    if (!outcome.loaded) {
+      // 読み込めないファイル：いまのキャラクターはそのまま。
+      ui.message = { kind: 'error', ...loadErrorText(outcome.errors) };
+      render('all');
+      return;
+    }
+    ui.savedSnapshot = snapshotOf(outcome.character);
+    ui.target = null;
+    ui.scope = 'always';
+    const loaded = `「${outcome.character.name || '名前のないキャラクター'}」を読み込みました。`;
+    if (pageStep === 'create') {
+      // 最初のページで読み込んだら、作成画面へ移る。
+      character = outcome.character;
+      go('customize', loaded);
+      return;
+    }
+    ui.message = { kind: 'info', text: loaded };
+    commit(outcome.character);
+  });
+
+  function save() {
+    if (!character) return;
+    const text = stringifyCharacter(character);
+    hooks.lastSaved = text;
+    download(new Blob([text], { type: 'application/json' }), `${character.name || 'character'}.json`);
+    ui.savedSnapshot = snapshotOf(character);
+    ui.message = { kind: 'info', text: 'キャラクターを保存しました。' };
+    render('status');
+  }
+
+  function openSettings() {
+    const always = mark(h('input', { type: 'checkbox', checked: ui.alwaysAdvanced }), { setting: 'always-advanced' });
+    always.addEventListener('change', () => {
+      ui.alwaysAdvanced = always.checked;
+      if (always.checked) ui.advancedOpen = true;
+      render('all');
+    });
+    const kept = character ? keptInstances(character) : [];
+    modal('設定', [
+      h('label', { className: 'row' }, always, '詳細設定を常に開く'),
+      mark(h('div', {},
+        h('h4', {}, '外したパーツの設定'),
+        kept.length === 0
+          ? h('p', { className: 'muted small' }, '外したパーツの色や位置を覚えておき、選び直すと元に戻します。いま覚えている設定はありません。')
+          : h('p', { className: 'muted small' }, '外したパーツの色や位置を覚えています。選び直すと元に戻ります。不要なら削除できます。'),
+        ...kept.map((k) => h('div', { className: 'row' }, h('span', {}, set.library.get(k.partId)?.name ?? k.partId), h('span', { className: 'spacer' }),
+          button('削除', () => {
+            apply((x) => removeInstance(x, k.instanceId));
+            openSettings();
+          }, { action: 'forget', part: k.partId })))), { role: 'kept' }),
+      h('p', { className: 'muted small' }, 'InvestiMaker Phase 1-C ／ Asset Specification v1 RC1 ／ Character Schema v1 RC1'),
+      h('p', { className: 'muted small' }, 'この版で使えるのは、新規作成・カスタマイズ・1 枚の PNG の書き出しです。'),
+    ], [button('閉じる', closeModal, { action: 'settings-close' }, { primary: true })]);
+  }
+
+  // 名前の欄は作り直さない（入力中に作り直すと、文字の入力が途切れるため）。
+  const nameEl = mark(h('input', { type: 'text', className: 'name', maxLength: 200, placeholder: '（名前を入力）' }), { role: 'name' });
+  nameEl.addEventListener('input', () => {
+    if (!character) return;
+    character = rename(character, nameEl.value);
+    view = inspect(character, set);
+    persist();
+  });
+
+  function noticeChip(count: number) {
+    const className = `chip${view && !view.export.allowed ? ' bad' : ''}`;
+    if (noticeMode !== 'chip') return mark(h('span', { className }, `注意 ${count} 件`), { role: 'chip' });
+    const el = mark(h('button', { type: 'button', className: `${className} chip-button` }, `注意 ${count} 件 ${ui.noticesOpen ? '▴' : '▾'}`), { role: 'chip' });
+    el.addEventListener('click', () => {
+      ui.noticesOpen = !ui.noticesOpen;
+      render('status');
+    });
+    return el;
+  }
 
   function renderHeader() {
-    const name = tag(h('input', { type: 'text', value: session.character.name, maxLength: 200, className: 'name' }), { role: 'name' });
-    name.addEventListener('input', () => update(edit(session, (c) => rename(c, name.value)), { rebuild: false }));
+    if (document.activeElement !== nameEl) nameEl.value = character?.name ?? '';
+    nameEl.hidden = character === null;
+    const count = notices.length;
+    fill(header,
+      h('span', { className: 'brand' }, 'InvestiMaker'),
+      nameEl,
+      count > 0 && noticeChip(count),
+      h('span', { className: 'spacer' }),
+      button('保存', save, { action: 'save' }, { disabled: !character }),
+      button('読込', () => confirmDiscard(() => fileInput.click()), { action: 'load' }),
+      button('設定', openSettings, { action: 'settings' }),
+      fileInput,
+      noticeMode === 'chip' && popoverEl,
+    );
+  }
 
-    const file = tag(h('input', { type: 'file', accept: '.json,application/json', hidden: true }), { role: 'load-file' });
-    file.addEventListener('change', async () => {
-      const chosen = file.files?.[0];
-      if (!chosen) return;
-      const outcome = loadCharacterText(session, await chosen.text());
-      if (outcome.loaded) {
-        notice = { kind: 'info', text: `${chosen.name} を読み込んだ${outcome.warnings.length > 0 ? `（${outcome.warnings.map((w) => w.message).join(' / ')}）` : ''}` };
-        scope = 'base';
-        update(outcome.session);
-      } else {
-        // INVALID：現在のキャラクターは置き換えない。
-        notice = { kind: 'error', text: `${chosen.name} は読み込めない（現在のキャラクターはそのまま）: ${outcome.errors.map((e) => `${e.path || '全体'}: ${e.message}`).join(' / ')}` };
-        renderAll();
+  function renderSteps() {
+    const item = (step: string, enabled: boolean, soon = false) => {
+      const el = mark(h('button', { type: 'button', className: `step${ui.step === step ? ' on' : ''}`, disabled: !enabled }, label('step', step), soon && h('small', {}, '準備中')), { step });
+      if (enabled) el.addEventListener('click', () => go(step as Step));
+      return el;
+    };
+    fill(stepBar, item('create', true), item('customize', character !== null), item('variant', false, true), item('portrait', false, true), item('export', character !== null));
+  }
+
+  // ---------------------------------------------------------------- 本体
+
+  function renderBody() {
+    if (ui.alwaysAdvanced) ui.advancedOpen = true;
+    body.className = `body step-${ui.step}`;
+    if (ui.step === 'create') {
+      fill(body, renderCreate(), previewEl);
+    } else if (ui.step === 'customize') {
+      fill(body, railEl, pickerEl, previewEl, editEl);
+      renderRail();
+      renderPicker();
+      renderEdit();
+    } else {
+      fill(body, previewEl, sideEl);
+      renderExportSide();
+    }
+  }
+
+  /** プレビューの上の「何もない」表示と、下の通知・知らせること。 */
+  function renderUnder() {
+    emptyEl.hidden = !!view && view.drawn > 0;
+    emptyEl.textContent = '表示できる素材がありません';
+    // 通知は CUSTOMIZE の段で出す（EXPORT の段は、右側に常に並べる）。
+    const shown = ui.step === 'customize' ? notices : [];
+    if (shown.length === 0) ui.noticesOpen = false;
+    fill(underEl,
+      // 1 行分の高さを常に確保する（「保存しました」などが出ても、プレビューの大きさが変わらないようにする）。
+      h('div', { className: 'message-line' },
+        ui.step !== 'create' && ui.message && mark(h('p', { className: `message ${ui.message.kind}` }, ui.message.text, ui.message.detail && ui.advancedOpen && h('span', { className: 'detail' }, ui.message.detail)), { role: 'message' })),
+      ...(noticeMode === 'under' ? shown.map((n) => noticeBox(n)) : []),
+    );
+    fill(overlayEl, ...(noticeMode === 'overlay' ? shown.map((n) => noticeBox(n)) : []));
+    overlayEl.hidden = noticeMode !== 'overlay' || shown.length === 0;
+    fill(popoverEl, ...(noticeMode === 'chip' && ui.noticesOpen ? shown.map((n) => noticeBox(n)) : []));
+    popoverEl.hidden = !(noticeMode === 'chip' && ui.noticesOpen && shown.length > 0);
+  }
+
+  /** 【検証用】右ペインの上に通知を出す方式のときだけ、通知を返す。 */
+  const sideNotices = (): Child[] => (noticeMode === 'side' ? notices.map((n) => noticeBox(n)) : []);
+
+  function noticeBox(n: Notice) {
+    return mark(
+      h('div', { className: 'notice' },
+        h('div', { className: 'notice-text' }, n.text),
+        n.note && h('div', { className: 'small muted' }, n.note),
+        n.detail && ui.advancedOpen && h('div', { className: 'detail' }, n.detail),
+        n.action && button(n.action.label, () => {
+          const action = n.action!;
+          if (action.kind === 'unequip') apply((c) => setEquipped(c, action.instanceId, false));
+          else apply((c) => setView(c, 'front'));
+        }, { noticeAction: n.action.kind })),
+      { notice: n.key },
+    );
+  }
+
+  // ---------------------------------------------------------------- CREATE
+
+  /** 選んでいる「プリセット」から、これから作るキャラクターを組み立てる。 */
+  function draftCharacter(): Character | null {
+    const preset = presetList.find((p) => p.id === ui.draft.preset);
+    return preset ? startCharacter(set, newId, { name: ui.draft.name.trim(), bodyId: preset.bodyId, withStarter: preset.withStarter }) : null;
+  }
+
+  /** スタート画面のプレビュー：選んでいるセットで始めたときの見た目を出す（編集中のキャラクターは変えない）。 */
+  function showDraft() {
+    const draft = draftCharacter();
+    view = draft ? inspect(draft, set) : null;
+    renderUnder();
+    void paint();
+  }
+
+  function renderCreate() {
+    const nameInput = mark(h('input', { type: 'text', className: 'field wide', maxLength: 200, value: ui.draft.name, placeholder: 'あとから変えられます' }), { create: 'name' });
+    nameInput.addEventListener('input', () => (ui.draft.name = nameInput.value));
+
+    const start = () =>
+      confirmDiscard(() => {
+        // 新しいキャラクターを作り、作成画面（別のページ）へ移る。
+        const created = draftCharacter();
+        if (!created) return;
+        character = created;
+        ui.savedSnapshot = null;
+        ui.target = null;
+        go('customize');
+      });
+    nameInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.isComposing) start();
+    });
+
+    const manyBodies = bodies(set).length > 1;
+    const presetButton = (preset: Preset) => {
+      const title = preset.withStarter ? '基本のセット' : '素体だけ';
+      const note = preset.withStarter ? '顔・髪・服を付けた状態から始めます。' : '何も付けていない状態から始めます。';
+      const on = preset.id === ui.draft.preset;
+      const el = mark(h('button', { type: 'button', className: `preset${on ? ' on' : ''}` },
+        h('span', { className: 'preset-name' }, manyBodies ? `${set.library.get(preset.bodyId)?.name ?? ''} ／ ${title}` : title),
+        h('span', { className: 'muted small' }, note)), { preset: preset.id, selected: String(on) });
+      el.addEventListener('click', () => {
+        ui.draft.preset = preset.id;
+        render('all');
+        showDraft();
+      });
+      return el;
+    };
+
+    return h('div', { className: 'pane start' },
+      h('div', { className: 'start-card' },
+        h('h1', { className: 'start-brand' }, 'InvestiMaker'),
+        h('p', { className: 'muted' }, 'パーツを組み合わせて、TRPG のキャラクターの立ち絵を作ります。'),
+        character && mark(h('div', { className: 'box resume' },
+          h('p', {}, `編集中のキャラクターがあります：${character.name || '（名前なし）'}`),
+          button('続きから編集する', () => go('customize'), { action: 'resume' })), { role: 'resume' }),
+        h('h2', {}, '新しいキャラクターを作る'),
+        h('label', { className: 'start-label' }, 'キャラクターの名前', nameInput),
+        h('div', { className: 'start-label' }, 'プリセット'),
+        h('div', { className: 'presets' }, ...presetList.map(presetButton)),
+        h('p', { className: 'muted small' }, 'どのプリセットで始めても、あとからすべて変えられます。'),
+        h('div', { className: 'start-actions' },
+          button('作成を開始', start, { action: 'start' }, { primary: true }),
+          button('保存データを読み込む', () => confirmDiscard(() => fileInput.click()), { action: 'create-load' })),
+        ui.message && mark(h('p', { className: `message ${ui.message.kind}` }, ui.message.text), { role: 'message' }),
+        h('p', { className: 'muted small start-foot' }, 'このブラウザの中だけで動きます。キャラクターや画像を外部へ送信しません。'),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------- CUSTOMIZE：左（選ぶ）
+
+  /**
+   * カード。サムネイルがあれば画像と名前、なければ名前だけにする（同じ名前を 2 回出さない）。
+   * `placeholder` は、画像のカードと並べるときに絵の位置へ文字を置く（「なし」のカード）。
+   */
+  function card(text: string, image: string | null, options: { on?: boolean; off?: boolean; why?: string; placeholder?: boolean; data: Record<string, string>; onPick?: () => void }) {
+    const textOnly = !image && !options.placeholder;
+    const el = mark(
+      h('button', { type: 'button', className: `card${options.on ? ' on' : ''}${options.off ? ' off' : ''}${textOnly ? ' text-only' : ''}`, disabled: options.off ?? false },
+        image && h('span', { className: 'thumb' }, h('img', { src: image, alt: '', loading: 'lazy' })),
+        options.placeholder && h('span', { className: 'thumb' }, h('span', { className: 'thumb-text' }, text)),
+        !options.placeholder && h('span', { className: 'card-name' }, text),
+        options.why && h('span', { className: 'why' }, options.why)),
+      { ...options.data, selected: String(!!options.on), available: String(!options.off) },
+    );
+    if (options.onPick && !options.off) el.addEventListener('click', options.onPick);
+    return el;
+  }
+
+  function renderRail() {
+    fill(railEl, ...majors.map(({ major }) => {
+      const el = mark(h('button', { type: 'button', className: `rail-item${ui.major === major.id ? ' on' : ''}` }, label('major', major.id)), { major: major.id });
+      el.addEventListener('click', () => {
+        ui.major = major.id;
+        if (major.kind === 'expression') ui.target = { kind: 'expression' };
+        else if (major.kind === 'pose') ui.target = { kind: 'pose' };
+        else if (major.id === 'body' && character) ui.target = { kind: 'instance', instanceId: character.appearance.body };
+        render('all');
+      });
+      return el;
+    }));
+  }
+
+  function currentMajor(): MajorView {
+    return majors.find((m) => m.major.id === ui.major) ?? majors[0]!;
+  }
+
+  function renderPicker() {
+    if (!character) return;
+    const c = character;
+    const { major, subs } = currentMajor();
+    for (const el of railEl.querySelectorAll<HTMLElement>('[data-major]')) el.classList.toggle('on', el.dataset.major === major.id);
+
+    if (major.kind === 'expression') {
+      const preset = expressionPresetOf(c.state.expression);
+      fill(pickerEl, h('h3', {}, '表情'),
+        h('div', { className: 'grid' },
+          ...STANDARD_EXPRESSIONS.map((e) => card(label('expression', e.id), null, { on: e.id === preset, data: { preset: e.id }, onPick: () => {
+            ui.target = { kind: 'expression' };
+            apply((x) => applyExpressionPreset(x, e.id), 'picker');
+          } })),
+          // 目・眉・口を個別に変えて、どの表情にも当たらなくなった状態を示す（押すものではない）。
+          card('カスタム', null, { on: preset === undefined, off: preset !== undefined, data: { preset: 'custom' } })),
+        h('p', { className: 'muted small' }, '右で、目・眉・口を個別に変えられます。'));
+      return;
+    }
+    if (major.kind === 'pose') {
+      fill(pickerEl, h('h3', {}, 'ポーズ'),
+        ...['torso', 'arm.right', 'arm.left'].flatMap((region) => [
+          h('h4', {}, label('region', region)),
+          choices(POSE_DEFINITIONS.filter((d) => d.region === region).map((d) => [d.id, label('pose', d.id)] as const), c.state.pose[region] ?? null, (id) => {
+            ui.target = { kind: 'pose' };
+            apply((x) => setPose(x, region, id), 'picker');
+          }, `pose-${region}`),
+        ]),
+        h('h3', { className: 'gap' }, '向き'),
+        h('div', { className: 'grid' }, ...viewChoices(c, set).map((v) => card(label('view', v.id), null, {
+          on: v.selected,
+          off: !v.available && !v.selected,
+          why: v.available ? undefined : '素材なし',
+          data: { view: v.id },
+          onPick: () => {
+            ui.target = { kind: 'pose' };
+            apply((x) => setView(x, v.id), 'picker');
+          },
+        }))));
+      return;
+    }
+
+    const sub = subs.find((s) => s.category === ui.sub[major.id]) ?? subs[0]!;
+    const cards = cardStates(c, set, sub.category);
+    const canBeNone = !REQUIRED_CATEGORIES.has(sub.category) && !isMultiCategory(sub.category);
+    const hint = multiHint(sub.category);
+    fill(pickerEl,
+      subs.length > 1 && choices(subs.map((s) => [s.category, label('category', s.category)] as const), sub.category, (category) => {
+        ui.sub[major.id] = category;
+        render('picker');
+      }, 'sub'),
+      h('div', { className: 'grid' },
+        canBeNone && card('なし', null, { on: noneSelected(c, set, sub.category), placeholder: true, data: { card: 'none' }, onPick: () => {
+          ui.target = null;
+          apply((x) => chooseNone(x, set, sub.category), 'picker');
+        } }),
+        ...cards.map((state) => card(state.name, thumbUrl(state.partId), {
+          on: state.selected,
+          off: !state.available,
+          why: cardProblemText(state),
+          data: { card: state.partId },
+          onPick: () => {
+            const choice = chooseCard(c, set, state.partId, newId);
+            // カードを選ぶと、装備と編集対象の選択を同時に行う。
+            ui.target = choice.instanceId ? { kind: 'instance', instanceId: choice.instanceId } : null;
+            commit(choice.character, 'picker');
+          },
+        }))),
+      hint && h('p', { className: 'muted small' }, hint),
+    );
+  }
+
+  // ---------------------------------------------------------------- CUSTOMIZE：右（調整する）
+
+  function renderEdit() {
+    if (!character) return;
+    const c = character;
+    const target = ui.target;
+    if (target?.kind === 'expression') return fill(editEl, ...sideNotices(), ...expressionPanel(c));
+    if (target?.kind === 'pose') return fill(editEl, ...sideNotices(), ...posePanel(c));
+    const inst = target ? c.equipment.find((i) => i.instanceId === target.instanceId && i.equipped) : undefined;
+    if (!inst) return fill(editEl, ...sideNotices(), h('p', { className: 'muted' }, '左でパーツを選ぶと、ここで色などを調整できます。'));
+    const part = set.library.get(inst.partId);
+    fill(editEl,
+      ...sideNotices(),
+      mark(h('h3', {}, part?.name ?? '見つからない素材'), { role: 'edit-title' }),
+      ...(inst.instanceId === c.appearance.body ? bodyPanel(c) : colorPanel(c, inst, part)),
+      advancedBox(c, inst),
+    );
+  }
+
+  function expressionPanel(c: Character): Child[] {
+    const preset = expressionPresetOf(c.state.expression);
+    const row = (key: 'eyes' | 'eyebrows' | 'mouth', title: string) => [
+      h('h4', {}, title),
+      choices(STANDARD_STATES[key].map((s) => [s, label(key, s)] as const), c.state.expression[key], (value) => apply((x) => setExpression(x, { [key]: value }), 'picker'), key),
+    ];
+    return [mark(h('h3', {}, `表情：${preset ? label('expression', preset) : 'カスタム'}`), { role: 'edit-title' }), ...row('eyes', '目'), ...row('eyebrows', '眉'), ...row('mouth', '口')];
+  }
+
+  function posePanel(c: Character): Child[] {
+    const { pose, view: v } = c.state;
+    return [
+      mark(h('h3', {}, 'ポーズ・向き'), { role: 'edit-title' }),
+      h('p', {}, `${label('region', 'torso')}：${label('pose', pose.torso!)} ／ ${label('region', 'arm.right')}：${label('pose', pose['arm.right']!)} ／ ${label('region', 'arm.left')}：${label('pose', pose['arm.left']!)}`),
+      h('p', {}, `向き：${label('view', v)}`),
+      h('p', { className: 'muted small' }, 'ポーズや向きを変えて表示できなくなったパーツがあれば、注意としてお知らせします。'),
+    ];
+  }
+
+  /** 素体：全体の色（共有色）と体型。 */
+  function bodyPanel(c: Character): Child[] {
+    const bodyPart = set.library.get(bodyInstance(c).partId);
+    const dims = bodyPart?.kind === 'body' ? Object.entries(bodyPart.fitDimensions ?? {}) : [];
+    const NONE = '';
+    return [
+      h('h4', {}, '全体の色'),
+      ...sharedColorRows(c, set.library).map(({ key, color: current }) => {
+        const onColor = (color: string, done: boolean) => apply((x) => setSharedColor(x, key, color), done ? 'edit' : 'status');
+        return h('div', { className: 'color-row' },
+          h('div', { className: 'row' }, colorField(current, onColor, { shared: key }), h('span', {}, label('shared', key))),
+          recentChips(current, onColor, key));
+      }),
+      h('p', { className: 'muted small' }, 'この色を使っているパーツが、まとめて変わります。'),
+      dims.length > 0 && h('h4', {}, '体型'),
+      ...dims.map(([dim, values]) => h('div', { className: 'row' }, h('span', { className: 'lbl' }, label('fitDimension', dim)),
+        choices([[NONE, '指定なし'] as const, ...values.map((v) => [v, label('fitValue', v)] as const)], c.appearance.fit[dim] ?? NONE, (value) => apply((x) => setFit(x, dim, value === NONE ? undefined : value), 'edit'), `fit-${dim}`))),
+    ];
+  }
+
+  /** パーツの色。全体の色に従っているスロットは、その場で全体の色を編集する。 */
+  function colorPanel(c: Character, inst: EquipmentInstance, part: PartManifest | undefined): Child[] {
+    const slots = (part?.colorSlots ?? []).filter((s) => s.mode !== 'fixed');
+    if (slots.length === 0) return [h('p', { className: 'muted' }, 'このパーツには、変えられる色がありません。')];
+    const rows = slots.map((slot) => {
+      const override = inst.colors[slot.id];
+      const linked = slot.link !== undefined && override?.linked !== false;
+      const shown = resolveSlotColor(slot, override, c.sharedColors);
+      const onColor = linked
+        ? (color: string, done: boolean) => apply((x) => setSharedColor(x, slot.link!, color), done ? 'edit' : 'status')
+        : (color: string, done: boolean) => apply((x) => setInstanceColor(x, inst.instanceId, slot.id, color), done ? 'edit' : 'status');
+      const field = colorField(shown, onColor, { slot: slot.id });
+      const own = slot.link !== undefined && mark(h('input', { type: 'checkbox', checked: !linked }), { own: slot.id });
+      // リンクの解除と復帰は core の操作を使う（解除時に、見えている色を写すのは core の仕事）。
+      if (own) own.addEventListener('change', () => apply((x) => (own.checked ? unlinkColor(x, inst.instanceId, slot) : relinkColor(x, inst.instanceId, slot.id)), 'edit'));
+      return h('div', { className: 'color-row' },
+        h('div', { className: 'row' }, field, h('span', {}, linked ? `${label('shared', slot.link!)}の色（全体）` : (slot.name ?? slot.id))),
+        own && h('label', { className: 'row own' }, own, 'このパーツだけ色を変える'),
+        recentChips(shown, onColor, slot.id));
+    });
+    return [
+      h('h4', {}, '色'),
+      ...rows,
+      slots.some((s) => s.link !== undefined) && h('p', { className: 'muted small' }, '「全体」の色は、同じ色を使うすべてのパーツが一緒に変わります。'),
+    ];
+  }
+
+  // ---------------------------------------------------------------- 詳細設定（Advanced）
+
+  /** その Instance の「パーツの中心」。画素を調べるので非同期。 */
+  async function centerOf(instanceId: string): Promise<Point | null> {
+    const plan = view?.plan;
+    if (!plan) return null;
+    const entries = plan.entries.filter((e) => e.instanceId === instanceId && e.status === 'draw' && e.asset);
+    const all = await Promise.all(entries.map(async (e) => [`${e.partId}/${e.asset!.file}`, await composer.opaqueBounds(e.partId, e.asset!.file)] as const));
+    const bounds = new Map(all);
+    return partCenter(plan, instanceId, (partId, file) => bounds.get(`${partId}/${file}`) ?? null);
+  }
+
+  function advancedBox(c: Character, inst: EquipmentInstance | null) {
+    const toggle = mark(h('button', { type: 'button', className: 'adv-toggle' }, `${ui.advancedOpen ? '▾' : '▸'} 詳細設定`), { action: 'advanced' });
+    toggle.addEventListener('click', () => {
+      ui.advancedOpen = !ui.advancedOpen;
+      render('edit');
+    });
+    if (!ui.advancedOpen) return h('div', { className: 'box adv' }, toggle);
+
+    if (!inst) return h('div', { className: 'box adv' }, toggle);
+
+    const part = set.library.get(inst.partId);
+    const stored = storedTransform(inst, ui.scope, c.state);
+    // 条件つきの調整がまだないときは、写して始める元（いつもの調整）の値を見せる。
+    const shown: Transform | undefined = stored ?? (ui.scope === 'always' ? undefined : inst.transform);
+    const armRight = label('pose', c.state.pose['arm.right']!);
+
+    const scope = mark(h('select', { className: 'field wide' },
+      h('option', { value: 'always', selected: ui.scope === 'always' }, 'いつも'),
+      h('option', { value: 'arm.right', selected: ui.scope === 'arm.right' }, `右腕が「${armRight}」のとき`),
+      h('option', { value: 'full', selected: ui.scope === 'full' }, 'いまの向きとポーズのとき')), { tf: 'scope' });
+    scope.addEventListener('change', () => {
+      ui.scope = scope.value as Scope;
+      render('edit');
+    });
+
+    const number = (key: 'x' | 'y' | 'scaleX' | 'scaleY' | 'rotation', text: string, fallback: number, step: string) => {
+      const input = mark(h('input', { type: 'number', className: 'num', step, value: String(shown?.[key] ?? fallback) }), { tf: key });
+      input.addEventListener('change', async () => {
+        const value = Number(input.value);
+        if (!Number.isFinite(value)) return;
+        // 調整を初めて作るときは「パーツの中心」を中心として保存する。
+        const center = stored ? null : await centerOf(inst.instanceId);
+        apply((x) => editTransform(x, inst.instanceId, ui.scope, { [key]: value }, center), 'edit');
+      });
+      return h('label', { className: 'num-field' }, text, input);
+    };
+
+    const pivotSelect = mark(h('select', { className: 'field wide' },
+      h('option', { value: 'part' }, 'パーツの中心'),
+      h('option', { value: 'canvas' }, 'キャンバスの中心'),
+      h('option', { value: 'custom' }, '数値で指定')), { tf: 'pivot-mode' });
+    const pivotInputs = h('div', { className: 'row' });
+    // どの選び方に当たるかは、保存されている値から求める（UI では覚えない）。
+    void centerOf(inst.instanceId).then((center) => {
+      // まだ調整がないときは、最初に作るときの既定（パーツの中心）を示す。
+      const mode = shown ? pivotMode(shown, center) : 'part';
+      pivotSelect.value = mode;
+      pivotSelect.dataset.ready = 'true';
+      const writePivot = (pivot: Point | null) => apply((x) => setPivot(x, inst.instanceId, ui.scope, pivot), 'edit');
+      pivotSelect.addEventListener('change', () => {
+        if (pivotSelect.value === 'part') writePivot(center);
+        else if (pivotSelect.value === 'canvas') writePivot(null);
+        else writePivot(shown?.pivot ?? center ?? [c.canvas[0] / 2, c.canvas[1] / 2]);
+      });
+      if (mode === 'custom' && shown?.pivot) {
+        const pivot = shown.pivot;
+        const axis = (index: 0 | 1, text: string) => {
+          const input = mark(h('input', { type: 'number', className: 'num', step: '1', value: String(pivot[index]) }), { tf: index === 0 ? 'pivot-x' : 'pivot-y' });
+          input.addEventListener('change', () => {
+            const next: Point = [pivot[0], pivot[1]];
+            next[index] = Number(input.value);
+            if (Number.isFinite(next[index])) writePivot(next);
+          });
+          return h('label', { className: 'num-field' }, text, input);
+        };
+        pivotInputs.append(h('span', { className: 'lbl' }), axis(0, 'X'), axis(1, 'Y'));
       }
     });
 
-    fill(header, 
-      h('h1', {}, 'InvestiMaker'),
-      name,
-      button('新規作成', () => {
-        notice = { kind: 'info', text: '新しいキャラクターを作った' };
-        scope = 'base';
-        update(newSession(set, newId));
-      }, { action: 'new' }),
-      button('JSON 保存', () => {
-        const text = stringifyCharacter(session.character);
-        hooks.lastSaved = text;
-        download(new Blob([text], { type: 'application/json' }), `${session.character.name || 'character'}.json`);
-        notice = { kind: 'info', text: 'JSON を保存した' };
-        renderStatus();
-      }, { action: 'save' }),
-      button('JSON 読込', () => file.click(), { action: 'load' }),
-      file,
-      button('PNG 出力', () => {
-        void idle.then(() => {
-          hooks.lastPng = canvas.toDataURL('image/png');
-          canvas.toBlob((blob) => blob && download(blob, `${session.character.name || 'character'}.png`), 'image/png');
-          notice = { kind: 'info', text: view.export.warnings.length > 0 ? 'PNG を出力した（下の注意を確認）' : 'PNG を出力した' };
-          renderStatus();
-        });
-      }, { action: 'export' }, !view.export.allowed),
+    return h('div', { className: 'box adv' }, toggle,
+      h('h4', {}, '位置・大きさ・回転'),
+      h('div', { className: 'row' }, h('span', { className: 'lbl' }, 'いつ使うか'), scope),
+      ui.scope !== 'always' && !stored && h('p', { className: 'muted small' }, 'この条件の調整はまだありません。値を変えると、いまの調整を写して作ります。'),
+      h('div', { className: 'row' }, h('span', { className: 'lbl' }, '位置'), number('x', 'X', 0, '1'), number('y', 'Y', 0, '1')),
+      h('div', { className: 'row' }, h('span', { className: 'lbl' }, '大きさ'), number('scaleX', '横', 1, '0.01'), number('scaleY', '縦', 1, '0.01')),
+      h('div', { className: 'row' }, h('span', { className: 'lbl' }, '回転'), number('rotation', '度', 0, '1'), h('span', { className: 'spacer' }),
+        button('元に戻す', () => apply((x) => clearTransform(x, inst.instanceId, ui.scope), 'edit'), { action: 'tf-clear' }, { disabled: !stored })),
+      h('div', { className: 'row' }, h('span', { className: 'lbl' }, '中心'), pivotSelect),
+      pivotInputs,
+      h('h4', {}, '内部情報'),
+      mark(h('p', { className: 'muted small internal' }, `${inst.partId} ／ ${part?.category ?? '（不明）'}`, h('br'), inst.instanceId), { role: 'internal' }),
     );
   }
 
-  function renderStatus() {
-    const { evaluation } = view;
-    const exportButton = header.querySelector<HTMLButtonElement>('[data-action="export"]');
-    if (exportButton) exportButton.disabled = !view.export.allowed;
-    fill(statusPanel, 
-      tag(h('span', { className: `validity ${evaluation.validity}` }, evaluation.validity), { role: 'validity' }),
-      notice && tag(h('p', { className: notice.kind }, notice.text), { role: 'notice' }),
-      !view.export.allowed && tag(h('p', { className: 'error' }, `PNG 出力ができない: ${view.export.reason}`), { role: 'export-blocked' }),
-      h(
-        'ul',
-        { className: 'issues' },
-        ...evaluation.issues.map((i) => h('li', { className: i.effect }, `${i.effect === 'unresolved' ? '未解決' : '注意'}: ${i.message}`)),
-        ...view.export.warnings.map((w) => h('li', { className: 'warning' }, w)),
-      ),
-    );
-  }
+  // ---------------------------------------------------------------- EXPORT
 
-  // ---------------------------------------------------------------- Parts
-
-  function renderParts() {
-    const { character } = session;
-    const byPart = new Map<string, EquipmentInstance[]>();
-    for (const inst of character.equipment) byPart.set(inst.partId, [...(byPart.get(inst.partId) ?? []), inst]);
-    const statusOf = new Map(view.plan?.parts.map((p) => [p.instanceId, p]) ?? []);
-    const duplicated = new Set(view.evaluation.issues.flatMap((i) => (i.code === 'category-duplicate' && i.category ? [i.category] : [])));
-
-    const instanceRow = (inst: EquipmentInstance, part: PartManifest | undefined) => {
-      const report = statusOf.get(inst.instanceId);
-      const state = !inst.equipped ? '外している' : report ? PART_STATUS[report.status] : part ? '装備中' : '不足';
-      const cls = !inst.equipped ? 'off' : (report?.status ?? (part ? 'ok' : 'missing'));
-      const isBody = inst.instanceId === character.appearance.body;
-      return tag(
-        h(
-          'div',
-          { className: `instance ${cls}${session.selected === inst.instanceId ? ' selected' : ''}` },
-          h('span', { className: 'badge' }, state),
-          button('選択', () => update({ ...session, selected: inst.instanceId }), { action: 'select', instance: inst.instanceId }),
-          !isBody && inst.equipped && button('外す', () => update(unequip(session, inst.instanceId)), { action: 'unequip', instance: inst.instanceId }),
-          !isBody && !inst.equipped && button('付ける', () => {
-            // 1 Part だけの category では、付け直すときも同じ category の装備中の Part を外す。
-            if (part && !isMultiCategory(part.category)) update(choosePart(session, set, part.id, newId));
-            else update(edit(session, (c) => setEquipped(c, inst.instanceId, true)));
-          }, { action: 'reequip', instance: inst.instanceId }),
-          !isBody && button('削除', () => update(deleteInstance(session, inst.instanceId)), { action: 'delete', instance: inst.instanceId }),
-          report && report.reasons.length > 0 && h('div', { className: 'reason' }, report.reasons.join(' / ')),
-        ),
-        { instance: inst.instanceId, part: inst.partId, state: cls },
-      );
-    };
-
-    const categories = new Map<string, PartManifest[]>();
-    for (const id of set.order) {
-      const part = set.library.get(id);
-      if (part) categories.set(part.category, [...(categories.get(part.category) ?? []), part]);
-    }
-
-    const blocks = [...categories].map(([category, parts]) =>
-      tag(
-        h(
-          'div',
-          { className: 'category' },
-          h('h3', {}, category, isMultiCategory(category) && h('span', { className: 'hint' }, '（複数可）')),
-          duplicated.has(category) && tag(h('p', { className: 'warning' }, '注意：1 Part だけの category に複数装備されている（両方描画する）'), { role: 'duplicate', category }),
-          ...parts.map((part) => {
-            const instances = byPart.get(part.id) ?? [];
-            const multi = isMultiCategory(category);
-            const canAdd = part.kind !== 'body' && (multi || instances.length === 0);
-            return h(
-              'div',
-              { className: 'part' },
-              h('div', { className: 'part-head' }, h('span', { className: 'part-name' }, part.name), h('code', {}, part.id),
-                canAdd && button(multi ? '追加' : '装備', () => update(choosePart(session, set, part.id, newId)), { action: 'equip', part: part.id })),
-              ...instances.map((inst) => instanceRow(inst, part)),
-            );
-          }),
-        ),
-        { category },
-      ),
-    );
-
-    // 読み込まれていない Part の Instance。情報は保持したまま、ここに並べる。
-    const missing = view.evaluation.missing;
-    fill(partsPanel, 
-      h('h2', {}, 'Parts'),
-      missing.length > 0 &&
-        tag(
-          h('div', { className: 'category' }, h('h3', {}, '不足している Part'),
-            ...missing.map((inst) => h('div', { className: 'part' }, h('div', { className: 'part-head' }, h('code', {}, inst.partId)), instanceRow(inst, undefined)))),
-          { category: 'missing' },
-        ),
-      ...blocks,
-    );
-  }
-
-  // ---------------------------------------------------------------- State・Colors・Transform
-
-  function renderState() {
-    const { character } = session;
-    const { state } = character;
-    const body = set.library.get(bodyInstance(character).partId) as Body | undefined;
-    const NONE = '';
-    const MANUAL = '（個別に選択）';
-    return group(
-      'State',
-      row('VIEW', select(VIEWS, state.view, (v) => apply((c) => setView(c, v)), { state: 'view' })),
-      ...Object.keys(REGION_LABEL).map((region) =>
-        row(REGION_LABEL[region]!, select(POSE_DEFINITIONS.filter((d) => d.region === region).map((d) => d.id), state.pose[region]!, (v) => apply((c) => setPose(c, region, v)), { state: `pose.${region}` })),
-      ),
-      row('表情', select([...STANDARD_EXPRESSIONS.map((e) => e.id), [NONE, MANUAL]], expressionPresetOf(state.expression) ?? NONE, (v) => {
-        const preset = STANDARD_EXPRESSIONS.find((e) => e.id === v);
-        if (preset) apply((c) => setExpression(c, { eyes: preset.eyes, eyebrows: preset.eyebrows, mouth: preset.mouth }));
-      }, { state: 'expression' })),
-      row('目', select(STANDARD_STATES.eyes, state.expression.eyes, (v) => apply((c) => setExpression(c, { eyes: v })), { state: 'eyes' })),
-      row('眉', select(STANDARD_STATES.eyebrows, state.expression.eyebrows, (v) => apply((c) => setExpression(c, { eyebrows: v })), { state: 'eyebrows' })),
-      row('口', select(STANDARD_STATES.mouth, state.expression.mouth, (v) => apply((c) => setExpression(c, { mouth: v })), { state: 'mouth' })),
-      ...Object.entries(body?.fitDimensions ?? {}).map(([dim, values]) =>
-        row(`fit: ${dim}`, select([[NONE, '（指定なし）'], ...values], character.appearance.fit[dim] ?? NONE, (v) =>
-          apply((c) => setFit(c, dim, v === NONE ? undefined : v)), { state: `fit.${dim}` })),
-      ),
-    );
-  }
-
-  function renderSharedColors() {
-    const { sharedColors } = session.character;
-    const keys = [...new Set([...SHARED_KEYS, ...Object.keys(sharedColors)])];
-    return group(
-      '共有色',
-      ...keys.map((key) =>
-        h('div', { className: 'row' },
-          colorInput(sharedColors[key] ?? '#808080', (color, done) => apply((c) => setSharedColor(c, key, color), { rebuild: done }), { shared: key }),
-          h('span', {}, key),
-          sharedColors[key] === undefined && h('span', { className: 'hint' }, '（未設定：Part の既定色）')),
-      ),
-    );
-  }
-
-  function renderColors(inst: EquipmentInstance, part: PartManifest | undefined) {
-    if (!part) return group('Colors', h('p', { className: 'hint' }, `Part が読み込まれていないため編集できない（保存されている色は保持する: ${Object.keys(inst.colors).join(', ') || 'なし'}）`));
-    const slots = (part.colorSlots ?? []).filter((s) => s.mode !== 'fixed');
-    if (slots.length === 0) return group('Colors', h('p', { className: 'hint' }, '色を変えられるスロットがない'));
-    return group(
-      'Colors',
-      ...slots.map((slot) => {
-        const override = inst.colors[slot.id];
-        const linked = slot.link !== undefined && override?.linked !== false;
-        const shown = resolveSlotColor(slot, override, session.character.sharedColors);
-        const link = slot.link !== undefined && h('input', { type: 'checkbox', checked: linked });
-        if (link) {
-          tag(link, { link: slot.id });
-          // リンクの解除と復帰は、必ず core の操作を使う（解除時に表示色を個別色へコピーするのは core の仕事）。
-          link.addEventListener('change', () => apply((c) => (link.checked ? relinkColor(c, inst.instanceId, slot.id) : unlinkColor(c, inst.instanceId, slot))));
-        }
-        return h('div', { className: 'row' },
-          colorInput(shown, (color, done) => apply((c) => setInstanceColor(c, inst.instanceId, slot.id, color), { rebuild: done }), { slot: slot.id }, linked),
-          h('span', {}, slot.name ?? slot.id),
-          link && h('label', { className: 'link' }, link, `共有色 ${slot.link}`));
-      }),
-    );
-  }
-
-  function renderTransform(inst: EquipmentInstance) {
-    const { state } = session.character;
-    const conditionOf = (s: typeof scope): TransformCondition | null =>
-      s === 'base' ? null : s === 'arm.right' ? { pose: { 'arm.right': state.pose['arm.right']! } } : { view: state.view, pose: { ...state.pose } };
-    const when = conditionOf(scope);
-    const entry = when ? inst.overrides?.transform?.find((e) => sameCondition(e.when, when)) : undefined;
-    const stored: Transform | undefined = when ? entry?.transform : inst.transform;
-
-    // 現在の状態で実際に使われている補正を示す。
-    const active = [...(inst.overrides?.transform ?? [])].filter((e) => conditionMatches(e.when, state)).sort((a, b) => conditionSize(b.when) - conditionSize(a.when))[0];
-    const activeLabel = active ? `条件別（${JSON.stringify(active.when)}）` : inst.transform ? '基本' : 'なし';
-
-    const field = (label: string, key: 'x' | 'y' | 'scaleX' | 'scaleY' | 'rotation', fallback: number, step: string) => {
-      const input = tag(h('input', { type: 'number', step, value: String((stored ?? inst.transform)?.[key] ?? fallback) }), { transform: key });
-      input.addEventListener('change', () => {
-        const value = Number(input.value);
-        if (!Number.isFinite(value)) return;
-        // 条件別の補正は基本の補正を置き換えるので、初めて作るときは基本の値から始める。
-        const next: Transform = { ...(stored ?? inst.transform), [key]: value };
-        apply((c) => (when ? setTransformOverride(c, inst.instanceId, when, next) : setTransform(c, inst.instanceId, next)));
+  function renderExportSide() {
+    if (!character || !view) return;
+    const c = character;
+    const blocked = exportBlockText(view);
+    const exportButton = button('PNG を保存', () => {
+      void idle.then(() => {
+        hooks.lastPng = canvas.toDataURL('image/png');
+        canvas.toBlob((blob) => blob && download(blob, `${c.name || 'character'}.png`), 'image/png');
+        ui.message = { kind: 'info', text: '画像を書き出しました。' };
+        render('status');
       });
-      return row(label, input);
-    };
-
-    return group(
-      'Transform',
-      row('適用範囲', select(
-        [['base', '基本（すべての状態）'], ['arm.right', `右腕が ${state.pose['arm.right']} のとき`], ['full', '現在の VIEW とポーズすべて']],
-        scope,
-        (v) => {
-          scope = v as typeof scope;
-          renderAll();
-        },
-        { transform: 'scope' },
-      )),
-      field('X', 'x', 0, '1'),
-      field('Y', 'y', 0, '1'),
-      field('Scale X', 'scaleX', 1, '0.01'),
-      field('Scale Y', 'scaleY', 1, '0.01'),
-      field('Rotation（度）', 'rotation', 0, '1'),
-      h('div', { className: 'row' },
-        button(when ? 'この条件の補正を削除' : '基本の補正を削除', () => apply((c) => (when ? setTransformOverride(c, inst.instanceId, when, undefined) : setTransform(c, inst.instanceId, undefined))), { action: 'transform-clear' }, !stored)),
-      tag(h('p', { className: 'hint' }, `現在の状態で使われている補正: ${activeLabel}${when && !entry ? '／この条件の補正は未設定' : ''}`), { role: 'transform-active' }),
+    }, { action: 'export' }, { primary: true, disabled: blocked !== null });
+    fill(sideEl,
+      h('h2', {}, '画像を書き出す'),
+      h('div', { className: 'row' }, h('span', { className: 'lbl' }, '大きさ'), `${c.canvas[0]} × ${c.canvas[1]}`),
+      h('div', { className: 'row' }, h('span', { className: 'lbl' }, '背景'), '透明'),
+      h('div', { className: 'row' }, h('span', { className: 'lbl' }, '形式'), 'PNG'),
+      h('div', { className: 'row actions' }, exportButton),
+      blocked && mark(h('p', { className: 'message error' }, blocked), { role: 'export-blocked' }),
+      !blocked && notices.length > 0 && h('p', { className: 'muted small' }, '下の内容は画像にも反映されます（表示されていないパーツは、画像に含まれません）。'),
+      ...notices.map((n) => noticeBox(n)),
+      h('p', { className: 'muted small gap' }, '全身以外の構図、背景色、まとめての書き出しは、今後の版で対応します。'),
     );
   }
 
-  function renderSide() {
-    const inst = session.character.equipment.find((i) => i.instanceId === session.selected);
-    const part = inst ? set.library.get(inst.partId) : undefined;
-    fill(sidePanel, 
-      renderState(),
-      renderSharedColors(),
-      inst
-        ? h('div', {}, h('h2', {}, `選択中: ${part?.name ?? inst.partId}`), h('code', {}, inst.instanceId), renderColors(inst, part), renderTransform(inst))
-        : h('p', { className: 'hint' }, 'Parts の「選択」で、色と配置補正を編集する Part を選ぶ'),
-    );
-  }
-
-  function renderAll() {
-    renderHeader();
-    renderStatus();
-    renderParts();
-    renderSide();
-  }
-
-  root.append(header, h('main', {}, partsPanel, h('section', { className: 'panel preview' }, h('div', { className: 'canvas-wrap' }, canvas), statusPanel), sidePanel));
-  renderAll();
+  // 一度出した知らせは、次のページへ持ち越さない。
+  if (character) commit(character);
+  else render('all');
+  if (pageStep === 'create') showDraft();
   await paint();
 
-  // 自動操作（tools/browser-smoke.ts）用の入口。画面の操作を置き換えるものではなく、結果の確認に使う。
+  // 自動操作（tools/creator-smoke.ts）用の入口。画面の操作を置き換えるものではなく、結果の確認に使う。
   Object.assign(window, {
-    __app: {
+    __creator: {
       get character() {
-        return session.character;
+        return character;
       },
       get inspection() {
         return view;
+      },
+      get ui() {
+        return ui;
       },
       idle: () => idle,
       hooks,

@@ -123,7 +123,7 @@ try {
       const runs: BenchResult[] = [];
       for (let i = 0; i < RUNS; i++) {
         // 毎回新しいタブで開き、読み込み前の状態から測る。
-        const page = await Page.open(cdp, `${base}lab.html?set=bench/${w}x${h}&bench=1`, undefined, throttle);
+        const page = await Page.open(cdp, `${base}dev/lab.html?set=bench/${w}x${h}&bench=1`, undefined, throttle);
         runs.push(await page.waitFor<BenchResult>('__benchResult'));
         await page.close();
       }
@@ -140,7 +140,7 @@ try {
   const throttled = await measure(4);
 
   // 画面のスクリーンショットと、ブラウザからの書き出し。
-  const page = await Page.open(cdp, `${base}lab.html`, [1500, 1100]);
+  const page = await Page.open(cdp, `${base}dev/lab.html`, [1500, 1100]);
   await page.waitFor('__lab');
   await page.screenshot(`${OUT_IMAGES}/lab_default.png`);
   const exported = await page.evaluate<string>('window.__lab.exportPng()');

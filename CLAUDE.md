@@ -4,7 +4,14 @@ TRPG 用 2D キャラクター立ち絵を既製パーツの組み合わせで�
 
 ## 唯一の正
 
-素材規格は `docs/specifications/InvestiMaker_Asset_Specification_v1.md`（仕様書）が**唯一の正**。キャラクターの保存形式は同じフォルダの `InvestiMaker_Character_Schema_v1.md`（RC1）が定める。`docs/design/` の基本設計書は背景理解用で、食い違う箇所は仕様書が優先する。
+素材規格は `docs/specifications/InvestiMaker_Asset_Specification_v1.md`（仕様書）が**唯一の正**。キャラクターの保存形式は同じフォルダの `InvestiMaker_Character_Schema_v1.md`（RC1）が定める。製品・配布・UX の方針は `docs/design/InvestiMaker_Basic_Design.md`（基本設計書 v1.0）が定める。食い違う場合、データの意味は 2 つの仕様書が、製品・配布・UX の方針は基本設計書が優先する。
+
+## 配布の要件（基本設計書 v1.0）
+
+- 配布物は 1 種類。同じファイルが、**ZIP を解凍して `index.html` を開く**（`file://`）場合と、GitHub Pages などに置く場合の両方で動く。Web 用とローカル用を別に作らない。
+- 利用者に、インストール・Node.js / npm・ローカルサーバー・コマンド操作・ログインを求めない。
+- ローカルでは、インターネットにつながっていなくても基本機能が動く。
+- HTTP サーバーがあることを前提にしたコードを書かない（モジュールの読み込み、`fetch` でのローカルファイルの取得、動的 import、Worker など）。配布物に入るコードを変えたら `npm run smoke:dist` で確かめる。
 
 ## 守ること
 
@@ -19,7 +26,8 @@ TRPG 用 2D キャラクター立ち絵を既製パーツの組み合わせで�
 
 - `src/core/` — DOM に依存しない純粋な関数（manifest 型・検証・Asset 解決・描画順・色合成・互換性）。製品版に持ち越す。
 - `src/core/character/` — キャラクターの保存形式（型・検証・保存と読込・評価・編集）。読み込みは Part の manifest を参照しない。
-- `src/app/` — InvestiMaker 本体の最小 UI。Character が唯一の正本で、UI 用の第二の正本を持たない。編集は core の operations、評価は evaluate、描画計画は plan を使う。
+- `src/app/` — InvestiMaker の Creator UI。3 つのページ（スタート画面 = CREATE / CUSTOMIZE / EXPORT）に分かれ、どのページも `main.ts` を読む。編集中の Character はセッションストレージでページ間を運ぶ（`store.ts`）。Character が唯一の正本で、UI 用の第二の正本を持たない。編集は core の operations、評価は evaluate、描画計画は plan を使う。表示名は `labels.ts`、利用者向けの文は `messages.ts` に置き、内部の語（UNRESOLVED、Part ID など）を通常の画面に出さない。
+- `src/minimal/` — Phase 1-B の最小 UI。Character 操作のリファレンスとして残してある。
 - `src/web/` — 素材の読み込みと Canvas 合成（本体と検証ページの共用）。
 - `src/lab/` — 検証ページ（使い捨て。素の DOM）。
 - `tools/` — 仮素材の生成・レポート用画像の生成・ブラウザ計測。Node の型除去で `.ts` を直接実行する。
@@ -29,6 +37,8 @@ TRPG 用 2D キャラクター立ち絵を既製パーツの組み合わせで�
 ## コマンド
 
 - `npm run dev` 検証ページ / `npm test` テスト / `npm run typecheck` 型検査
+- `npm run build:site` 配布用のページ（リポジトリ直下の `index.html`・`customize.html`・`export.html` と `app/`）を作り直す。これらは生成物で、手で編集しない。「ZIP を解凍して `index.html` を開くだけ」で動くこと、GitHub Pages にそのまま置けることが要件。開発用のページは `dev/`（配布物には入れない）。**`src/app/`・`src/web/`・`src/core/`・素材を変えたら、コミットの前に作り直す。**
+- `npm run smoke:dist` 配布物の検証。ソースから組み立てたものがリポジトリ直下の配布物と同じことを確かめ、ZIP（`release/InvestiMaker.zip`、git 管理外）にして別のフォルダへ解凍し、`file://`（通信できない状態のブラウザ）と静的 HTTP の両方で、作成 → 保存 → 読込 → 書き出しを通して、保存データと PNG が一致することを確かめる。
 - `npm run gen:assets` 仮素材の再生成（`-- --width 1200 --height 1800 --out <dir>` でサイズ変更）
 
 ## コードの約束

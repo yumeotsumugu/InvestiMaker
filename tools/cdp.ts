@@ -27,12 +27,16 @@ export class Cdp {
   private nextId = 1;
   private readonly waiting = new Map<number, { resolve(v: unknown): void; reject(e: Error): void }>();
   private readonly ws: WebSocket;
+  private readonly listeners: ((method: string, params: Record<string, unknown>, sessionId?: string) => void)[] = [];
 
   private constructor(ws: WebSocket) {
     this.ws = ws;
     ws.addEventListener('message', (event) => {
-      const msg = JSON.parse(String(event.data)) as { id?: number; result?: unknown; error?: { message: string } };
-      if (msg.id === undefined) return;
+      const msg = JSON.parse(String(event.data)) as { id?: number; result?: unknown; error?: { message: string }; method?: string; params?: Record<string, unknown>; sessionId?: string };
+      if (msg.id === undefined) {
+        if (msg.method) for (const listener of this.listeners) listener(msg.method, msg.params ?? {}, msg.sessionId);
+        return;
+      }
       const w = this.waiting.get(msg.id);
       this.waiting.delete(msg.id);
       if (msg.error) w?.reject(new Error(msg.error.message));
@@ -56,6 +60,11 @@ export class Cdp {
     });
   }
 
+  /** ブラウザからの通知（イベント）を受け取る。 */
+  onEvent(listener: (method: string, params: Record<string, unknown>, sessionId?: string) => void) {
+    this.listeners.push(listener);
+  }
+
   close() {
     this.ws.close();
   }
@@ -72,7 +81,10 @@ export class Page {
     this.targetId = targetId;
   }
 
-  static async open(cdp: Cdp, url: string, viewport?: [number, number], cpuThrottle = 1): Promise<Page> {
+  /**
+   * `requests` を渡すと、このページが読み込もうとした URL をすべて記録する（外部と通信していないことの確認用）。
+   */
+  static async open(cdp: Cdp, url: string, viewport?: [number, number], cpuThrottle = 1, requests?: string[]): Promise<Page> {
     const { targetId } = await cdp.send<{ targetId: string }>('Target.createTarget', { url: 'about:blank' });
     const { sessionId } = await cdp.send<{ sessionId: string }>('Target.attachToTarget', { targetId, flatten: true });
     const page = new Page(cdp, sessionId, targetId);
@@ -81,6 +93,12 @@ export class Page {
     }
     if (cpuThrottle !== 1) await page.send('Emulation.setCPUThrottlingRate', { rate: cpuThrottle });
     await page.send('Page.enable');
+    if (requests) {
+      cdp.onEvent((method, params, session) => {
+        if (session === sessionId && method === 'Network.requestWillBeSent') requests.push((params.request as { url: string }).url);
+      });
+      await page.send('Network.enable');
+    }
     await page.send('Page.navigate', { url });
     return page;
   }
@@ -130,11 +148,11 @@ export interface Browser {
 }
 
 /** ブラウザを起動して接続する。終了時は `close()` で一時プロファイルごと片付ける。 */
-export async function launchBrowser(): Promise<Browser> {
+export async function launchBrowser(extraArgs: string[] = []): Promise<Browser> {
   const profile = mkdtempSync(join(tmpdir(), 'investimaker-browser-'));
   const child: ChildProcess = spawn(
     findBrowser(),
-    ['--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check', '--disable-extensions', 'about:blank'],
+    ['--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check', '--disable-extensions', ...extraArgs, 'about:blank'],
     { stdio: ['ignore', 'ignore', 'pipe'] },
   );
   const wsUrl = await new Promise<string>((resolve, reject) => {

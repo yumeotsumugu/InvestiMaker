@@ -1,0 +1,218 @@
+{
+  "format": "INVESTIMAKER_CHARACTER",
+  "formatVersion": 1,
+  "id": "34875b33-6b4e-4142-8c78-29b51ab5a77c",
+  "name": "夢生ツムグ",
+  "canvas": [
+    1600,
+    2400
+  ],
+  "appearance": {
+    "body": "d24c12e0-b49c-4dc6-98a4-3a57b4ef8dc5",
+    "fit": {}
+  },
+  "sharedColors": {
+    "skin.base": "#F2D3BD",
+    "eyes.left": "#4A6FA5",
+    "eyes.right": "#4A6FA5",
+    "hair.base": "#202028"
+  },
+  "equipment": [
+    {
+      "instanceId": "d24c12e0-b49c-4dc6-98a4-3a57b4ef8dc5",
+      "partId": "dev.body_adult_standard",
+      "equipped": true,
+      "colors": {}
+    },
+    {
+      "instanceId": "b7cc3665-e064-4e42-8c82-eca1187c0a1e",
+      "partId": "dev.face_head_01",
+      "equipped": true,
+      "colors": {}
+    },
+    {
+      "instanceId": "337b96c7-1efc-4bea-9522-6960c04f3cb0",
+      "partId": "dev.face_ears_01",
+      "equipped": true,
+      "colors": {}
+    },
+    {
+      "instanceId": "4b389d7a-43fa-447b-aa2c-891a5c7faaaa",
+      "partId": "dev.face_nose_01",
+      "equipped": true,
+      "colors": {}
+    },
+    {
+      "instanceId": "1ebd375f-9419-4801-a2cf-2b33d40cc2f0",
+      "partId": "dev.eyes_01",
+      "equipped": true,
+      "colors": {}
+    },
+    {
+      "instanceId": "40d9c7d6-ae45-4633-b0bb-a5441e3516bb",
+      "partId": "dev.eyebrows_01",
+      "equipped": true,
+      "colors": {}
+    },
+    {
+      "instanceId": "119191ad-603e-41e4-a2a4-315cdf6e021f",
+      "partId": "dev.mouth_01",
+      "equipped": true,
+      "colors": {}
+    },
+    {
+      "instanceId": "5cf2ce21-bbbc-4a2a-9196-71f540e7a4bd",
+      "partId": "dev.hair_back_01",
+      "equipped": true,
+      "colors": {}
+    },
+    {
+      "instanceId": "121188a0-81a8-4de7-b707-447894e286c3",
+      "partId": "dev.hair_front_01",
+      "equipped": false,
+      "colors": {}
+    },
+    {
+      "instanceId": "3440adc5-485a-41be-af78-8ea65e0e8b2b",
+      "partId": "dev.socks_01",
+      "equipped": true,
+      "colors": {}
+    },
+    {
+      "instanceId": "51abb1b6-3823-4fde-8a53-2a4e0d1c72a9",
+      "partId": "dev.shoes_01",
+      "equipped": true,
+      "colors": {}
+    },
+    {
+      "instanceId": "d02e8f70-b471-4c64-a78a-6261c1c3b01d",
+      "partId": "dev.pants_01",
+      "equipped": true,
+      "colors": {}
+    },
+    {
+      "instanceId": "0dbe8ce9-73e1-4d7b-a07e-cedf22a3863d",
+      "partId": "dev.shirt_01",
+      "equipped": false,
+      "colors": {}
+    },
+    {
+      "instanceId": "209b606e-43cf-41b1-94b9-a51017609649",
+      "partId": "dev.hair_front_02",
+      "equipped": true,
+      "colors": {
+        "base": {
+          "linked": false,
+          "color": "#E8D080"
+        }
+      }
+    },
+    {
+      "instanceId": "1e2195ed-ee18-4dff-bc27-485afda2129c",
+      "partId": "dev.shirt_02",
+      "equipped": true,
+      "colors": {
+        "main": {
+          "color": "#E60033"
+        }
+      }
+    },
+    {
+      "instanceId": "b033548e-d1ee-4687-9a08-0939c90a5ce5",
+      "partId": "dev.coat_01",
+      "equipped": false,
+      "colors": {}
+    },
+    {
+      "instanceId": "e652ff3e-cc85-4c42-800a-b24a938ab972",
+      "partId": "dev.glasses_01",
+      "equipped": true,
+      "colors": {},
+      "transform": {
+        "y": -40,
+        "pivot": [
+          800,
+          405
+        ],
+        "rotation": 10
+      },
+      "overrides": {
+        "transform": [
+          {
+            "when": {
+              "pose": {
+                "arm.right": "down"
+              }
+            },
+            "transform": {
+              "y": -40,
+              "rotation": 10,
+              "x": 60,
+              "pivot": [
+                800,
+                405
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "state": {
+    "view": "front",
+    "pose": {
+      "torso": "stand",
+      "arm.left": "down",
+      "arm.right": "down"
+    },
+    "expression": {
+      "eyes": "smile",
+      "eyebrows": "relaxed",
+      "mouth": "smile_open"
+    }
+  },
+  "requirements": {
+    "parts": [
+      "dev.body_adult_standard",
+      "dev.eyebrows_01",
+      "dev.eyes_01",
+      "dev.face_ears_01",
+      "dev.face_head_01",
+      "dev.face_nose_01",
+      "dev.glasses_01",
+      "dev.hair_back_01",
+      "dev.hair_front_02",
+      "dev.mouth_01",
+      "dev.pants_01",
+      "dev.shirt_02",
+      "dev.shoes_01",
+      "dev.socks_01"
+    ],
+    "view": [
+      "front"
+    ],
+    "pose": {
+      "arm.left": [
+        "down"
+      ],
+      "arm.right": [
+        "down"
+      ],
+      "torso": [
+        "stand"
+      ]
+    },
+    "fit": {},
+    "state": {
+      "eyebrows": [
+        "relaxed"
+      ],
+      "eyes": [
+        "smile"
+      ],
+      "mouth": [
+        "smile_open"
+      ]
+    }
+  }
+}

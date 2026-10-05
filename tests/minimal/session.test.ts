@@ -1,9 +1,9 @@
-// 本体 UI の操作（src/app/session.ts）を、DOM なしで確かめる。指示書 §13 の項目に対応する。
+// Phase 1-B の最小 UI の操作（src/minimal/session.ts）を、DOM なしで確かめる。Phase 1-B の指示書 §13 の項目に対応する。
 // 画面からの操作そのものは tools/browser-smoke.ts がヘッドレスのブラウザで確かめる。
 
 import { beforeAll, describe, expect, it } from 'vitest';
-import type { Catalog, Session } from '../../src/app/session.ts';
-import { choosePart, deleteInstance, edit, inspect, loadCharacterText, newSession, unequip } from '../../src/app/session.ts';
+import type { Catalog, Session } from '../../src/minimal/session.ts';
+import { choosePart, deleteInstance, edit, inspect, loadCharacterText, newSession, unequip } from '../../src/minimal/session.ts';
 import type { Bitmap, Character } from '../../src/core/index.ts';
 import {
   resolveSlotColor,

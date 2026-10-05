@@ -42,6 +42,7 @@ export class Composer {
   private readonly pixels = new Map<string, Promise<ImageData>>();
   private readonly bitmaps = new Map<string, Promise<ImageBitmap>>();
   private readonly tinted = new Map<string, Tinted>();
+  private readonly bounds = new Map<string, { x0: number; y0: number; x1: number; y1: number } | null>();
   private sourcePixels = 0;
   private images = 0;
   private readonly ctx: CanvasRenderingContext2D;
@@ -163,6 +164,34 @@ export class Composer {
       recolored,
       recoloredPixels,
     };
+  }
+
+  /**
+   * 画像の中の、透明でない画素の外接矩形（画像の左上が原点。x1・y1 は端の外側）。すべて透明なら null。
+   * 「パーツの中心」を求めるために使う。
+   */
+  async opaqueBounds(partId: string, file: string): Promise<{ x0: number; y0: number; x1: number; y1: number } | null> {
+    const url = this.url(partId, file);
+    let cached = this.bounds.get(url);
+    if (cached === undefined) {
+      const image = await this.getPixels(url);
+      let x0 = image.width;
+      let y0 = image.height;
+      let x1 = -1;
+      let y1 = -1;
+      for (let y = 0; y < image.height; y++) {
+        for (let x = 0; x < image.width; x++) {
+          if (image.data[(y * image.width + x) * 4 + 3] === 0) continue;
+          if (x < x0) x0 = x;
+          if (x > x1) x1 = x;
+          if (y < y0) y0 = y;
+          if (y > y1) y1 = y;
+        }
+      }
+      cached = x1 < 0 ? null : { x0, y0, x1: x1 + 1, y1: y1 + 1 };
+      this.bounds.set(url, cached);
+    }
+    return cached;
   }
 
   /** 色変更結果のキャッシュを捨てる（計測用）。 */

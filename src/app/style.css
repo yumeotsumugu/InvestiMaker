@@ -2,246 +2,724 @@
   color-scheme: light;
   font-family: system-ui, 'Segoe UI', 'Hiragino Sans', 'Yu Gothic UI', sans-serif;
   font-size: 13px;
-  --line: #d0d4dc;
+  line-height: 1.5;
+  --ink: #232a38;
+  --line: #c9cfda;
+  --soft: #e7eaf0;
+  --fill: #f3f5f8;
   --muted: #667085;
+  --accent: #2f66d0;
+  --warn: #9a6500;
+  --warn-bg: #fff7e3;
+  --bad: #a3231c;
+  --bad-bg: #fdecea;
+  --ok: #17643a;
 }
 
 * {
   box-sizing: border-box;
 }
 
-body {
+html,
+body,
+#app {
+  height: 100%;
   margin: 0;
-  background: #f4f5f7;
-  color: #1d2433;
 }
 
-header {
+body {
+  color: var(--ink);
+  background: var(--fill);
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+.frame {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 48px minmax(0, 1fr) 44px;
+}
+
+/* ヘッダー */
+.hd {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: #1d2433;
-  color: #fff;
+  gap: 10px;
+  padding: 0 14px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
 }
 
-h1 {
-  margin: 0 8px 0 0;
+.brand {
+  font-weight: 700;
   font-size: 16px;
-}
-
-h2 {
-  margin: 8px 0 6px;
-  font-size: 13px;
-}
-
-h3 {
-  margin: 10px 0 4px;
-  font-size: 12px;
-  color: var(--muted);
+  margin-right: 10px;
 }
 
 .name {
-  width: 220px;
-  padding: 4px 6px;
-  font: inherit;
-}
-
-button {
-  padding: 3px 10px;
-  font: inherit;
-}
-
-main {
-  display: grid;
-  grid-template-columns: 340px minmax(260px, 420px) minmax(320px, 1fr);
-  gap: 12px;
-  padding: 12px;
-  align-items: start;
-}
-
-@media (max-width: 1000px) {
-  main {
-    grid-template-columns: 1fr;
-  }
-}
-
-.panel {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 10px;
-  min-width: 0;
-}
-
-.canvas-wrap {
-  background: repeating-conic-gradient(#e6e8ec 0% 25%, #fff 0% 50%) 0 0 / 20px 20px;
-  border: 1px solid var(--line);
-}
-
-.preview-canvas {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.status {
-  margin-top: 8px;
-}
-
-.validity {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 3px;
-  font-weight: 600;
-}
-
-.validity.VALID {
-  background: #e3f4e8;
-  color: #17643a;
-}
-
-.validity.UNRESOLVED {
-  background: #fdf0d5;
-  color: #8a5a00;
-}
-
-.issues {
-  margin: 6px 0 0;
-  padding-left: 18px;
-}
-
-.issues .unresolved,
-.warning {
-  color: #8a5a00;
-}
-
-.error {
-  color: #9b1c1c;
-}
-
-.info {
-  color: #17643a;
-}
-
-.hint {
-  color: var(--muted);
-  font-weight: normal;
-}
-
-.part {
-  padding: 3px 0;
-  border-top: 1px solid #eceef2;
-}
-
-.part-head {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.part-name {
-  font-weight: 600;
-}
-
-code {
-  font-family: ui-monospace, Consolas, monospace;
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.instance {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-  margin: 2px 0 2px 12px;
-  padding: 2px 4px;
-  border-radius: 3px;
-}
-
-.instance.selected {
-  background: #e8f0fe;
-}
-
-.instance.off {
-  color: var(--muted);
-}
-
-.badge {
-  min-width: 64px;
-  padding: 0 6px;
-  border-radius: 3px;
-  background: #e3f4e8;
-  color: #17643a;
-  text-align: center;
-}
-
-.instance.off .badge {
-  background: #eceef2;
-  color: var(--muted);
-}
-
-.instance.missing .badge,
-.instance.unsupported .badge {
-  background: #fde3e3;
-  color: #9b1c1c;
-}
-
-.instance.conflict .badge {
-  background: #fdf0d5;
-  color: #8a5a00;
-}
-
-.reason {
-  flex-basis: 100%;
-  color: #9b1c1c;
-}
-
-fieldset {
-  margin: 0 0 10px;
-  padding: 6px 8px 8px;
+  width: 300px;
+  padding: 5px 8px;
   border: 1px solid var(--line);
   border-radius: 4px;
 }
 
-legend {
-  padding: 0 4px;
+.spacer {
+  flex: 1;
+}
+
+.btn {
+  padding: 4px 12px;
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn.primary {
+  background: var(--ink);
+  color: #fff;
+}
+
+.btn:disabled {
+  border-color: var(--line);
+  color: var(--line);
+  background: #fff;
+  cursor: default;
+}
+
+.chip {
+  padding: 1px 10px;
+  border: 1px solid var(--warn);
+  border-radius: 10px;
+  background: var(--warn-bg);
+  color: var(--warn);
+  font-size: 12px;
+}
+
+.chip.bad {
+  border-color: var(--bad);
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+
+/* 下の段 */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background: #fff;
+  border-top: 1px solid var(--line);
+}
+
+.step {
+  border: 0;
+  border-right: 1px solid var(--soft);
+  background: #fff;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.step.on {
+  background: var(--ink);
+  color: #fff;
+  font-weight: 700;
+}
+
+.step:disabled {
+  color: var(--line);
+  cursor: default;
+}
+
+.step small {
+  margin-left: 6px;
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+/* 本体。列の幅は画面に合わせて伸び縮みする（決め打ちにしない）。 */
+.body {
+  display: grid;
+  min-height: 0;
+}
+
+.body.step-customize {
+  grid-template-columns: minmax(84px, 104px) minmax(240px, 316px) minmax(260px, 1fr) minmax(260px, 320px);
+}
+
+.body.step-create {
+  grid-template-columns: minmax(320px, 1fr) minmax(280px, 440px);
+}
+
+.body.step-export {
+  grid-template-columns: minmax(280px, 1fr) minmax(300px, 440px);
+}
+
+.pane {
+  min-width: 0;
+  min-height: 0;
+  padding: 10px;
+  overflow: auto;
+  background: #fff;
+  border-right: 1px solid var(--line);
+}
+
+.pane:last-child {
+  border-right: 0;
+}
+
+h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+
+h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+h3.gap,
+.gap {
+  margin-top: 16px;
+}
+
+h4 {
+  margin: 12px 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 11px;
+}
+
+/* 大分類の列 */
+.rail {
+  padding: 6px;
+}
+
+.rail-item {
+  display: block;
+  width: 100%;
+  padding: 9px 2px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.rail-item.on {
+  background: var(--ink);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* 名前のボタン */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.tab {
+  padding: 1px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.tab.on {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+/* カードの一覧 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 6px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  font-size: 11px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.card.on {
+  padding: 1px;
+  border: 3px solid var(--accent);
+}
+
+.card.on::after {
+  content: '✓';
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+/* 絵のないカード（表情・向き）は、名前だけを出す。 */
+.card.text-only {
+  justify-content: center;
+  min-height: 44px;
+  padding: 6px 4px;
+  font-size: 13px;
+}
+
+.card.text-only.on {
+  padding: 4px 2px;
+}
+
+.card.off {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  background: var(--fill);
+  overflow: hidden;
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.thumb-text {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.card-name {
+  padding-top: 2px;
+}
+
+.why {
+  color: var(--bad);
+  font-size: 10px;
+}
+
+/* プレビュー */
+.preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--fill);
+}
+
+.canvas-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 200px;
+  max-width: 100%;
+  aspect-ratio: 2 / 3;
+  border: 1px solid var(--line);
+  background: repeating-conic-gradient(#dfe3ea 0% 25%, #fff 0% 50%) 0 0 / 18px 18px;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.canvas-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+
+.canvas-empty[hidden] {
+  display: none;
+}
+
+.under {
+  align-self: stretch;
+  flex: 0 0 auto;
+  max-height: 34%;
+  overflow: auto;
+  margin-top: 6px;
+}
+
+.message {
+  margin: 0 0 6px;
+}
+
+.message.info {
+  color: var(--ok);
+}
+
+.message.error {
+  color: var(--bad);
+}
+
+.detail {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+  word-break: break-all;
+}
+
+.notice {
+  margin-bottom: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--warn);
+  border-radius: 4px;
+  background: var(--warn-bg);
+}
+
+.notice-text {
   font-weight: 600;
 }
 
+.notice .btn {
+  margin-top: 4px;
+}
+
+/* 編集パネル */
 .row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  min-height: 26px;
+  gap: 8px;
+  min-height: 28px;
 }
 
-.label {
-  min-width: 92px;
+.row.actions {
+  margin-top: 14px;
+}
+
+.lbl {
+  flex: none;
+  min-width: 64px;
   color: var(--muted);
 }
 
-.link {
+.field {
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: #fff;
+}
+
+.field.wide {
+  flex: 1;
+  min-width: 0;
+}
+
+.color-row {
+  margin-bottom: 4px;
+}
+
+.color-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.swatch {
+  width: 32px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--ink);
+  border-radius: 3px;
+  background: #fff;
+}
+
+.hex {
+  width: 76px;
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+}
+
+.own {
+  margin-left: 40px;
+  color: var(--muted);
+  font-size: 12px;
+  min-height: 22px;
+}
+
+.recent-color {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+}
+
+.box {
+  margin-top: 12px;
+  padding: 8px;
+  border: 1px solid var(--soft);
+  border-radius: 4px;
+}
+
+.box.adv {
+  border-style: dashed;
+  border-color: var(--line);
+  background: #fafbfc;
+}
+
+.adv-toggle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.num-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.num {
+  width: 70px;
+  padding: 2px 4px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+
+.internal {
+  word-break: break-all;
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+/* スタート画面（index.html）。ヘッダーと下の段は出さない。 */
+#app[data-page='create'] .frame {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+#app[data-page='create'] .hd,
+#app[data-page='create'] .steps {
+  display: none;
+}
+
+.start {
+  display: flex;
+  justify-content: center;
+  padding: 32px 24px;
+}
+
+.start-card {
+  width: 100%;
+  max-width: 460px;
+  font-size: 14px;
+}
+
+.start-brand {
+  margin: 0;
+  font-size: 30px;
+  letter-spacing: 0.02em;
+}
+
+.start-card h2 {
+  margin: 26px 0 4px;
+}
+
+.start-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 14px;
+  font-weight: 600;
+}
+
+.start-label .field {
+  flex: none;
+  padding: 8px 10px;
+  font-weight: 400;
+}
+
+.presets {
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.preset {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.preset.on {
+  padding: 7px 10px;
+  border: 3px solid var(--accent);
+}
+
+.preset-name {
+  font-weight: 600;
+}
+
+.start-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.start-actions .btn {
+  padding: 9px 12px;
+}
+
+.start-actions .btn.primary {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.start-card .message {
+  margin-top: 10px;
+}
+
+.start-foot {
+  margin-top: 26px;
+}
+
+.box.resume {
+  margin-top: 18px;
+  border-color: var(--line);
+  background: var(--fill);
+}
+
+.box.resume p {
+  margin: 0 0 6px;
+}
+
+/* 確認と設定 */
+.modal-back {
+  position: fixed;
+  inset: 0;
   display: flex;
   align-items: center;
-  gap: 3px;
-  color: var(--muted);
+  justify-content: center;
+  background: rgba(35, 42, 56, 0.4);
 }
 
-input[type='color'] {
-  width: 32px;
-  height: 22px;
+.modal {
+  width: min(440px, 90vw);
+  padding: 16px;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.fatal {
+  padding: 24px;
+  color: var(--bad);
+}
+
+/* プレビューの下の 1 行（通知文）。高さを常に確保し、出ても消えてもプレビューの大きさを変えない。 */
+.message-line {
+  min-height: 22px;
+}
+
+.message-line .message {
+  margin: 0;
+}
+
+.recent {
+  margin-left: 40px;
+  min-height: 22px;
+  gap: 4px;
+}
+
+button.recent-color {
   padding: 0;
+  cursor: pointer;
+}
+
+/* 【Phase 1-C-3 の検証用】通知の置き場所の比較。決まったら、採用した案だけを残す。 */
+.notice-overlay {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  max-height: 45%;
+  overflow: auto;
+}
+
+.notice-overlay[hidden],
+.notice-popover[hidden] {
+  display: none;
+}
+
+.notice-overlay .notice {
+  box-shadow: 0 1px 4px rgba(35, 42, 56, 0.25);
+}
+
+.hd {
+  position: relative;
+}
+
+.chip-button {
+  cursor: pointer;
+}
+
+.notice-popover {
+  position: absolute;
+  top: 44px;
+  left: 330px;
+  z-index: 5;
+  width: 420px;
+  max-height: 60vh;
+  overflow: auto;
+  padding: 8px 8px 2px;
   border: 1px solid var(--line);
-}
-
-input[type='color']:disabled {
-  opacity: 0.45;
-}
-
-input[type='number'] {
-  width: 90px;
-  font: inherit;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(35, 42, 56, 0.25);
 }
