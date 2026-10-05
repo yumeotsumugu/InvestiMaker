@@ -1,10 +1,11 @@
-// 本体の最小 UI を、ヘッドレスの Chrome / Edge で実際に操作して確かめる。
+// Phase 1-B の最小 UI（minimal.html）を、ヘッドレスの Chrome / Edge で実際に操作して確かめる。
 //
-//   node tools/browser-smoke.ts
+//   node tools/browser-smoke.ts [--write]
 //
 // ボタン・選択・入力は画面の要素に対して行い、JSON の読込はファイル選択として行う。
 // 途中で期待と違えば、その場で失敗して終了する。
-// 結果は docs/reports/data/app-smoke.json と docs/reports/images/app_*.png に書く。
+// --write を付けたときだけ、結果を docs/reports/data/app-smoke.json と docs/reports/images/app_*.png に書く
+// （Phase 1-B の検証レポートの証跡。実行のたびに UUID が変わるので、普段は上書きしない）。
 
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -12,6 +13,7 @@ import { join } from 'node:path';
 import { createServer } from 'vite';
 import { Page, launchBrowser } from './cdp.ts';
 
+const WRITE = process.argv.includes('--write');
 const OUT_DATA = 'docs/reports/data';
 const OUT_IMAGES = 'docs/reports/images';
 mkdirSync(OUT_DATA, { recursive: true });
@@ -32,7 +34,7 @@ const temp = mkdtempSync(join(tmpdir(), 'investimaker-smoke-'));
 
 try {
   console.log(`${browser.product}（ヘッドレス） / ${base}`);
-  const page = await Page.open(browser.cdp, base, [1500, 1300]);
+  const page = await Page.open(browser.cdp, `${base}minimal.html`, [1500, 1300]);
   await page.waitFor('__app');
 
   // ---- 画面の操作
@@ -110,7 +112,7 @@ try {
   await input('[data-role="name"]', '夢生ツムグ');
   let s = await record('新規作成');
   check(s.validity === 'VALID' && s.equipped.length === 13 && s.opaque > 100_000, '新規作成で素体と基本の Part が描画される');
-  await page.screenshot(`${OUT_IMAGES}/app_new.png`);
+  if (WRITE) await page.screenshot(`${OUT_IMAGES}/app_new.png`);
 
   // 2) Part 選択：同じ category の別の Part に切り替える
   await click('[data-action="equip"][data-part="dev.shirt_02"]');
@@ -154,7 +156,7 @@ try {
   check((await preview()) === withOverride, 'ポーズを戻すと、条件別の補正に戻る');
   await input('[data-state="expression"]', 'smile');
   await input('[data-state="fit.chest"]', 'large');
-  await page.screenshot(`${OUT_IMAGES}/app_edited.png`);
+  if (WRITE) await page.screenshot(`${OUT_IMAGES}/app_edited.png`);
 
   // 5) JSON 保存 → 新規作成 → JSON 読込 → 同じ画像
   await click('[data-action="save"]');
@@ -162,8 +164,8 @@ try {
   const saved = await page.evaluate<string>('window.__app.hooks.lastSaved');
   const pngBefore = await page.evaluate<string>('window.__app.hooks.lastPng');
   const characterBefore = (await snapshot()).character;
-  writeFileSync(`${OUT_DATA}/app-smoke-character.json`, saved);
-  writeFileSync(`${OUT_IMAGES}/app_export.png`, Buffer.from(pngBefore.replace(/^data:image\/png;base64,/, ''), 'base64'));
+  if (WRITE) writeFileSync(`${OUT_DATA}/app-smoke-character.json`, saved);
+  if (WRITE) writeFileSync(`${OUT_IMAGES}/app_export.png`, Buffer.from(pngBefore.replace(/^data:image\/png;base64,/, ''), 'base64'));
 
   await click('[data-action="new"]');
   check((await snapshot()).character !== characterBefore, '新規作成で別のキャラクターになる');
@@ -192,7 +194,7 @@ try {
   const resaved = JSON.parse(await page.evaluate<string>('window.__app.hooks.lastSaved'));
   check(JSON.stringify(resaved.equipment[2]) === JSON.stringify(coat), '不足 Part の Instance が、位置・色・transform ごと保存される');
   check(resaved.requirements.parts.includes('author.special_coat'), 'requirements に不足 Part が残る');
-  await page.screenshot(`${OUT_IMAGES}/app_missing.png`);
+  if (WRITE) await page.screenshot(`${OUT_IMAGES}/app_missing.png`);
 
   // 7) 実装が知らないポーズ：読み込めるが、描画と PNG 出力はできない
   const unknownPose = JSON.parse(saved);
@@ -231,11 +233,11 @@ try {
   s = await record('category の重複');
   check(s.validity === 'VALID' && s.duplicates.includes('outfit.top'), '重複が注意として表示される');
   check(s.equipped.includes('dev.shirt_01') && s.equipped.includes('dev.shirt_02'), '両方とも装備中のまま');
-  await page.screenshot(`${OUT_IMAGES}/app_duplicate.png`);
+  if (WRITE) await page.screenshot(`${OUT_IMAGES}/app_duplicate.png`);
 
   await page.close();
-  writeFileSync(`${OUT_DATA}/app-smoke.json`, JSON.stringify({ browser: browser.product, headless: true, steps }, null, 2) + '\n');
-  console.log(`すべて通過。${OUT_DATA}/app-smoke.json を書き出した`);
+  if (WRITE) writeFileSync(`${OUT_DATA}/app-smoke.json`, JSON.stringify({ browser: browser.product, headless: true, steps }, null, 2) + '\n');
+  console.log(WRITE ? `すべて通過。${OUT_DATA}/app-smoke.json を書き出した` : 'すべて通過。');
 } finally {
   await browser.close();
   await server.close();

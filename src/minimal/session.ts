@@ -1,4 +1,4 @@
-// 本体 UI の状態と操作（DOM 非依存）。
+// Phase 1-B の最小 UI の状態と操作（DOM 非依存）。
 // 正本は Character 1 個だけで、ここにあるのは「どの Instance を選択しているか」という表示上の状態だけである。
 // Character の編集は core の operations.ts を通し、評価と描画計画も core に任せる。
 
