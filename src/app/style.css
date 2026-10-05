@@ -563,3 +563,65 @@ h4 {
   padding: 24px;
   color: var(--bad);
 }
+
+/* プレビューの下の 1 行（通知文）。高さを常に確保し、出ても消えてもプレビューの大きさを変えない。 */
+.message-line {
+  min-height: 22px;
+}
+
+.message-line .message {
+  margin: 0;
+}
+
+.recent {
+  margin-left: 40px;
+  min-height: 22px;
+  gap: 4px;
+}
+
+button.recent-color {
+  padding: 0;
+  cursor: pointer;
+}
+
+/* 【Phase 1-C-3 の検証用】通知の置き場所の比較。決まったら、採用した案だけを残す。 */
+.notice-overlay {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  max-height: 45%;
+  overflow: auto;
+}
+
+.notice-overlay[hidden],
+.notice-popover[hidden] {
+  display: none;
+}
+
+.notice-overlay .notice {
+  box-shadow: 0 1px 4px rgba(35, 42, 56, 0.25);
+}
+
+.hd {
+  position: relative;
+}
+
+.chip-button {
+  cursor: pointer;
+}
+
+.notice-popover {
+  position: absolute;
+  top: 44px;
+  left: 330px;
+  z-index: 5;
+  width: 420px;
+  max-height: 60vh;
+  overflow: auto;
+  padding: 8px 8px 2px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(35, 42, 56, 0.25);
+}

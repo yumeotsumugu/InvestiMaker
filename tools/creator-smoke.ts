@@ -338,12 +338,65 @@ try {
   await click('[data-card="dev.shirt_02"]');
   check(!(await snapshot()).equipped.includes('dev.shirt_01'), 'パーツを選び直すと 1 つになる');
 
-  // 13) 設定
+  // 13) 最近使った色：押すと、その欄の色になる
+  await click('[data-recent="#202028"][data-recent-for="main"]');
+  s = await record('最近使った色');
+  check((JSON.parse(s.character!) as { equipment: { partId: string; equipped: boolean; colors: Record<string, { color?: string }> }[] }).equipment.find((i) => i.partId === 'dev.shirt_02' && i.equipped)!.colors.main!.color === '#202028', '最近使った色を押すと、その欄に適用される');
+
+  // 14) 設定：外したパーツの設定は、ここで見て削除できる（詳細設定には出ない）
+  await click('[data-action="advanced"]');
+  check((await page.evaluate<number>(`document.querySelectorAll('.edit [data-action="forget"]').length`)) === 0, '詳細設定に、外したパーツの設定は出ない');
+  await click('[data-action="advanced"]');
+  check((await snapshot()).kept.includes('dev.shirt_01'), '外したシャツの設定を覚えている');
   await click('[data-action="settings"]');
   await shot('14_settings');
+  await click('[data-action="forget"][data-part="dev.shirt_01"]');
+  s = await snapshot();
+  check(!s.kept.includes('dev.shirt_01') && s.modal, '設定から削除でき、設定は開いたまま');
   await click('[data-action="settings-close"]');
-
   await page.close();
+
+  // 15) 【検証用】通知の置き場所の 4 方式。現状以外は、通知が出ても消えてもプレビューの大きさが変わらない
+  for (const mode of ['under', 'side', 'overlay', 'chip'] as const) {
+    const p = await Page.open(browser.cdp, `${base}?notices=${mode}`, [1280, 800]);
+    await p.waitFor('__creator');
+    const wait = async () => {
+      await p.evaluate<void>('window.__creator.idle()');
+      await p.evaluate('new Promise((r) => setTimeout(r, 30))');
+    };
+    const press = async (selector: string) => {
+      await p.evaluate(`(() => { const el = document.querySelector(${JSON.stringify(selector)}); if (!el) throw new Error('要素がない: ' + ${JSON.stringify(selector)}); el.click(); })()`);
+      await wait();
+    };
+    const rect = () => p.evaluate<string>(`(() => { const r = document.querySelector('.canvas-wrap').getBoundingClientRect(); return [r.x, r.y, r.width, r.height].map((v) => Math.round(v)).join(','); })()`);
+    const where = () => p.evaluate<string[]>(`[...document.querySelectorAll('[data-notice]')].filter((el) => el.offsetParent !== null).map((el) => el.closest('.under') ? 'under' : el.closest('.edit') ? 'side' : el.closest('[data-role="notice-overlay"]') ? 'overlay' : el.closest('[data-role="notice-popover"]') ? 'chip' : 'other')`);
+
+    await press('[data-action="start"]');
+    await press('[data-major="outfit"]');
+    await press('[data-sub="outfit.outer"]');
+    await press('[data-card="dev.coat_01"]');
+    const before = await rect();
+    await press('[data-action="save"]');
+    check((await rect()) === before, `「保存しました」が出ても、プレビューの大きさは変わらない（${mode}）`);
+    await press('[data-major="pose"]');
+    await press('[data-pose-arm\\.right="pocket"]');
+    if (mode === 'chip') {
+      check((await where()).length === 0, '「注意 n 件」を押すまで、通知は開かない');
+      await press('[data-role="chip"]');
+    }
+    const shown = await where();
+    check(shown.length === 1 && shown[0] === mode, `通知が決めた場所に出る（${mode}）: ${shown}`);
+    const withNotice = await rect();
+    if (WRITE) await p.screenshot(`${OUT_IMAGES}/creator_notices_${mode}.png`);
+    if (mode === 'under') check(withNotice !== before, '現状（プレビューの下）では、通知でプレビューが縮む（比較の基準）');
+    else check(withNotice === before, `通知が出ても、プレビューの大きさは変わらない（${mode}）: ${before} → ${withNotice}`);
+    await press('[data-notice-action="unequip"]');
+    check((await where()).length === 0 && (await rect()) === before, `通知が消えると、元の大きさのまま（${mode}）`);
+    steps.push({ step: `通知の置き場所: ${mode}`, result: { before, withNotice, changed: withNotice !== before } });
+    console.log(`  通知の置き場所 ${mode}: プレビュー ${before} → ${withNotice}${withNotice === before ? '（変化なし）' : '（縮む）'}`);
+    await p.close();
+  }
+
   if (WRITE) writeFileSync(`${OUT_DATA}/creator-smoke.json`, JSON.stringify({ browser: browser.product, headless: true, viewport: [1280, 800], steps }, null, 2) + '\n');
   console.log('すべて通過。');
 } finally {

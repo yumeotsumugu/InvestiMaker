@@ -173,6 +173,50 @@
         "equipped": 15,
         "drawn": 23
       }
+    },
+    {
+      "step": "最近使った色",
+      "result": {
+        "step": "customize",
+        "chip": null,
+        "message": "「夢生ツムグ」を読み込みました。",
+        "notices": [],
+        "title": "仮・Tシャツ",
+        "equipped": 14,
+        "drawn": 20
+      }
+    },
+    {
+      "step": "通知の置き場所: under",
+      "result": {
+        "before": "470,58,440,660",
+        "withNotice": "499,58,380,571",
+        "changed": true
+      }
+    },
+    {
+      "step": "通知の置き場所: side",
+      "result": {
+        "before": "470,58,440,660",
+        "withNotice": "470,58,440,660",
+        "changed": false
+      }
+    },
+    {
+      "step": "通知の置き場所: overlay",
+      "result": {
+        "before": "470,58,440,660",
+        "withNotice": "470,58,440,660",
+        "changed": false
+      }
+    },
+    {
+      "step": "通知の置き場所: chip",
+      "result": {
+        "before": "470,58,440,660",
+        "withNotice": "470,58,440,660",
+        "changed": false
+      }
     }
   ]
 }

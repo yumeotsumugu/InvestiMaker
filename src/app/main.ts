@@ -102,6 +102,8 @@ interface UiState {
   draft: { name: string; bodyId: string; withStarter: boolean };
   /** 「設定」で選ぶ：詳細設定を常に開く。 */
   alwaysAdvanced: boolean;
+  /** 【検証用】「注意 n 件」から開く方式で、一覧を開いているか。 */
+  noticesOpen: boolean;
 }
 
 async function main() {
@@ -116,6 +118,12 @@ async function main() {
   const majors: MajorView[] = visibleMajors(set.library);
   const firstBody = bodies(set)[0]?.id ?? set.body;
   const thumbUrl = (partId: string) => `${set.baseUrl}${partId}/preview.png`;
+
+  // 【Phase 1-C-3 の検証用】通知の置き場所を URL で切り替える。置き場所が決まったら、採用した案だけを残して消す。
+  //   ?notices=under（現状：プレビューの下）／ side（右ペインの上）／ overlay（プレビューに重ねる）／ chip（「注意 n 件」から開く）
+  type NoticeMode = 'under' | 'side' | 'overlay' | 'chip';
+  const requested = new URLSearchParams(location.search).get('notices');
+  const noticeMode: NoticeMode = requested === 'side' || requested === 'overlay' || requested === 'chip' ? requested : 'under';
 
   /** 編集中のキャラクター。CREATE で始めるまでは null。 */
   let character: Character | null = null;
@@ -133,6 +141,7 @@ async function main() {
     message: null,
     draft: { name: '', bodyId: firstBody, withStarter: true },
     alwaysAdvanced: false,
+    noticesOpen: false,
   };
   const hooks = { lastSaved: null as string | null, lastPng: null as string | null };
 
@@ -149,7 +158,10 @@ async function main() {
   const pickerEl = h('div', { className: 'pane picker' });
   const emptyEl = mark(h('div', { className: 'canvas-empty' }), { role: 'empty' });
   const underEl = h('div', { className: 'under' });
-  const previewEl = h('div', { className: 'pane preview' }, h('div', { className: 'canvas-wrap' }, canvas, emptyEl), underEl);
+  const overlayEl = mark(h('div', { className: 'notice-overlay' }), { role: 'notice-overlay' });
+  const previewEl = h('div', { className: 'pane preview' }, h('div', { className: 'canvas-wrap' }, canvas, emptyEl, overlayEl), underEl);
+  const popoverEl = mark(h('div', { className: 'notice-popover' }), { role: 'notice-popover' });
+  root.dataset.notices = noticeMode;
   const editEl = h('div', { className: 'pane edit' });
   const sideEl = h('div', { className: 'pane side' });
 
@@ -257,6 +269,21 @@ async function main() {
     });
     return h('span', { className: 'color-field' }, picker, text);
   }
+
+  /** 最近使った色。押すと、その欄の色として適用する（新しい色の管理は持たない。UI の一時的な記憶を使うだけ）。 */
+  function recentChips(current: string, onColor: (color: string, done: boolean) => void, slotKey: string) {
+    const others = ui.recentColors.filter((color) => color !== current.toUpperCase());
+    if (others.length === 0) return null;
+    return h('div', { className: 'row recent' }, h('span', { className: 'muted small' }, '最近使った色'), ...others.map((color) => {
+      const chip = mark(h('button', { type: 'button', className: 'recent-color', title: color }), { recent: color, recentFor: slotKey });
+      chip.style.background = color;
+      chip.addEventListener('click', () => {
+        remember(color);
+        onColor(color, true);
+      });
+      return chip;
+    }));
+  }
   function remember(color: string) {
     ui.recentColors = [color.toUpperCase(), ...ui.recentColors.filter((c) => c !== color.toUpperCase())].slice(0, 6);
   }
@@ -317,8 +344,19 @@ async function main() {
       if (always.checked) ui.advancedOpen = true;
       render('all');
     });
+    const kept = character ? keptInstances(character) : [];
     modal('設定', [
       h('label', { className: 'row' }, always, '詳細設定を常に開く'),
+      mark(h('div', {},
+        h('h4', {}, '外したパーツの設定'),
+        kept.length === 0
+          ? h('p', { className: 'muted small' }, '外したパーツの色や位置を覚えておき、選び直すと元に戻します。いま覚えている設定はありません。')
+          : h('p', { className: 'muted small' }, '外したパーツの色や位置を覚えています。選び直すと元に戻ります。不要なら削除できます。'),
+        ...kept.map((k) => h('div', { className: 'row' }, h('span', {}, set.library.get(k.partId)?.name ?? k.partId), h('span', { className: 'spacer' }),
+          button('削除', () => {
+            apply((x) => removeInstance(x, k.instanceId));
+            openSettings();
+          }, { action: 'forget', part: k.partId })))), { role: 'kept' }),
       h('p', { className: 'muted small' }, 'InvestiMaker Phase 1-C ／ Asset Specification v1 RC1 ／ Character Schema v1 RC1'),
       h('p', { className: 'muted small' }, 'この版で使えるのは、新規作成・カスタマイズ・1 枚の PNG の書き出しです。'),
     ], [button('閉じる', closeModal, { action: 'settings-close' }, { primary: true })]);
@@ -332,6 +370,17 @@ async function main() {
     view = inspect(character, set);
   });
 
+  function noticeChip(count: number) {
+    const className = `chip${view && !view.export.allowed ? ' bad' : ''}`;
+    if (noticeMode !== 'chip') return mark(h('span', { className }, `注意 ${count} 件`), { role: 'chip' });
+    const el = mark(h('button', { type: 'button', className: `${className} chip-button` }, `注意 ${count} 件 ${ui.noticesOpen ? '▴' : '▾'}`), { role: 'chip' });
+    el.addEventListener('click', () => {
+      ui.noticesOpen = !ui.noticesOpen;
+      render('status');
+    });
+    return el;
+  }
+
   function renderHeader() {
     if (document.activeElement !== nameEl) nameEl.value = character?.name ?? '';
     nameEl.hidden = character === null;
@@ -339,12 +388,13 @@ async function main() {
     fill(header,
       h('span', { className: 'brand' }, 'InvestiMaker'),
       nameEl,
-      count > 0 && mark(h('span', { className: `chip${view && !view.export.allowed ? ' bad' : ''}` }, `注意 ${count} 件`), { role: 'chip' }),
+      count > 0 && noticeChip(count),
       h('span', { className: 'spacer' }),
       button('保存', save, { action: 'save' }, { disabled: !character }),
       button('読込', () => confirmDiscard(() => fileInput.click()), { action: 'load' }),
       button('設定', openSettings, { action: 'settings' }),
       fileInput,
+      noticeMode === 'chip' && popoverEl,
     );
   }
 
@@ -379,11 +429,23 @@ async function main() {
   function renderUnder() {
     emptyEl.hidden = !!view && view.drawn > 0;
     emptyEl.textContent = character ? '表示できる素材がありません' : 'ここにキャラクターが表示されます';
+    // 通知は CUSTOMIZE の段で出す（EXPORT の段は、右側に常に並べる）。
+    const shown = ui.step === 'customize' ? notices : [];
+    if (shown.length === 0) ui.noticesOpen = false;
     fill(underEl,
-      ui.message && mark(h('p', { className: `message ${ui.message.kind}` }, ui.message.text, ui.message.detail && ui.advancedOpen && h('span', { className: 'detail' }, ui.message.detail)), { role: 'message' }),
-      ...(ui.step === 'customize' ? notices.map((n) => noticeBox(n)) : []),
+      // 1 行分の高さを常に確保する（「保存しました」などが出ても、プレビューの大きさが変わらないようにする）。
+      h('div', { className: 'message-line' },
+        ui.message && mark(h('p', { className: `message ${ui.message.kind}` }, ui.message.text, ui.message.detail && ui.advancedOpen && h('span', { className: 'detail' }, ui.message.detail)), { role: 'message' })),
+      ...(noticeMode === 'under' ? shown.map((n) => noticeBox(n)) : []),
     );
+    fill(overlayEl, ...(noticeMode === 'overlay' ? shown.map((n) => noticeBox(n)) : []));
+    overlayEl.hidden = noticeMode !== 'overlay' || shown.length === 0;
+    fill(popoverEl, ...(noticeMode === 'chip' && ui.noticesOpen ? shown.map((n) => noticeBox(n)) : []));
+    popoverEl.hidden = !(noticeMode === 'chip' && ui.noticesOpen && shown.length > 0);
   }
+
+  /** 【検証用】右ペインの上に通知を出す方式のときだけ、通知を返す。 */
+  const sideNotices = (): Child[] => (noticeMode === 'side' ? notices.map((n) => noticeBox(n)) : []);
 
   function noticeBox(n: Notice) {
     return mark(
@@ -552,12 +614,13 @@ async function main() {
     if (!character) return;
     const c = character;
     const target = ui.target;
-    if (target?.kind === 'expression') return fill(editEl, ...expressionPanel(c));
-    if (target?.kind === 'pose') return fill(editEl, ...posePanel(c));
+    if (target?.kind === 'expression') return fill(editEl, ...sideNotices(), ...expressionPanel(c));
+    if (target?.kind === 'pose') return fill(editEl, ...sideNotices(), ...posePanel(c));
     const inst = target ? c.equipment.find((i) => i.instanceId === target.instanceId && i.equipped) : undefined;
-    if (!inst) return fill(editEl, h('p', { className: 'muted' }, '左でパーツを選ぶと、ここで色などを調整できます。'), advancedBox(c, null));
+    if (!inst) return fill(editEl, ...sideNotices(), h('p', { className: 'muted' }, '左でパーツを選ぶと、ここで色などを調整できます。'));
     const part = set.library.get(inst.partId);
     fill(editEl,
+      ...sideNotices(),
       mark(h('h3', {}, part?.name ?? '見つからない素材'), { role: 'edit-title' }),
       ...(inst.instanceId === c.appearance.body ? bodyPanel(c) : colorPanel(c, inst, part)),
       advancedBox(c, inst),
@@ -579,7 +642,7 @@ async function main() {
       mark(h('h3', {}, 'ポーズ・向き'), { role: 'edit-title' }),
       h('p', {}, `${label('region', 'torso')}：${label('pose', pose.torso!)} ／ ${label('region', 'arm.right')}：${label('pose', pose['arm.right']!)} ／ ${label('region', 'arm.left')}：${label('pose', pose['arm.left']!)}`),
       h('p', {}, `向き：${label('view', v)}`),
-      h('p', { className: 'muted small' }, 'ポーズや向きを変えて表示できなくなったパーツは、プレビューの下に表示されます。'),
+      h('p', { className: 'muted small' }, 'ポーズや向きを変えて表示できなくなったパーツがあれば、注意としてお知らせします。'),
     ];
   }
 
@@ -590,9 +653,12 @@ async function main() {
     const NONE = '';
     return [
       h('h4', {}, '全体の色'),
-      ...sharedColorRows(c, set.library).map(({ key, color: current }) => h('div', { className: 'row' },
-        colorField(current, (color, done) => apply((x) => setSharedColor(x, key, color), done ? 'edit' : 'status'), { shared: key }),
-        h('span', {}, label('shared', key)))),
+      ...sharedColorRows(c, set.library).map(({ key, color: current }) => {
+        const onColor = (color: string, done: boolean) => apply((x) => setSharedColor(x, key, color), done ? 'edit' : 'status');
+        return h('div', { className: 'color-row' },
+          h('div', { className: 'row' }, colorField(current, onColor, { shared: key }), h('span', {}, label('shared', key))),
+          recentChips(current, onColor, key));
+      }),
       h('p', { className: 'muted small' }, 'この色を使っているパーツが、まとめて変わります。'),
       dims.length > 0 && h('h4', {}, '体型'),
       ...dims.map(([dim, values]) => h('div', { className: 'row' }, h('span', { className: 'lbl' }, label('fitDimension', dim)),
@@ -608,25 +674,22 @@ async function main() {
       const override = inst.colors[slot.id];
       const linked = slot.link !== undefined && override?.linked !== false;
       const shown = resolveSlotColor(slot, override, c.sharedColors);
-      const field = linked
-        ? colorField(shown, (color, done) => apply((x) => setSharedColor(x, slot.link!, color), done ? 'edit' : 'status'), { slot: slot.id })
-        : colorField(shown, (color, done) => apply((x) => setInstanceColor(x, inst.instanceId, slot.id, color), done ? 'edit' : 'status'), { slot: slot.id });
+      const onColor = linked
+        ? (color: string, done: boolean) => apply((x) => setSharedColor(x, slot.link!, color), done ? 'edit' : 'status')
+        : (color: string, done: boolean) => apply((x) => setInstanceColor(x, inst.instanceId, slot.id, color), done ? 'edit' : 'status');
+      const field = colorField(shown, onColor, { slot: slot.id });
       const own = slot.link !== undefined && mark(h('input', { type: 'checkbox', checked: !linked }), { own: slot.id });
       // リンクの解除と復帰は core の操作を使う（解除時に、見えている色を写すのは core の仕事）。
       if (own) own.addEventListener('change', () => apply((x) => (own.checked ? unlinkColor(x, inst.instanceId, slot) : relinkColor(x, inst.instanceId, slot.id)), 'edit'));
       return h('div', { className: 'color-row' },
         h('div', { className: 'row' }, field, h('span', {}, linked ? `${label('shared', slot.link!)}の色（全体）` : (slot.name ?? slot.id))),
-        own && h('label', { className: 'row own' }, own, 'このパーツだけ色を変える'));
+        own && h('label', { className: 'row own' }, own, 'このパーツだけ色を変える'),
+        recentChips(shown, onColor, slot.id));
     });
     return [
       h('h4', {}, '色'),
       ...rows,
       slots.some((s) => s.link !== undefined) && h('p', { className: 'muted small' }, '「全体」の色は、同じ色を使うすべてのパーツが一緒に変わります。'),
-      ui.recentColors.length > 0 && h('div', { className: 'row recent' }, h('span', { className: 'muted small' }, '最近使った色'), ...ui.recentColors.map((color) => {
-        const chip = h('span', { className: 'recent-color', title: color });
-        chip.style.background = color;
-        return chip;
-      })),
     ];
   }
 
@@ -650,14 +713,7 @@ async function main() {
     });
     if (!ui.advancedOpen) return h('div', { className: 'box adv' }, toggle);
 
-    const kept = keptInstances(c);
-    const keptList = kept.length > 0 && mark(h('div', {},
-      h('h4', {}, '外したパーツの設定'),
-      h('p', { className: 'muted small' }, '外したパーツの色や位置を覚えています。選び直すと元に戻ります。'),
-      ...kept.map((k) => h('div', { className: 'row' }, h('span', {}, set.library.get(k.partId)?.name ?? k.partId), h('span', { className: 'spacer' }),
-        button('削除', () => apply((x) => removeInstance(x, k.instanceId), 'edit'), { action: 'forget', part: k.partId })))), { role: 'kept' });
-
-    if (!inst) return h('div', { className: 'box adv' }, toggle, keptList);
+    if (!inst) return h('div', { className: 'box adv' }, toggle);
 
     const part = set.library.get(inst.partId);
     const stored = storedTransform(inst, ui.scope, c.state);
@@ -730,7 +786,6 @@ async function main() {
       pivotInputs,
       h('h4', {}, '内部情報'),
       mark(h('p', { className: 'muted small internal' }, `${inst.partId} ／ ${part?.category ?? '（不明）'}`, h('br'), inst.instanceId), { role: 'internal' }),
-      keptList,
     );
   }
 
